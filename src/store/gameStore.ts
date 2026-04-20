@@ -22,6 +22,7 @@ export interface CounterValues {
 }
 
 export interface GameConfig {
+  name?: string;
   counterNames?: Partial<Record<CounterKey, string>>;
   counterResetsOnTurn?: Partial<Record<CounterKey, boolean>>;
   counterVisibleForNonActive?: Partial<Record<CounterKey, boolean>>;
@@ -60,6 +61,7 @@ export interface GameState {
     money: number;
     attack: number;
   };
+  currentGameConfigName: string;
   theme: 'generic' | 'starRealms';
 }
 
@@ -141,6 +143,7 @@ const initialGameState: GameState = {
     money: 0,
     attack: 0,
   },
+  currentGameConfigName: 'Generic',
   theme: 'starRealms',
 };
 
@@ -392,6 +395,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         counterResetsOnTurn: mergedResets,
         counterVisibleForNonActive: mergedVisibility,
         defaultCounterValues: mergedDefaults,
+        currentGameConfigName: config.name ?? state.currentGameConfigName,
       };
     });
     get().saveGame();
@@ -425,6 +429,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
             ...initialGameState.defaultCounterValues,
             ...(savedGame.defaultCounterValues ?? {}),
           },
+          currentGameConfigName:
+            savedGame.currentGameConfigName ?? initialGameState.currentGameConfigName,
         });
       }
     } catch (error) {
@@ -444,6 +450,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         counterResetsOnTurn: state.counterResetsOnTurn,
         counterVisibleForNonActive: state.counterVisibleForNonActive,
         defaultCounterValues: state.defaultCounterValues,
+        currentGameConfigName: state.currentGameConfigName,
         theme: state.theme,
       };
       await localforage.setItem('gameState', gameState);

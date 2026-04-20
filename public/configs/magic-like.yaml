@@ -1,9 +1,9 @@
-name: Star Realms
+name: Magic-Like
 
 counterNames:
-  authority: Authority
-  money: Trade
-  attack: Combat
+  authority: Life
+  money: Mana
+  attack: Damage
 
 counterResetsOnTurn:
   authority: false
@@ -16,7 +16,7 @@ counterVisibleForNonActive:
   attack: true
 
 defaultCounterValues:
-  authority: 50
+  authority: 20
   money: 0
   attack: 0
 

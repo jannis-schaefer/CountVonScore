@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
-import { parseGameConfig, stringifyGameConfigJson } from '../utils/gameConfig';
+import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigJson } from '../utils/gameConfig';
+import type { GameConfig } from '../store/gameStore';
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export const Settings: React.FC = () => {
     counterResetsOnTurn,
     counterVisibleForNonActive,
     defaultCounterValues,
+    currentGameConfigName,
     updateCounterNames,
     updateCounterResetsOnTurn,
     updateCounterVisibleForNonActive,
@@ -28,6 +30,21 @@ export const Settings: React.FC = () => {
   const [editingPlayerIds, setEditingPlayerIds] = useState<Set<string>>(new Set());
   const [editingPlayerNames, setEditingPlayerNames] = useState<Record<string, string>>({});
   const [configMessage, setConfigMessage] = useState<string>('');
+  const [bundledConfigs, setBundledConfigs] = useState<GameConfig[]>([]);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const configs = await loadBundledGameConfigs();
+        setBundledConfigs(configs);
+      } catch (error) {
+        console.error(error);
+        setConfigMessage('Failed to load bundled game configs.');
+      }
+    };
+
+    run();
+  }, []);
 
   const handleCounterNameChange = (counter: keyof typeof counterNames, value: string) => {
     setTempCounterNames({ ...tempCounterNames, [counter]: value });
@@ -80,7 +97,7 @@ export const Settings: React.FC = () => {
         setTempCounterNames((prev) => ({ ...prev, ...config.counterNames }));
       }
 
-      setConfigMessage(`Imported config from ${file.name}`);
+      setConfigMessage(`Imported config: ${config.name ?? file.name}`);
     } catch (error) {
       console.error(error);
       setConfigMessage('Failed to import config. Check JSON/YAML format.');
@@ -91,6 +108,7 @@ export const Settings: React.FC = () => {
 
   const handleExportConfig = () => {
     const payload = {
+      name: currentGameConfigName,
       counterNames,
       counterResetsOnTurn,
       counterVisibleForNonActive,
@@ -101,10 +119,11 @@ export const Settings: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'game-config.json';
+    const safeName = currentGameConfigName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    link.download = `${safeName || 'game-config'}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    setConfigMessage('Exported game-config.json');
+    setConfigMessage(`Exported ${safeName || 'game-config'}.json`);
   };
 
   return (
@@ -122,6 +141,7 @@ export const Settings: React.FC = () => {
           <h2 style={{ marginTop: 0 }}>Theme</h2>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <span>Current: {theme === 'generic' ? 'Generic' : 'Star Realms'}</span>
+            <span>Config: {currentGameConfigName}</span>
             <button className="btn" onClick={toggleTheme}>
               Switch Theme
             </button>
@@ -311,62 +331,26 @@ export const Settings: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Quick Presets</h2>
+          <h2 style={{ marginTop: 0 }}>Bundled Game Formats</h2>
           <p style={{ opacity: 0.7, marginBottom: '15px' }}>
-            Choose label and reset presets.
+            These presets are loaded from YAML files bundled with the PWA. New formats can be added with a pull request.
           </p>
-          <div className="controls-row">
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                const genericNames = {
-                  authority: 'Counter A',
-                  money: 'Counter B',
-                  attack: 'Counter C',
-                };
-                updateCounterNames(genericNames);
-                setTempCounterNames(genericNames);
-                updateCounterResetsOnTurn({ authority: false, money: false, attack: false });
-                updateCounterVisibleForNonActive({ authority: true, money: false, attack: false });
-                updateDefaultCounterValues({ authority: 0, money: 0, attack: 0 });
-              }}
-            >
-              Generic
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                const starRealmsNames = {
-                  authority: 'Authority',
-                  money: 'Trade',
-                  attack: 'Combat',
-                };
-                updateCounterNames(starRealmsNames);
-                setTempCounterNames(starRealmsNames);
-                updateCounterResetsOnTurn({ authority: false, money: true, attack: true });
-                updateCounterVisibleForNonActive({ authority: true, money: false, attack: true });
-                updateDefaultCounterValues({ authority: 50, money: 0, attack: 0 });
-              }}
-            >
-              Star Realms
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                const customNames = {
-                  authority: 'Life',
-                  money: 'Mana',
-                  attack: 'Damage',
-                };
-                updateCounterNames(customNames);
-                setTempCounterNames(customNames);
-                updateCounterResetsOnTurn({ authority: false, money: true, attack: true });
-                updateCounterVisibleForNonActive({ authority: true, money: false, attack: true });
-                updateDefaultCounterValues({ authority: 20, money: 0, attack: 0 });
-              }}
-            >
-              Magic-Like
-            </button>
+          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+            {bundledConfigs.map((config) => (
+              <button
+                key={config.name}
+                className="btn btn-secondary"
+                onClick={() => {
+                  applyGameConfig(config);
+                  if (config.counterNames) {
+                    setTempCounterNames((prev) => ({ ...prev, ...config.counterNames }));
+                  }
+                  setConfigMessage(`Applied bundled config: ${config.name ?? 'Unnamed config'}`);
+                }}
+              >
+                {config.name ?? 'Unnamed config'}
+              </button>
+            ))}
           </div>
         </div>
 

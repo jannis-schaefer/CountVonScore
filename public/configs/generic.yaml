@@ -1,22 +1,22 @@
-name: Star Realms
+name: Generic
 
 counterNames:
-  authority: Authority
-  money: Trade
-  attack: Combat
+  authority: Counter A
+  money: Counter B
+  attack: Counter C
 
 counterResetsOnTurn:
   authority: false
-  money: true
-  attack: true
+  money: false
+  attack: false
 
 counterVisibleForNonActive:
   authority: true
   money: false
-  attack: true
+  attack: false
 
 defaultCounterValues:
-  authority: 50
+  authority: 0
   money: 0
   attack: 0
 

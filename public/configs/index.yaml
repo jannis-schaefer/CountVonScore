@@ -1,0 +1,7 @@
+configs:
+  - name: Generic
+    file: generic.yaml
+  - name: Star Realms
+    file: star-realms.yaml
+  - name: Magic-Like
+    file: magic-like.yaml
