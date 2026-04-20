@@ -1,0 +1,23 @@
+counterNames:
+  authority: Authority
+  money: Trade
+  attack: Combat
+
+counterResetsOnTurn:
+  authority: false
+  money: true
+  attack: true
+
+counterVisibleForNonActive:
+  authority: true
+  money: false
+  attack: true
+
+defaultCounterValues:
+  authority: 50
+  money: 0
+  attack: 0
+
+players:
+  - Player 1
+  - Player 2

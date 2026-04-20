@@ -1,0 +1,167 @@
+/* Star Realms Theme */
+:root {
+  --star-realms-primary: #1a0f2e;
+  --star-realms-secondary: #2d1b4e;
+  --star-realms-accent: #ff6b35;
+  --star-realms-accent-light: #ff8c5a;
+  --star-realms-text: #e8dff5;
+  --star-realms-text-dim: #b8a8c8;
+  --star-realms-border: #4a3a6e;
+  --star-realms-gold: #ffc107;
+  --star-realms-red: #e74c3c;
+  --star-realms-green: #27ae60;
+}
+
+.theme-starRealms {
+  background-color: var(--star-realms-primary);
+  color: var(--star-realms-text);
+}
+
+.theme-starRealms body {
+  background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 100%);
+  background-attachment: fixed;
+}
+
+.theme-starRealms .btn {
+  background-color: var(--star-realms-accent);
+  color: #000;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.theme-starRealms .btn:hover {
+  background-color: var(--star-realms-accent-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.theme-starRealms .btn-secondary {
+  background-color: var(--star-realms-secondary);
+  color: var(--star-realms-text);
+  border: 2px solid var(--star-realms-border);
+}
+
+.theme-starRealms .btn-secondary:hover {
+  background-color: var(--star-realms-border);
+  border-color: var(--star-realms-accent);
+}
+
+.theme-starRealms .btn-danger {
+  background-color: var(--star-realms-red);
+  color: white;
+}
+
+.theme-starRealms .btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.theme-starRealms .card {
+  background: linear-gradient(135deg, rgba(45, 27, 78, 0.6) 0%, rgba(74, 58, 110, 0.4) 100%);
+  border: 2px solid var(--star-realms-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(232, 223, 245, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.theme-starRealms .counter-display {
+  color: var(--star-realms-gold);
+  text-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+  font-family: 'Courier New', monospace;
+}
+
+.theme-starRealms .counter-label {
+  color: var(--star-realms-text-dim);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.theme-starRealms .counter-btn {
+  background: linear-gradient(135deg, var(--star-realms-accent) 0%, #e55a2b 100%);
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(255, 107, 53, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  border: 2px solid #d94a1f;
+}
+
+.theme-starRealms .counter-btn:hover {
+  background: linear-gradient(135deg, var(--star-realms-accent-light) 0%, #f0703a 100%);
+  box-shadow: 0 6px 12px rgba(255, 107, 53, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.theme-starRealms .counter-btn:active {
+  transform: scale(0.95) translateY(2px);
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.theme-starRealms .input {
+  background-color: var(--star-realms-secondary);
+  color: var(--star-realms-text);
+  border: 2px solid var(--star-realms-border);
+}
+
+.theme-starRealms .input:focus {
+  outline: none;
+  border-color: var(--star-realms-accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+}
+
+.theme-starRealms .player-card {
+  background: linear-gradient(135deg, rgba(45, 27, 78, 0.7) 0%, rgba(74, 58, 110, 0.5) 100%);
+  border: 3px solid var(--star-realms-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-starRealms .player-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--star-realms-accent), transparent);
+}
+
+.theme-starRealms .player-card.active {
+  border-color: var(--star-realms-accent);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.theme-starRealms .player-name {
+  color: var(--star-realms-text);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Resource Counter Colors */
+.theme-starRealms .counter-authority {
+  color: var(--star-realms-green);
+  text-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+}
+
+.theme-starRealms .counter-money {
+  color: var(--star-realms-gold);
+  text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+}
+
+.theme-starRealms .counter-attack {
+  color: var(--star-realms-red);
+  text-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+/* Icon styles */
+.theme-starRealms .icon-authority {
+  filter: drop-shadow(0 0 4px rgba(39, 174, 96, 0.5));
+}
+
+.theme-starRealms .icon-money {
+  filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.5));
+}
+
+.theme-starRealms .icon-attack {
+  filter: drop-shadow(0 0 4px rgba(231, 76, 60, 0.5));
+}
