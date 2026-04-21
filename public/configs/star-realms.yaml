@@ -5,22 +5,22 @@ counters:
     name: Authority
     icon: authority
     initialValue: 50
-    persistsBetweenTurns: true
-    alwaysDisplayed: true
+    persistsBetweenTurns: yes
+    alwaysDisplayed: yes
 
   - id: trade
     name: Trade
     icon: trade
     initialValue: 0
-    persistsBetweenTurns: false
-    alwaysDisplayed: false
+    persistsBetweenTurns: yes
+    alwaysDisplayed: no
 
   - id: combat
     name: Combat
     icon: combat
     initialValue: 0
-    persistsBetweenTurns: false
-    alwaysDisplayed: true
+    persistsBetweenTurns: yes
+    alwaysDisplayed: no
 
 players:
   defaultPlayerCount: 2
