@@ -14,13 +14,8 @@ export const MultiplayerMode: React.FC = () => {
     setCounter,
     resetGame,
     undo,
-    loadGame,
   } = useGameStore();
   const [trackedPlayerIndex, setTrackedPlayerIndex] = React.useState(0);
-
-  useEffect(() => {
-    loadGame();
-  }, [loadGame]);
 
   useEffect(() => {
     if (players.length === 0) {

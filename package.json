@@ -10,16 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
+    "localforage": "^1.10.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^6.20.0",
-    "zustand": "^4.4.1",
-    "localforage": "^1.10.0"
+    "yaml": "^2.8.3",
+    "zustand": "^4.4.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

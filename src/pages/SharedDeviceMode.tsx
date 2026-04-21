@@ -9,6 +9,10 @@ export const SharedDeviceMode: React.FC = () => {
   const navigate = useNavigate();
   const {
     players,
+    viewedPlayers,
+    viewedTurnNumber,
+    isHistoricalTurnDirty,
+    turnRecords,
     currentPlayerIndex,
     turnNumber,
     history,
@@ -17,18 +21,15 @@ export const SharedDeviceMode: React.FC = () => {
     setStartingPlayer,
     nextTurn,
     previousTurn,
+    applyHistoricalChanges,
+    continueFromHistoricalTurn,
     resetGame,
     undo,
-    loadGame,
   } = useGameStore();
 
   // Show starting-player overlay when we're at the very first turn and no player has been chosen yet.
   const [startingPlayerChosen, setStartingPlayerChosen] = useState(turnNumber > 1);
   const [selectingManually, setSelectingManually] = useState(false);
-
-  useEffect(() => {
-    loadGame();
-  }, [loadGame]);
 
   // If the game was resumed mid-game, skip the overlay.
   useEffect(() => {
@@ -48,7 +49,20 @@ export const SharedDeviceMode: React.FC = () => {
     handleChoosePlayer(randomIndex);
   };
 
-  const currentPlayer = players[currentPlayerIndex];
+  const displayedPlayers = viewedPlayers ?? players;
+  const isViewingHistoricalTurn = viewedTurnNumber !== null;
+  const viewedTurnRecord = viewedTurnNumber !== null
+    ? turnRecords.find((record) => record.turnNumber === viewedTurnNumber)
+    : undefined;
+  const displayedPlayerIndex = viewedTurnRecord?.playerIndex ?? currentPlayerIndex;
+  const currentPlayer = displayedPlayers[displayedPlayerIndex];
+  const canNavigatePrevious = isViewingHistoricalTurn ? viewedTurnNumber! > 1 && !isHistoricalTurnDirty : turnNumber > 1;
+  const canNavigateNext = !isHistoricalTurnDirty;
+  const nextLabel = isViewingHistoricalTurn
+    ? viewedTurnNumber === turnNumber - 1
+      ? 'Return to Current'
+      : 'Next Turn'
+    : 'End Turn';
 
   const handleCounterChange = (
     playerId: string,
@@ -139,17 +153,50 @@ export const SharedDeviceMode: React.FC = () => {
           <div className="panel">
             <TurnNavigation
               currentPlayerName={currentPlayer?.name || 'Unknown'}
-              playerCount={players.length}
-              currentPlayerIndex={currentPlayerIndex}
-              turnNumber={turnNumber}
+              playerCount={displayedPlayers.length}
+              currentPlayerIndex={displayedPlayerIndex}
+              turnNumber={viewedTurnNumber ?? turnNumber}
+              latestTurnNumber={turnNumber}
+              isViewingHistoricalTurn={isViewingHistoricalTurn}
+              previousLabel="Previous Turn"
+              nextLabel={nextLabel}
+              disablePrevious={!canNavigatePrevious}
+              disableNext={!canNavigateNext}
               onNextPlayer={nextTurn}
               onPreviousPlayer={previousTurn}
             />
           </div>
 
+          {isViewingHistoricalTurn && !isHistoricalTurnDirty && (
+            <div className="panel" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                Viewing the saved result for turn {viewedTurnNumber}. Navigate forward to review later turns or return to the current turn.
+              </p>
+            </div>
+          )}
+
+          {isHistoricalTurnDirty && (
+            <div className="panel stack" style={{ gap: '12px', border: '1px solid rgba(255,255,255,0.18)' }}>
+              <div>
+                <h3 className="panel-title" style={{ marginBottom: '6px' }}>Past Turn Changed</h3>
+                <p style={{ margin: 0, opacity: 0.82 }}>
+                  Apply this edited turn to recalculate the later turns and return to the current turn, or discard the later turns and continue the game from this edited result.
+                </p>
+              </div>
+              <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+                <button className="btn" onClick={applyHistoricalChanges}>
+                  Apply Changes and Return
+                </button>
+                <button className="btn btn-secondary" onClick={continueFromHistoricalTurn}>
+                  Continue From This Turn
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="tabletop-grid">
-            {players.map((player, index) => {
-              const isActive = index === currentPlayerIndex;
+            {displayedPlayers.map((player, index) => {
+              const isActive = index === displayedPlayerIndex;
               return (
                 <div
                   key={player.id}
