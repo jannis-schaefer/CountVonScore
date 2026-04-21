@@ -48,6 +48,7 @@ export interface GameHistoryEntry {
 export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
+  turnNumber: number;
   history: GameHistoryEntry[];
   gameMode: 'shared' | 'multiplayer' | null;
   hasSavedGame: boolean;
@@ -189,6 +190,7 @@ const initialCounterDefinitions = createDefaultCounterDefinitions();
 const initialGameState: GameState = {
   players: buildPlayers(2, initialCounterDefinitions, []),
   currentPlayerIndex: 0,
+  turnNumber: 1,
   history: [],
   gameMode: null,
   hasSavedGame: false,
@@ -325,6 +327,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players,
         currentPlayerIndex: nextIndex,
+        turnNumber: state.turnNumber + 1,
         history: didReset
           ? [
               ...state.history.slice(-MAX_HISTORY + 1),
@@ -356,6 +359,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players,
         currentPlayerIndex: 0,
+        turnNumber: 1,
         history: [],
       };
     });
@@ -477,6 +481,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         players,
         defaultPlayerCount: Math.max(1, playerCount),
         currentPlayerIndex: 0,
+        turnNumber: 1,
         history: [],
         hasSavedGame: true,
       };
@@ -534,6 +539,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const gameState: GameState = {
         players: state.players,
         currentPlayerIndex: state.currentPlayerIndex,
+        turnNumber: state.turnNumber,
         history: state.history,
         gameMode: state.gameMode,
         hasSavedGame: true,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { PlayerCard } from '../components/PlayerCard';
@@ -10,6 +10,7 @@ export const SharedDeviceMode: React.FC = () => {
   const {
     players,
     currentPlayerIndex,
+    turnNumber,
     history,
     counterDefinitions,
     setCounter,
@@ -21,9 +22,31 @@ export const SharedDeviceMode: React.FC = () => {
     loadGame,
   } = useGameStore();
 
+  // Show starting-player overlay when we're at the very first turn and no player has been chosen yet.
+  const [startingPlayerChosen, setStartingPlayerChosen] = useState(turnNumber > 1);
+  const [selectingManually, setSelectingManually] = useState(false);
+
   useEffect(() => {
     loadGame();
   }, [loadGame]);
+
+  // If the game was resumed mid-game, skip the overlay.
+  useEffect(() => {
+    if (turnNumber > 1) {
+      setStartingPlayerChosen(true);
+    }
+  }, [turnNumber]);
+
+  const handleChoosePlayer = (index: number) => {
+    setCurrentPlayer(index);
+    setStartingPlayerChosen(true);
+    setSelectingManually(false);
+  };
+
+  const handleChooseRandom = () => {
+    const randomIndex = Math.floor(Math.random() * players.length);
+    handleChoosePlayer(randomIndex);
+  };
 
   const currentPlayer = players[currentPlayerIndex];
 
@@ -48,12 +71,77 @@ export const SharedDeviceMode: React.FC = () => {
           </button>
         </div>
 
-        <div className="layout-main-single">
+        <div className="layout-main-single" style={{ position: 'relative' }}>
+          {/* Starting player overlay */}
+          {!startingPlayerChosen && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'var(--primary-bg, #0d1b2a)',
+                borderRadius: '12px',
+              }}
+            >
+              <div className="card stack" style={{ maxWidth: '420px', width: '100%', textAlign: 'center', gap: '16px' }}>
+                <h2 style={{ margin: 0 }}>Who goes first?</h2>
+                {selectingManually ? (
+                  <>
+                    <p style={{ opacity: 0.75, margin: 0 }}>Select a player:</p>
+                    <div className="stack" style={{ gap: '8px' }}>
+                      {players.map((player, index) => (
+                        <button
+                          key={player.id}
+                          className="btn btn-secondary"
+                          style={{ width: '100%' }}
+                          onClick={() => handleChoosePlayer(index)}
+                        >
+                          {player.name}
+                        </button>
+                      ))}
+                    </div>
+                    <button className="btn btn-secondary" onClick={() => setSelectingManually(false)}>
+                      Back
+                    </button>
+                  </>
+                ) : (
+                  <div className="stack" style={{ gap: '10px' }}>
+                    <button
+                      className="btn"
+                      style={{ width: '100%' }}
+                      onClick={() => handleChoosePlayer(0)}
+                    >
+                      {players[0]?.name ?? 'Player 1'}
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ width: '100%' }}
+                      onClick={() => setSelectingManually(true)}
+                    >
+                      Select Player
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ width: '100%' }}
+                      onClick={handleChooseRandom}
+                    >
+                      🎲 Random
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="panel">
             <TurnNavigation
               currentPlayerName={currentPlayer?.name || 'Unknown'}
               playerCount={players.length}
               currentPlayerIndex={currentPlayerIndex}
+              turnNumber={turnNumber}
               onNextPlayer={nextPlayer}
               onPreviousPlayer={previousPlayer}
             />
@@ -86,7 +174,11 @@ export const SharedDeviceMode: React.FC = () => {
           <div className="panel">
             <GameControls
               onUndo={undo}
-              onReset={resetGame}
+              onReset={() => {
+                resetGame();
+                setStartingPlayerChosen(false);
+                setSelectingManually(false);
+              }}
               onOpenSettings={() => navigate('/settings')}
               hasHistory={history.length > 0}
             />
