@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
-import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigJson } from '../utils/gameConfig';
+import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigYaml } from '../utils/gameConfig';
 import type { CounterDefinition, GameConfig, PlayerOverride } from '../store/gameStore';
 
 const createNewCounter = (index: number): CounterDefinition => ({
@@ -107,8 +107,29 @@ export const Settings: React.FC = () => {
       setConfigMessage('Every counter requires both an id and a name.');
       return;
     }
-    setCounterDefinitions(editableCounters);
-    setConfigMessage('Saved counter definitions.');
+
+    const applyToCurrentGame = window.confirm(
+      'Apply these counter definition changes to the current game state now?\n\n' +
+      'OK: Apply now\nCancel: Save without recalculating existing totals'
+    );
+
+    if (!applyToCurrentGame) {
+      setCounterDefinitions(editableCounters, { recalculateFromInitialValues: false });
+      setConfigMessage('Saved counter definitions without recalculating current totals.');
+      return;
+    }
+
+    const recalculateFromInitialValues = window.confirm(
+      'Recalculate current and historical totals based on changes to counter starting values?\n\n' +
+      'OK: Recalculate totals\nCancel: Keep existing totals as-is'
+    );
+
+    setCounterDefinitions(editableCounters, { recalculateFromInitialValues });
+    setConfigMessage(
+      recalculateFromInitialValues
+        ? 'Saved counter definitions and recalculated totals from updated starting values.'
+        : 'Saved counter definitions and kept current totals unchanged.'
+    );
   };
 
   const handleSaveOverrides = () => {
@@ -159,15 +180,15 @@ export const Settings: React.FC = () => {
       },
     };
 
-    const blob = new Blob([stringifyGameConfigJson(payload)], { type: 'application/json' });
+    const blob = new Blob([stringifyGameConfigYaml(payload)], { type: 'application/x-yaml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     const safeName = (payload.name || 'game-config').toLowerCase().replace(/[^a-z0-9]+/g, '-');
     link.href = url;
-    link.download = `${safeName || 'game-config'}.json`;
+    link.download = `${safeName || 'game-config'}.yaml`;
     link.click();
     URL.revokeObjectURL(url);
-    setConfigMessage(`Exported ${safeName || 'game-config'}.json`);
+    setConfigMessage(`Exported ${safeName || 'game-config'}.yaml`);
   };
 
   return (
@@ -470,7 +491,7 @@ export const Settings: React.FC = () => {
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Game Config Import / Export</h2>
           <p style={{ opacity: 0.75, marginBottom: '12px' }}>
-            Import JSON/YAML, or export current settings to JSON.
+            Import JSON/YAML, or export current settings to YAML.
           </p>
           <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
             <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
@@ -483,7 +504,7 @@ export const Settings: React.FC = () => {
               />
             </label>
             <button className="btn btn-secondary" onClick={handleExportConfig}>
-              Export JSON
+              Export YAML
             </button>
           </div>
           {configMessage && <p style={{ marginTop: '10px', opacity: 0.8 }}>{configMessage}</p>}

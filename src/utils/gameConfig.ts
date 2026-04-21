@@ -1,4 +1,4 @@
-import { parseDocument } from 'yaml';
+import { parseDocument, stringify as stringifyYaml } from 'yaml';
 import type { GameConfig } from '../store/gameStore';
 
 interface BundledGameConfigEntry {
@@ -109,8 +109,12 @@ export const parseGameConfig = (raw: string, fileName?: string): GameConfig => {
   };
 };
 
-export const stringifyGameConfigJson = (config: GameConfig): string => {
-  return JSON.stringify(config, null, 2);
+export const stringifyGameConfigYaml = (config: GameConfig): string => {
+  return stringifyYaml(config, {
+    defaultKeyType: 'PLAIN',
+    defaultStringType: 'PLAIN',
+    lineWidth: 0,
+  });
 };
 
 const getConfigUrl = (fileName: string): string => {

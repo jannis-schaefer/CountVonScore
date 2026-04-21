@@ -101,7 +101,10 @@ interface GameStore extends GameState {
   setGameMode: (mode: 'shared' | 'multiplayer') => void;
   setTheme: (theme: 'generic' | 'starRealms') => void;
 
-  setCounterDefinitions: (definitions: CounterDefinition[]) => void;
+  setCounterDefinitions: (
+    definitions: CounterDefinition[],
+    options?: { recalculateFromInitialValues?: boolean }
+  ) => void;
   setDefaultPlayerCount: (count: number) => void;
   setPlayerOverrides: (overrides: PlayerOverride[]) => void;
   setCurrentGameConfigName: (name: string) => void;
@@ -428,6 +431,71 @@ const remapTurnRecordsToDefinitions = (
   return turnRecords.map((record) => {
     const startPlayers = remapPlayersToDefinitions(record.startPlayers, definitions);
     const endPlayers = remapPlayersToDefinitions(record.endPlayers, definitions);
+    return {
+      ...record,
+      startPlayers,
+      endPlayers,
+      delta: buildTurnDelta(startPlayers, endPlayers),
+    };
+  });
+};
+
+const getInitialValueDeltas = (
+  previousDefinitions: CounterDefinition[],
+  nextDefinitions: CounterDefinition[]
+): CounterValues => {
+  const previousById = previousDefinitions.reduce<Record<string, CounterDefinition>>((acc, definition) => {
+    acc[definition.id] = definition;
+    return acc;
+  }, {});
+
+  return nextDefinitions.reduce<CounterValues>((acc, definition) => {
+    const previous = previousById[definition.id];
+    if (!previous) {
+      return acc;
+    }
+
+    const delta = definition.initialValue - previous.initialValue;
+    if (delta !== 0) {
+      acc[definition.id] = delta;
+    }
+
+    return acc;
+  }, {});
+};
+
+const applyInitialValueDeltasToPlayers = (
+  players: Player[],
+  deltas: CounterValues
+): Player[] => {
+  if (Object.keys(deltas).length === 0) {
+    return players;
+  }
+
+  return players.map((player) => ({
+    ...player,
+    counters: Object.entries(deltas).reduce<CounterValues>((acc, [counterId, delta]) => {
+      if (!Object.prototype.hasOwnProperty.call(acc, counterId)) {
+        return acc;
+      }
+
+      acc[counterId] += delta;
+      return acc;
+    }, { ...player.counters }),
+  }));
+};
+
+const applyInitialValueDeltasToTurnRecords = (
+  turnRecords: TurnRecord[],
+  deltas: CounterValues
+): TurnRecord[] => {
+  if (Object.keys(deltas).length === 0) {
+    return turnRecords;
+  }
+
+  return turnRecords.map((record) => {
+    const startPlayers = applyInitialValueDeltasToPlayers(record.startPlayers, deltas);
+    const endPlayers = applyInitialValueDeltasToPlayers(record.endPlayers, deltas);
     return {
       ...record,
       startPlayers,
@@ -881,13 +949,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().saveGame();
   },
 
-  setCounterDefinitions: (definitions: CounterDefinition[]) => {
+  setCounterDefinitions: (definitions: CounterDefinition[], options) => {
     set((state) => {
-      const players = remapPlayersToDefinitions(state.players, definitions);
-      const turnStartPlayers = remapPlayersToDefinitions(state.turnStartPlayers, definitions);
-      const turnRecords = remapTurnRecordsToDefinitions(state.turnRecords, definitions);
-      const viewedPlayers = state.viewedPlayers
+      const recalculateFromInitialValues = Boolean(options?.recalculateFromInitialValues);
+      const initialValueDeltas = recalculateFromInitialValues
+        ? getInitialValueDeltas(state.counterDefinitions, definitions)
+        : {};
+
+      const remappedPlayers = remapPlayersToDefinitions(state.players, definitions);
+      const remappedTurnStartPlayers = remapPlayersToDefinitions(state.turnStartPlayers, definitions);
+      const remappedTurnRecords = remapTurnRecordsToDefinitions(state.turnRecords, definitions);
+      const remappedViewedPlayers = state.viewedPlayers
         ? remapPlayersToDefinitions(state.viewedPlayers, definitions)
+        : null;
+
+      const players = applyInitialValueDeltasToPlayers(remappedPlayers, initialValueDeltas);
+      const turnStartPlayers = applyInitialValueDeltasToPlayers(remappedTurnStartPlayers, initialValueDeltas);
+      const turnRecords = applyInitialValueDeltasToTurnRecords(remappedTurnRecords, initialValueDeltas);
+      const viewedPlayers = remappedViewedPlayers
+        ? applyInitialValueDeltasToPlayers(remappedViewedPlayers, initialValueDeltas)
         : null;
       const viewedRecord = state.viewedTurnNumber !== null
         ? getTurnRecord(turnRecords, state.viewedTurnNumber)
