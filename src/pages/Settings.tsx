@@ -25,6 +25,7 @@ export const Settings: React.FC = () => {
     setCounterDefinitions,
     setDefaultPlayerCount,
     setPlayerOverrides,
+    setCurrentGameConfigName,
     addPlayer,
     removePlayer,
     updatePlayerName,
@@ -192,14 +193,25 @@ export const Settings: React.FC = () => {
 
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Game Config Name</h2>
-          <input
-            type="text"
-            className="input"
-            value={configName}
-            onChange={(event) => setConfigName(event.target.value)}
-            placeholder="Config name"
-            style={{ width: '100%', boxSizing: 'border-box' }}
-          />
+          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+            <input
+              type="text"
+              className="input"
+              value={configName}
+              onChange={(event) => setConfigName(event.target.value)}
+              placeholder="Config name"
+              style={{ width: '100%', boxSizing: 'border-box', maxWidth: '360px' }}
+            />
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setCurrentGameConfigName(configName);
+                setConfigMessage('Saved game config name.');
+              }}
+            >
+              Save Name
+            </button>
+          </div>
         </div>
 
         <div className="card">

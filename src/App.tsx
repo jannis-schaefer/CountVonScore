@@ -9,6 +9,7 @@ import './styles/generic.css';
 import './styles/starRealms.css';
 
 // Pages
+import { HomeMenu } from './pages/HomeMenu';
 import { ModeSelection } from './pages/ModeSelection';
 import { SharedDeviceMode } from './pages/SharedDeviceMode';
 import { MultiplayerMode } from './pages/MultiplayerMode';
@@ -24,7 +25,8 @@ function AppContent() {
 
   return (
     <Routes>
-      <Route path="/" element={<ModeSelection />} />
+      <Route path="/" element={<HomeMenu />} />
+      <Route path="/new-game" element={<ModeSelection />} />
       <Route path="/shared" element={<SharedDeviceMode />} />
       <Route path="/multiplayer" element={<MultiplayerMode />} />
       <Route path="/settings" element={<Settings />} />

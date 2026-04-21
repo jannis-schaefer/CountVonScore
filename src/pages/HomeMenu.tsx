@@ -19,10 +19,10 @@ export const HomeMenu: React.FC = () => {
       <div className="page-wrap stack" style={{ maxWidth: '760px' }}>
         <div className="stack" style={{ textAlign: 'center', gap: '8px' }}>
           <h1 className="header-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
-            Multiplayer Counter
+            Card Game Counter
           </h1>
           <p style={{ opacity: 0.85, maxWidth: '620px', margin: '0 auto' }}>
-            Start a new game with presets, or resume your previously saved session.
+            Choose whether this device tracks the full table or just one player.
           </p>
         </div>
 

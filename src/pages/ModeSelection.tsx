@@ -1,19 +1,84 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
+import { loadBundledGameConfigs } from '../utils/gameConfig';
+import type { GameConfig } from '../store/gameStore';
+
+const defaultConfig: GameConfig = {
+  name: 'Default',
+  counters: [
+    {
+      id: 'counter-1',
+      name: 'Counter A',
+      initialValue: 0,
+      persistsBetweenTurns: true,
+      alwaysDisplayed: true,
+    },
+    {
+      id: 'counter-2',
+      name: 'Counter B',
+      initialValue: 0,
+      persistsBetweenTurns: true,
+      alwaysDisplayed: false,
+    },
+    {
+      id: 'counter-3',
+      name: 'Counter C',
+      initialValue: 0,
+      persistsBetweenTurns: true,
+      alwaysDisplayed: false,
+    },
+  ],
+  players: {
+    defaultPlayerCount: 2,
+    overrides: [],
+  },
+};
 
 export const ModeSelection: React.FC = () => {
   const navigate = useNavigate();
-  const { setGameMode } = useGameStore();
+  const { applyGameConfig, defaultPlayerCount, gameMode, startNewGame } = useGameStore();
+  const [mode, setMode] = React.useState<'shared' | 'multiplayer'>(gameMode ?? 'shared');
+  const [playerCount, setPlayerCount] = React.useState(Math.max(1, defaultPlayerCount));
+  const [bundledConfigs, setBundledConfigs] = React.useState<GameConfig[]>([]);
+  const [selectedConfigName, setSelectedConfigName] = React.useState('');
+  const [isDirty, setIsDirty] = React.useState(false);
+  const [message, setMessage] = React.useState('');
 
-  const handleSharedMode = () => {
-    setGameMode('shared');
-    navigate('/shared');
+  React.useEffect(() => {
+    const run = async () => {
+      try {
+        const configs = await loadBundledGameConfigs();
+        setBundledConfigs(configs);
+      } catch (error) {
+        console.error(error);
+        setMessage('Failed to load presets. You can still start with current settings.');
+      }
+    };
+
+    run();
+  }, []);
+
+  const handleStartGame = () => {
+    startNewGame({ mode, playerCount });
+    navigate(mode === 'shared' ? '/shared' : '/multiplayer');
   };
 
-  const handleMultiplayerMode = () => {
-    setGameMode('multiplayer');
-    navigate('/multiplayer');
+  const handleApplyPreset = (config: GameConfig) => {
+    if (isDirty) {
+      const shouldReplace = window.confirm(
+        'You have unsaved setup changes. Replace setup with the selected preset?'
+      );
+      if (!shouldReplace) {
+        return;
+      }
+    }
+
+    applyGameConfig(config);
+    setSelectedConfigName(config.name ?? 'Preset');
+    setPlayerCount(Math.max(1, config.players?.defaultPlayerCount ?? defaultPlayerCount));
+    setIsDirty(false);
+    setMessage(`Loaded preset: ${config.name ?? 'Preset'}. You can edit settings before starting.`);
   };
 
   return (
@@ -21,34 +86,103 @@ export const ModeSelection: React.FC = () => {
       <div className="page-wrap stack" style={{ maxWidth: '900px' }}>
         <div className="stack" style={{ textAlign: 'center', gap: '8px' }}>
           <h1 className="header-title" style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)' }}>
-            Multiplayer Counter
+            New Game
           </h1>
           <p style={{ opacity: 0.85, maxWidth: '640px', margin: '0 auto' }}>
-            Track up to three resources for multiple players. Use shared mode for pass-and-play,
-            or multiplayer mode to focus one player at a time.
+            Choose how this device will be used: shared table tracking or single-player tracking.
           </p>
         </div>
 
-        <div className="mode-grid">
-          <div className="card mode-card" onClick={handleSharedMode}>
-            <h2 style={{ marginBottom: '10px' }}>Shared Device</h2>
-            <p style={{ marginBottom: '16px', opacity: 0.85 }}>
-              One screen, turn-based flow. Great at the table with a single phone or tablet.
-            </p>
-            <button className="btn" onClick={handleSharedMode} style={{ width: '100%' }}>
-              Start Shared Game
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Mode</h2>
+          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+            <button
+              className={`btn ${mode === 'shared' ? '' : 'btn-secondary'}`}
+              onClick={() => {
+                setMode('shared');
+                setIsDirty(true);
+              }}
+            >
+              Shared Device (All Players)
+            </button>
+            <button
+              className={`btn ${mode === 'multiplayer' ? '' : 'btn-secondary'}`}
+              onClick={() => {
+                setMode('multiplayer');
+                setIsDirty(true);
+              }}
+            >
+              Personal Device (One Player)
             </button>
           </div>
+          <p style={{ opacity: 0.75, marginTop: '10px', marginBottom: 0 }}>
+            Shared Device is for one phone/tablet used by everyone. Personal Device is for a single player tracking only their own stats.
+          </p>
+        </div>
 
-          <div className="card mode-card" onClick={handleMultiplayerMode}>
-            <h2 style={{ marginBottom: '10px' }}>Multiplayer View</h2>
-            <p style={{ marginBottom: '16px', opacity: 0.85 }}>
-              Switch between players quickly and compare all counters in one place.
-            </p>
-            <button className="btn" onClick={handleMultiplayerMode} style={{ width: '100%' }}>
-              Start Multiplayer
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Preset (Optional)</h2>
+          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => handleApplyPreset(defaultConfig)}
+            >
+              Use Default
             </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setSelectedConfigName('Current settings');
+                setMessage('Using current settings.');
+              }}
+            >
+              Use Current Settings
+            </button>
+            {bundledConfigs.map((config) => (
+              <button
+                key={config.name ?? JSON.stringify(config)}
+                className="btn btn-secondary"
+                onClick={() => handleApplyPreset(config)}
+              >
+                {config.name ?? 'Unnamed Preset'}
+              </button>
+            ))}
           </div>
+          {selectedConfigName ? (
+            <p style={{ opacity: 0.8, marginTop: '10px' }}>Selected: {selectedConfigName}</p>
+          ) : null}
+        </div>
+
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Player Count</h2>
+          <input
+            type="number"
+            min={1}
+            className="input"
+            value={playerCount}
+            onChange={(event) => {
+              setPlayerCount(Math.max(1, Number(event.target.value || 1)));
+              setIsDirty(true);
+            }}
+            style={{ width: '120px' }}
+          />
+        </div>
+
+        <div className="panel">
+          <div className="controls-row" style={{ justifyContent: 'space-between' }}>
+            <button className="btn btn-secondary" onClick={() => navigate('/settings')}>
+              Edit Game Settings
+            </button>
+            <div className="controls-row" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => navigate('/')}>
+                Cancel
+              </button>
+              <button className="btn" onClick={handleStartGame}>
+                Confirm And Start
+              </button>
+            </div>
+          </div>
+          {message ? <p style={{ opacity: 0.8, marginTop: '10px' }}>{message}</p> : null}
         </div>
       </div>
     </div>

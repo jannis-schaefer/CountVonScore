@@ -42,7 +42,7 @@ export const SharedDeviceMode: React.FC = () => {
           <button className="btn btn-secondary" onClick={() => navigate('/')}>
             Back
           </button>
-          <h1 className="header-title">Shared Mode</h1>
+          <h1 className="header-title">Shared Device (All Players)</h1>
           <button className="btn btn-secondary" onClick={() => navigate('/settings')}>
             Settings
           </button>

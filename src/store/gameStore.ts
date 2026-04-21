@@ -80,6 +80,7 @@ interface GameStore extends GameState {
   setCounterDefinitions: (definitions: CounterDefinition[]) => void;
   setDefaultPlayerCount: (count: number) => void;
   setPlayerOverrides: (overrides: PlayerOverride[]) => void;
+  setCurrentGameConfigName: (name: string) => void;
   applyGameConfig: (config: GameConfig) => void;
   startNewGame: (options: { mode: 'shared' | 'multiplayer'; playerCount: number }) => void;
 
@@ -433,6 +434,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().saveGame();
   },
 
+  setCurrentGameConfigName: (name: string) => {
+    set({ currentGameConfigName: name.trim() || 'Unnamed Config' });
+    get().saveGame();
+  },
+
   applyGameConfig: (config: GameConfig) => {
     set((state) => {
       const nextDefinitions = config.counters
@@ -530,6 +536,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         currentPlayerIndex: state.currentPlayerIndex,
         history: state.history,
         gameMode: state.gameMode,
+        hasSavedGame: true,
         counterDefinitions: state.counterDefinitions,
         defaultPlayerCount: state.defaultPlayerCount,
         playerOverrides: state.playerOverrides,
