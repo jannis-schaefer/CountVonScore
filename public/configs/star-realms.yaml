@@ -12,14 +12,14 @@ counters:
     name: Trade
     icon: trade
     initialValue: 0
-    persistsBetweenTurns: yes
+    persistsBetweenTurns: no
     alwaysDisplayed: no
 
   - id: combat
     name: Combat
     icon: combat
     initialValue: 0
-    persistsBetweenTurns: yes
+    persistsBetweenTurns: no
     alwaysDisplayed: no
 
 players:
