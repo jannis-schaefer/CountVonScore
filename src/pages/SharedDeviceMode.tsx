@@ -14,9 +14,9 @@ export const SharedDeviceMode: React.FC = () => {
     history,
     counterDefinitions,
     setCounter,
-    setCurrentPlayer,
-    nextPlayer,
-    previousPlayer,
+    setStartingPlayer,
+    nextTurn,
+    previousTurn,
     resetGame,
     undo,
     loadGame,
@@ -38,7 +38,7 @@ export const SharedDeviceMode: React.FC = () => {
   }, [turnNumber]);
 
   const handleChoosePlayer = (index: number) => {
-    setCurrentPlayer(index);
+    setStartingPlayer(index);
     setStartingPlayerChosen(true);
     setSelectingManually(false);
   };
@@ -142,8 +142,8 @@ export const SharedDeviceMode: React.FC = () => {
               playerCount={players.length}
               currentPlayerIndex={currentPlayerIndex}
               turnNumber={turnNumber}
-              onNextPlayer={nextPlayer}
-              onPreviousPlayer={previousPlayer}
+              onNextPlayer={nextTurn}
+              onPreviousPlayer={previousTurn}
             />
           </div>
 
@@ -151,11 +151,9 @@ export const SharedDeviceMode: React.FC = () => {
             {players.map((player, index) => {
               const isActive = index === currentPlayerIndex;
               return (
-                <button
+                <div
                   key={player.id}
                   className="card-button"
-                  type="button"
-                  onClick={() => setCurrentPlayer(index)}
                 >
                   <PlayerCard
                     player={player}
@@ -166,7 +164,7 @@ export const SharedDeviceMode: React.FC = () => {
                     counterDefinitions={counterDefinitions}
                     compact={!isActive}
                   />
-                </button>
+                </div>
               );
             })}
           </div>

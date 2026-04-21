@@ -47,8 +47,9 @@ export interface GameHistoryEntry {
 
 export interface GameState {
   players: Player[];
-  currentPlayerIndex: number;
+  startingPlayerIndex: number;
   turnNumber: number;
+  currentPlayerIndex: number;
   history: GameHistoryEntry[];
   gameMode: 'shared' | 'multiplayer' | null;
   hasSavedGame: boolean;
@@ -68,9 +69,9 @@ interface GameStore extends GameState {
   decrementCounter: (playerId: string, counterId: string, amount?: number) => void;
   setCounter: (playerId: string, counterId: string, value: number) => void;
 
-  nextPlayer: () => void;
-  previousPlayer: () => void;
-  setCurrentPlayer: (index: number) => void;
+  nextTurn: () => void;
+  previousTurn: () => void;
+  setStartingPlayer: (index: number) => void;
 
   resetGame: () => void;
   undo: () => void;
@@ -187,10 +188,20 @@ const normalizeDefinitions = (
 
 const initialCounterDefinitions = createDefaultCounterDefinitions();
 
+const computeCurrentPlayerIndex = (
+  startingPlayerIndex: number,
+  turnNumber: number,
+  playerCount: number
+): number => {
+  if (playerCount === 0) return 0;
+  return (startingPlayerIndex + (turnNumber - 1)) % playerCount;
+};
+
 const initialGameState: GameState = {
   players: buildPlayers(2, initialCounterDefinitions, []),
-  currentPlayerIndex: 0,
+  startingPlayerIndex: 0,
   turnNumber: 1,
+  currentPlayerIndex: 0,
   history: [],
   gameMode: null,
   hasSavedGame: false,
@@ -222,13 +233,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set((state) => {
       const players = state.players.filter((p) => p.id !== id);
       const adjusted = players.length > 0 ? players : buildPlayers(1, state.counterDefinitions, state.playerOverrides);
-      let newIndex = state.currentPlayerIndex;
-      if (newIndex >= adjusted.length) {
-        newIndex = adjusted.length - 1;
+      let newStarting = state.startingPlayerIndex;
+      if (newStarting >= adjusted.length) {
+        newStarting = adjusted.length - 1;
       }
       return {
         players: adjusted,
-        currentPlayerIndex: Math.max(newIndex, 0),
+        startingPlayerIndex: Math.max(newStarting, 0),
+        currentPlayerIndex: computeCurrentPlayerIndex(
+          Math.max(newStarting, 0),
+          state.turnNumber,
+          adjusted.length
+        ),
         defaultPlayerCount: adjusted.length,
       };
     }),
@@ -296,11 +312,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().saveGame();
   },
 
-  nextPlayer: () => {
+  nextTurn: () => {
     set((state) => {
-      const currentIndex = state.currentPlayerIndex;
-      const nextIndex = (currentIndex + 1) % state.players.length;
-      const currentPlayer = state.players[currentIndex];
+      const currentPlayerIndex = (state.startingPlayerIndex + state.turnNumber - 1) % state.players.length;
+      const currentPlayer = state.players[currentPlayerIndex];
       if (!currentPlayer) {
         return state;
       }
@@ -319,19 +334,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
       );
 
       const players = [...state.players];
-      players[currentIndex] = {
+      players[currentPlayerIndex] = {
         ...currentPlayer,
         counters,
       };
 
+      const nextTurnNum = state.turnNumber + 1;
+
       return {
         players,
-        currentPlayerIndex: nextIndex,
-        turnNumber: state.turnNumber + 1,
+        turnNumber: nextTurnNum,
+        currentPlayerIndex: computeCurrentPlayerIndex(
+          state.startingPlayerIndex,
+          nextTurnNum,
+          state.players.length
+        ),
         history: didReset
           ? [
               ...state.history.slice(-MAX_HISTORY + 1),
-              { playerIndex: currentIndex, action: 'turn-reset', previousState: previous },
+              { playerIndex: currentPlayerIndex, action: 'turn-reset', previousState: previous },
             ]
           : state.history,
       };
@@ -339,14 +360,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().saveGame();
   },
 
-  previousPlayer: () =>
-    set((state) => ({
-      currentPlayerIndex:
-        state.currentPlayerIndex === 0 ? state.players.length - 1 : state.currentPlayerIndex - 1,
-    })),
+  previousTurn: () => {
+    set((state) => {
+      const newTurnNum = Math.max(1, state.turnNumber - 1);
+      return {
+        turnNumber: newTurnNum,
+        currentPlayerIndex: computeCurrentPlayerIndex(
+          state.startingPlayerIndex,
+          newTurnNum,
+          state.players.length
+        ),
+      };
+    });
+    get().saveGame();
+  },
 
-  setCurrentPlayer: (index: number) =>
-    set({ currentPlayerIndex: Math.max(0, Math.min(index, get().players.length - 1)) }),
+  setStartingPlayer: (index: number) => {
+    set((state) => {
+      const newStarting = Math.max(0, Math.min(index, state.players.length - 1));
+      return {
+        startingPlayerIndex: newStarting,
+        currentPlayerIndex: computeCurrentPlayerIndex(
+          newStarting,
+          state.turnNumber,
+          state.players.length
+        ),
+      };
+    });
+    get().saveGame();
+  },
 
   resetGame: () => {
     set((state) => {
@@ -358,8 +400,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       );
       return {
         players,
-        currentPlayerIndex: 0,
+        startingPlayerIndex: 0,
         turnNumber: 1,
+        currentPlayerIndex: 0,
         history: [],
       };
     });
@@ -480,8 +523,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         gameMode: mode,
         players,
         defaultPlayerCount: Math.max(1, playerCount),
-        currentPlayerIndex: 0,
+        startingPlayerIndex: 0,
         turnNumber: 1,
+        currentPlayerIndex: 0,
         history: [],
         hasSavedGame: true,
       };
@@ -538,8 +582,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const state = get();
       const gameState: GameState = {
         players: state.players,
-        currentPlayerIndex: state.currentPlayerIndex,
+        startingPlayerIndex: state.startingPlayerIndex,
         turnNumber: state.turnNumber,
+        currentPlayerIndex: state.currentPlayerIndex,
         history: state.history,
         gameMode: state.gameMode,
         hasSavedGame: true,
