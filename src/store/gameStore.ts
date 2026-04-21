@@ -1,148 +1,199 @@
 import { create } from 'zustand';
 import localforage from 'localforage';
 
-export interface CounterState {
-  authority: number;
-  money: number;
-  attack: number;
+export type CounterValues = Record<string, number>;
+
+export interface CounterDefinition {
+  id: string;
+  name: string;
+  icon?: string;
+  initialValue: number;
+  persistsBetweenTurns: boolean;
+  alwaysDisplayed: boolean;
 }
 
-export type CounterKey = keyof CounterState;
-
-export interface CounterFlags {
-  authority: boolean;
-  money: boolean;
-  attack: boolean;
-}
-
-export interface CounterValues {
-  authority: number;
-  money: number;
-  attack: number;
+export interface PlayerOverride {
+  name?: string;
+  initialCounters?: Record<string, number>;
 }
 
 export interface GameConfig {
   name?: string;
-  counterNames?: Partial<Record<CounterKey, string>>;
-  counterResetsOnTurn?: Partial<Record<CounterKey, boolean>>;
-  counterVisibleForNonActive?: Partial<Record<CounterKey, boolean>>;
-  defaultCounterValues?: Partial<Record<CounterKey, number>>;
-  players?: string[];
+  counters?: Array<{
+    id?: string;
+    name: string;
+    icon?: string;
+    initialValue: number;
+    persistsBetweenTurns: boolean;
+    alwaysDisplayed: boolean;
+  }>;
+  players?: {
+    defaultPlayerCount?: number;
+    overrides?: PlayerOverride[];
+  };
 }
 
 export interface Player {
   id: string;
   name: string;
-  counters: CounterState;
+  counters: CounterValues;
+}
+
+export interface GameHistoryEntry {
+  playerIndex: number;
+  action: string;
+  previousState: CounterValues;
 }
 
 export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
-  history: Array<{ playerIndex: number; action: string; previousState: CounterState }>;
+  history: GameHistoryEntry[];
   gameMode: 'shared' | 'multiplayer' | null;
-  counterNames: {
-    authority: string;
-    money: string;
-    attack: string;
-  };
-  counterResetsOnTurn: {
-    authority: boolean;
-    money: boolean;
-    attack: boolean;
-  };
-  counterVisibleForNonActive: {
-    authority: boolean;
-    money: boolean;
-    attack: boolean;
-  };
-  defaultCounterValues: {
-    authority: number;
-    money: number;
-    attack: number;
-  };
+  hasSavedGame: boolean;
+  counterDefinitions: CounterDefinition[];
+  defaultPlayerCount: number;
+  playerOverrides: PlayerOverride[];
   currentGameConfigName: string;
   theme: 'generic' | 'starRealms';
 }
 
 interface GameStore extends GameState {
-  // Player actions
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
   updatePlayerName: (id: string, name: string) => void;
-  
-  // Counter actions
-  incrementCounter: (playerId: string, counter: keyof CounterState, amount?: number) => void;
-  decrementCounter: (playerId: string, counter: keyof CounterState, amount?: number) => void;
-  setCounter: (playerId: string, counter: keyof CounterState, value: number) => void;
-  
-  // Turn navigation
+
+  incrementCounter: (playerId: string, counterId: string, amount?: number) => void;
+  decrementCounter: (playerId: string, counterId: string, amount?: number) => void;
+  setCounter: (playerId: string, counterId: string, value: number) => void;
+
   nextPlayer: () => void;
   previousPlayer: () => void;
   setCurrentPlayer: (index: number) => void;
-  
-  // Game controls
+
   resetGame: () => void;
   undo: () => void;
-  
-  // Game mode
+
   setGameMode: (mode: 'shared' | 'multiplayer') => void;
-  
-  // Counter names
-  updateCounterNames: (names: Partial<GameStore['counterNames']>) => void;
-
-  // Counter reset behavior
-  updateCounterResetsOnTurn: (resets: Partial<GameStore['counterResetsOnTurn']>) => void;
-
-  // Counter visibility for non-active players
-  updateCounterVisibleForNonActive: (
-    visibility: Partial<GameStore['counterVisibleForNonActive']>
-  ) => void;
-
-  // Counter starting values
-  updateDefaultCounterValues: (values: Partial<GameStore['defaultCounterValues']>) => void;
-
-  // Import/export style configuration
-  applyGameConfig: (config: GameConfig) => void;
-  
-  // Theme
   setTheme: (theme: 'generic' | 'starRealms') => void;
-  
-  // Persistence
+
+  setCounterDefinitions: (definitions: CounterDefinition[]) => void;
+  setDefaultPlayerCount: (count: number) => void;
+  setPlayerOverrides: (overrides: PlayerOverride[]) => void;
+  applyGameConfig: (config: GameConfig) => void;
+  startNewGame: (options: { mode: 'shared' | 'multiplayer'; playerCount: number }) => void;
+
   loadGame: () => Promise<void>;
   saveGame: () => Promise<void>;
 }
 
 const MAX_HISTORY = 50;
 
+const createDefaultCounterDefinitions = (): CounterDefinition[] => [
+  {
+    id: 'counter-1',
+    name: 'Counter A',
+    initialValue: 0,
+    persistsBetweenTurns: true,
+    alwaysDisplayed: true,
+  },
+  {
+    id: 'counter-2',
+    name: 'Counter B',
+    initialValue: 0,
+    persistsBetweenTurns: true,
+    alwaysDisplayed: false,
+  },
+  {
+    id: 'counter-3',
+    name: 'Counter C',
+    initialValue: 0,
+    persistsBetweenTurns: true,
+    alwaysDisplayed: false,
+  },
+];
+
+const slugify = (value: string): string => {
+  const slug = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || `counter-${Date.now()}`;
+};
+
+const getBaseCounterValues = (definitions: CounterDefinition[]): CounterValues => {
+  return definitions.reduce<CounterValues>((acc, def) => {
+    acc[def.id] = def.initialValue;
+    return acc;
+  }, {});
+};
+
+const applyCounterOverride = (
+  base: CounterValues,
+  override?: Record<string, number>
+): CounterValues => {
+  if (!override) {
+    return { ...base };
+  }
+
+  const merged: CounterValues = { ...base };
+  for (const key of Object.keys(override)) {
+    if (Object.prototype.hasOwnProperty.call(merged, key)) {
+      merged[key] = override[key];
+    }
+  }
+  return merged;
+};
+
+const buildPlayers = (
+  count: number,
+  definitions: CounterDefinition[],
+  overrides: PlayerOverride[],
+  existingPlayers?: Player[]
+): Player[] => {
+  const safeCount = Math.max(1, count);
+  const baseValues = getBaseCounterValues(definitions);
+
+  return Array.from({ length: safeCount }, (_, index) => {
+    const override = overrides[index];
+    const existing = existingPlayers?.[index];
+
+    return {
+      id: existing?.id ?? `${Date.now()}-${index}`,
+      name: override?.name ?? existing?.name ?? `Player ${index + 1}`,
+      counters: applyCounterOverride(baseValues, override?.initialCounters),
+    };
+  });
+};
+
+const normalizeDefinitions = (
+  counters: NonNullable<GameConfig['counters']>
+): CounterDefinition[] => {
+  return counters.map((counter, index) => {
+    const id = counter.id?.trim() || slugify(counter.name || `counter-${index + 1}`);
+    return {
+      id,
+      name: counter.name,
+      icon: counter.icon,
+      initialValue: counter.initialValue,
+      persistsBetweenTurns: counter.persistsBetweenTurns,
+      alwaysDisplayed: counter.alwaysDisplayed,
+    };
+  });
+};
+
+const initialCounterDefinitions = createDefaultCounterDefinitions();
+
 const initialGameState: GameState = {
-  players: [
-    { id: '1', name: 'Player 1', counters: { authority: 0, money: 0, attack: 0 } },
-    { id: '2', name: 'Player 2', counters: { authority: 0, money: 0, attack: 0 } },
-  ],
+  players: buildPlayers(2, initialCounterDefinitions, []),
   currentPlayerIndex: 0,
   history: [],
   gameMode: null,
-  counterNames: {
-    authority: 'Counter A',
-    money: 'Counter B',
-    attack: 'Counter C',
-  },
-  counterResetsOnTurn: {
-    authority: false,
-    money: false,
-    attack: false,
-  },
-  counterVisibleForNonActive: {
-    authority: true,
-    money: false,
-    attack: false,
-  },
-  defaultCounterValues: {
-    authority: 0,
-    money: 0,
-    attack: 0,
-  },
+  hasSavedGame: false,
+  counterDefinitions: initialCounterDefinitions,
+  defaultPlayerCount: 2,
+  playerOverrides: [],
   currentGameConfigName: 'Generic',
   theme: 'starRealms',
 };
@@ -151,25 +202,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
   ...initialGameState,
 
   addPlayer: (name: string) =>
-    set((state) => ({
-      players: [
-        ...state.players,
-        {
-          id: Date.now().toString(),
-          name,
-          counters: { ...state.defaultCounterValues },
-        },
-      ],
-    })),
+    set((state) => {
+      const newPlayer: Player = {
+        id: Date.now().toString(),
+        name,
+        counters: getBaseCounterValues(state.counterDefinitions),
+      };
+      const players = [...state.players, newPlayer];
+      return {
+        players,
+        defaultPlayerCount: players.length,
+      };
+    }),
 
   removePlayer: (id: string) =>
     set((state) => {
-      const newPlayers = state.players.filter((p) => p.id !== id);
+      const players = state.players.filter((p) => p.id !== id);
+      const adjusted = players.length > 0 ? players : buildPlayers(1, state.counterDefinitions, state.playerOverrides);
       let newIndex = state.currentPlayerIndex;
-      if (newIndex >= newPlayers.length && newIndex > 0) {
-        newIndex = newPlayers.length - 1;
+      if (newIndex >= adjusted.length) {
+        newIndex = adjusted.length - 1;
       }
-      return { players: newPlayers, currentPlayerIndex: newIndex };
+      return {
+        players: adjusted,
+        currentPlayerIndex: Math.max(newIndex, 0),
+        defaultPlayerCount: adjusted.length,
+      };
     }),
 
   updatePlayerName: (id: string, name: string) =>
@@ -177,65 +235,60 @@ export const useGameStore = create<GameStore>((set, get) => ({
       players: state.players.map((p) => (p.id === id ? { ...p, name } : p)),
     })),
 
-  incrementCounter: (playerId: string, counter: keyof CounterState, amount = 1) => {
+  incrementCounter: (playerId: string, counterId: string, amount = 1) => {
     set((state) => {
-      const player = state.players.find((p) => p.id === playerId);
-      if (!player) return state;
+      const playerIndex = state.players.findIndex((p) => p.id === playerId);
+      if (playerIndex === -1) return state;
 
-      const newState = { ...state };
-      const playerIndex = newState.players.findIndex((p) => p.id === playerId);
+      const player = state.players[playerIndex];
+      const previous = { ...player.counters };
+      const players = [...state.players];
+      players[playerIndex] = {
+        ...player,
+        counters: {
+          ...player.counters,
+          [counterId]: (player.counters[counterId] ?? 0) + amount,
+        },
+      };
 
-      newState.players[playerIndex].counters[counter] += amount;
-
-      // Add to history
-      newState.history = [
-        ...newState.history.slice(-MAX_HISTORY + 1),
-        { playerIndex, action: `increment-${counter}`, previousState: { ...player.counters } },
-      ];
-
-      return newState;
+      return {
+        players,
+        history: [
+          ...state.history.slice(-MAX_HISTORY + 1),
+          { playerIndex, action: `increment-${counterId}`, previousState: previous },
+        ],
+      };
     });
     get().saveGame();
   },
 
-  decrementCounter: (playerId: string, counter: keyof CounterState, amount = 1) => {
-    set((state) => {
-      const player = state.players.find((p) => p.id === playerId);
-      if (!player) return state;
-
-      const newState = { ...state };
-      const playerIndex = newState.players.findIndex((p) => p.id === playerId);
-
-      newState.players[playerIndex].counters[counter] -= amount;
-
-      // Add to history
-      newState.history = [
-        ...newState.history.slice(-MAX_HISTORY + 1),
-        { playerIndex, action: `decrement-${counter}`, previousState: { ...player.counters } },
-      ];
-
-      return newState;
-    });
-    get().saveGame();
+  decrementCounter: (playerId: string, counterId: string, amount = 1) => {
+    get().incrementCounter(playerId, counterId, -amount);
   },
 
-  setCounter: (playerId: string, counter: keyof CounterState, value: number) => {
+  setCounter: (playerId: string, counterId: string, value: number) => {
     set((state) => {
-      const player = state.players.find((p) => p.id === playerId);
-      if (!player) return state;
+      const playerIndex = state.players.findIndex((p) => p.id === playerId);
+      if (playerIndex === -1) return state;
 
-      const newState = { ...state };
-      const playerIndex = newState.players.findIndex((p) => p.id === playerId);
+      const player = state.players[playerIndex];
+      const previous = { ...player.counters };
+      const players = [...state.players];
+      players[playerIndex] = {
+        ...player,
+        counters: {
+          ...player.counters,
+          [counterId]: value,
+        },
+      };
 
-      newState.players[playerIndex].counters[counter] = value;
-
-      // Add to history
-      newState.history = [
-        ...newState.history.slice(-MAX_HISTORY + 1),
-        { playerIndex, action: `set-${counter}`, previousState: { ...player.counters } },
-      ];
-
-      return newState;
+      return {
+        players,
+        history: [
+          ...state.history.slice(-MAX_HISTORY + 1),
+          { playerIndex, action: `set-${counterId}`, previousState: previous },
+        ],
+      };
     });
     get().saveGame();
   },
@@ -249,35 +302,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return state;
       }
 
-      const currentCounters = currentPlayer.counters;
-      const nextCounters: CounterState = {
-        authority: state.counterResetsOnTurn.authority ? 0 : currentCounters.authority,
-        money: state.counterResetsOnTurn.money ? 0 : currentCounters.money,
-        attack: state.counterResetsOnTurn.attack ? 0 : currentCounters.attack,
-      };
+      const previous = { ...currentPlayer.counters };
+      const counters = { ...currentPlayer.counters };
 
-      const didReset =
-        nextCounters.authority !== currentCounters.authority ||
-        nextCounters.money !== currentCounters.money ||
-        nextCounters.attack !== currentCounters.attack;
+      for (const def of state.counterDefinitions) {
+        if (!def.persistsBetweenTurns) {
+          counters[def.id] = def.initialValue;
+        }
+      }
 
-      const updatedPlayers = [...state.players];
-      updatedPlayers[currentIndex] = {
+      const didReset = state.counterDefinitions.some(
+        (def) => !def.persistsBetweenTurns && previous[def.id] !== counters[def.id]
+      );
+
+      const players = [...state.players];
+      players[currentIndex] = {
         ...currentPlayer,
-        counters: nextCounters,
+        counters,
       };
 
       return {
-        players: updatedPlayers,
+        players,
         currentPlayerIndex: nextIndex,
         history: didReset
           ? [
               ...state.history.slice(-MAX_HISTORY + 1),
-              {
-                playerIndex: currentIndex,
-                action: 'turn-reset',
-                previousState: { ...currentCounters },
-              },
+              { playerIndex: currentIndex, action: 'turn-reset', previousState: previous },
             ]
           : state.history,
       };
@@ -295,16 +345,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ currentPlayerIndex: Math.max(0, Math.min(index, get().players.length - 1)) }),
 
   resetGame: () => {
-    const state = get();
-    const defaultCounters = { ...state.defaultCounterValues };
-    set({
-      ...state,
-      players: state.players.map((player) => ({
-        ...player,
-        counters: { ...defaultCounters },
-      })),
-      currentPlayerIndex: 0,
-      history: [],
+    set((state) => {
+      const players = buildPlayers(
+        state.players.length,
+        state.counterDefinitions,
+        state.playerOverrides,
+        state.players
+      );
+      return {
+        players,
+        currentPlayerIndex: 0,
+        history: [],
+      };
     });
     get().saveGame();
   },
@@ -314,124 +366,156 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (state.history.length === 0) return state;
 
       const lastEntry = state.history[state.history.length - 1];
-      const newState = { ...state };
-      const playerIndex = lastEntry.playerIndex;
+      const players = [...state.players];
+      const player = players[lastEntry.playerIndex];
+      if (!player) {
+        return { history: state.history.slice(0, -1) };
+      }
 
-      newState.players[playerIndex].counters = lastEntry.previousState;
-      newState.history = newState.history.slice(0, -1);
-
-      return newState;
-    });
-    get().saveGame();
-  },
-
-  setGameMode: (mode: 'shared' | 'multiplayer') =>
-    set({ gameMode: mode }),
-
-  updateCounterNames: (names: Partial<GameStore['counterNames']>) =>
-    set((state) => ({
-      counterNames: { ...state.counterNames, ...names },
-    })),
-
-  updateCounterResetsOnTurn: (resets: Partial<GameStore['counterResetsOnTurn']>) => {
-    set((state) => ({
-      counterResetsOnTurn: { ...state.counterResetsOnTurn, ...resets },
-    }));
-    get().saveGame();
-  },
-
-  updateCounterVisibleForNonActive: (
-    visibility: Partial<GameStore['counterVisibleForNonActive']>
-  ) => {
-    set((state) => ({
-      counterVisibleForNonActive: { ...state.counterVisibleForNonActive, ...visibility },
-    }));
-    get().saveGame();
-  },
-
-  updateDefaultCounterValues: (values: Partial<GameStore['defaultCounterValues']>) => {
-    set((state) => ({
-      defaultCounterValues: { ...state.defaultCounterValues, ...values },
-    }));
-    get().saveGame();
-  },
-
-  applyGameConfig: (config: GameConfig) => {
-    set((state) => {
-      const mergedCounterNames = {
-        ...state.counterNames,
-        ...(config.counterNames ?? {}),
+      players[lastEntry.playerIndex] = {
+        ...player,
+        counters: { ...lastEntry.previousState },
       };
-
-      const mergedResets = {
-        ...state.counterResetsOnTurn,
-        ...(config.counterResetsOnTurn ?? {}),
-      };
-
-      const mergedVisibility = {
-        ...state.counterVisibleForNonActive,
-        ...(config.counterVisibleForNonActive ?? {}),
-      };
-
-      const mergedDefaults = {
-        ...state.defaultCounterValues,
-        ...(config.defaultCounterValues ?? {}),
-      };
-
-      const nextPlayers =
-        config.players && config.players.length > 0
-          ? config.players.map((name, index) => ({
-              id: `${Date.now()}-${index}`,
-              name,
-              counters: { ...mergedDefaults },
-            }))
-          : state.players;
 
       return {
-        ...state,
-        players: nextPlayers,
-        currentPlayerIndex: Math.min(state.currentPlayerIndex, Math.max(nextPlayers.length - 1, 0)),
-        counterNames: mergedCounterNames,
-        counterResetsOnTurn: mergedResets,
-        counterVisibleForNonActive: mergedVisibility,
-        defaultCounterValues: mergedDefaults,
-        currentGameConfigName: config.name ?? state.currentGameConfigName,
+        players,
+        history: state.history.slice(0, -1),
       };
     });
     get().saveGame();
   },
+
+  setGameMode: (mode: 'shared' | 'multiplayer') => set({ gameMode: mode }),
 
   setTheme: (theme: 'generic' | 'starRealms') => {
     set({ theme });
     get().saveGame();
   },
 
+  setCounterDefinitions: (definitions: CounterDefinition[]) => {
+    set((state) => {
+      const players = buildPlayers(
+        state.players.length,
+        definitions,
+        state.playerOverrides,
+        state.players
+      );
+      return {
+        counterDefinitions: definitions,
+        players,
+      };
+    });
+    get().saveGame();
+  },
+
+  setDefaultPlayerCount: (count: number) => {
+    set((state) => {
+      const players = buildPlayers(count, state.counterDefinitions, state.playerOverrides, state.players);
+      return {
+        defaultPlayerCount: Math.max(1, count),
+        players,
+        currentPlayerIndex: Math.min(state.currentPlayerIndex, players.length - 1),
+      };
+    });
+    get().saveGame();
+  },
+
+  setPlayerOverrides: (overrides: PlayerOverride[]) => {
+    set((state) => ({
+      playerOverrides: overrides,
+      players: buildPlayers(
+        state.players.length,
+        state.counterDefinitions,
+        overrides,
+        state.players
+      ),
+    }));
+    get().saveGame();
+  },
+
+  applyGameConfig: (config: GameConfig) => {
+    set((state) => {
+      const nextDefinitions = config.counters
+        ? normalizeDefinitions(config.counters)
+        : state.counterDefinitions;
+
+      const defaultPlayerCount = Math.max(
+        1,
+        config.players?.defaultPlayerCount ?? state.defaultPlayerCount
+      );
+
+      const playerOverrides = config.players?.overrides ?? state.playerOverrides;
+
+      const players = buildPlayers(defaultPlayerCount, nextDefinitions, playerOverrides);
+
+      return {
+        ...state,
+        counterDefinitions: nextDefinitions,
+        defaultPlayerCount,
+        playerOverrides,
+        players,
+        currentPlayerIndex: Math.min(state.currentPlayerIndex, players.length - 1),
+        currentGameConfigName: config.name ?? state.currentGameConfigName,
+        history: [],
+      };
+    });
+    get().saveGame();
+  },
+
+  startNewGame: ({ mode, playerCount }) => {
+    set((state) => {
+      const players = buildPlayers(playerCount, state.counterDefinitions, state.playerOverrides);
+      return {
+        ...state,
+        gameMode: mode,
+        players,
+        defaultPlayerCount: Math.max(1, playerCount),
+        currentPlayerIndex: 0,
+        history: [],
+        hasSavedGame: true,
+      };
+    });
+    get().saveGame();
+  },
+
   loadGame: async () => {
     try {
-      const savedGame = await localforage.getItem<GameState>('gameState');
+      const savedGame = await localforage.getItem<Partial<GameState> & Record<string, unknown>>('gameState');
       if (savedGame) {
-        set({
+        // Migration stub:
+        // If/when we publish and need to support older schemas, add versioned migration steps here.
+
+        const mergedDefinitions =
+          savedGame.counterDefinitions && savedGame.counterDefinitions.length > 0
+            ? savedGame.counterDefinitions
+            : initialGameState.counterDefinitions;
+
+        const mergedState: GameState = {
           ...initialGameState,
           ...savedGame,
-          counterNames: {
-            ...initialGameState.counterNames,
-            ...(savedGame.counterNames ?? {}),
-          },
-          counterResetsOnTurn: {
-            ...initialGameState.counterResetsOnTurn,
-            ...(savedGame.counterResetsOnTurn ?? {}),
-          },
-          counterVisibleForNonActive: {
-            ...initialGameState.counterVisibleForNonActive,
-            ...(savedGame.counterVisibleForNonActive ?? {}),
-          },
-          defaultCounterValues: {
-            ...initialGameState.defaultCounterValues,
-            ...(savedGame.defaultCounterValues ?? {}),
-          },
+          hasSavedGame: true,
+          counterDefinitions: mergedDefinitions,
+          defaultPlayerCount:
+            savedGame.defaultPlayerCount && savedGame.defaultPlayerCount > 0
+              ? savedGame.defaultPlayerCount
+              : initialGameState.defaultPlayerCount,
+          playerOverrides:
+            (savedGame.playerOverrides as PlayerOverride[] | undefined) ?? initialGameState.playerOverrides,
           currentGameConfigName:
             savedGame.currentGameConfigName ?? initialGameState.currentGameConfigName,
-        });
+          players:
+            savedGame.players && savedGame.players.length > 0
+              ? savedGame.players
+              : buildPlayers(
+                  initialGameState.defaultPlayerCount,
+                  mergedDefinitions,
+                  initialGameState.playerOverrides
+                ),
+        };
+
+        set(mergedState);
+      } else {
+        set({ hasSavedGame: false });
       }
     } catch (error) {
       console.error('Failed to load game:', error);
@@ -446,10 +530,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         currentPlayerIndex: state.currentPlayerIndex,
         history: state.history,
         gameMode: state.gameMode,
-        counterNames: state.counterNames,
-        counterResetsOnTurn: state.counterResetsOnTurn,
-        counterVisibleForNonActive: state.counterVisibleForNonActive,
-        defaultCounterValues: state.defaultCounterValues,
+        counterDefinitions: state.counterDefinitions,
+        defaultPlayerCount: state.defaultPlayerCount,
+        playerOverrides: state.playerOverrides,
         currentGameConfigName: state.currentGameConfigName,
         theme: state.theme,
       };

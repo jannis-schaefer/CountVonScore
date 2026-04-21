@@ -137,31 +137,4 @@
   letter-spacing: 0.05em;
 }
 
-/* Resource Counter Colors */
-.theme-starRealms .counter-authority {
-  color: var(--star-realms-green);
-  text-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
-}
-
-.theme-starRealms .counter-money {
-  color: var(--star-realms-gold);
-  text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
-}
-
-.theme-starRealms .counter-attack {
-  color: var(--star-realms-red);
-  text-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
-}
-
-/* Icon styles */
-.theme-starRealms .icon-authority {
-  filter: drop-shadow(0 0 4px rgba(39, 174, 96, 0.5));
-}
-
-.theme-starRealms .icon-money {
-  filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.5));
-}
-
-.theme-starRealms .icon-attack {
-  filter: drop-shadow(0 0 4px rgba(231, 76, 60, 0.5));
-}
+/* Counter/icon coloring is now data-driven and intentionally generic here. */

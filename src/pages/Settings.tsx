@@ -1,36 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
 import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigJson } from '../utils/gameConfig';
-import type { GameConfig } from '../store/gameStore';
+import type { CounterDefinition, GameConfig, PlayerOverride } from '../store/gameStore';
+
+const createNewCounter = (index: number): CounterDefinition => ({
+  id: `counter-${Date.now()}-${index}`,
+  name: `Counter ${index + 1}`,
+  initialValue: 0,
+  persistsBetweenTurns: true,
+  alwaysDisplayed: false,
+});
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const {
     players,
-    counterNames,
-    counterResetsOnTurn,
-    counterVisibleForNonActive,
-    defaultCounterValues,
+    counterDefinitions,
+    defaultPlayerCount,
+    playerOverrides,
     currentGameConfigName,
-    updateCounterNames,
-    updateCounterResetsOnTurn,
-    updateCounterVisibleForNonActive,
-    updateDefaultCounterValues,
     applyGameConfig,
+    setCounterDefinitions,
+    setDefaultPlayerCount,
+    setPlayerOverrides,
     addPlayer,
     removePlayer,
     updatePlayerName,
   } = useGameStore();
   const { theme, toggleTheme } = useTheme();
 
-  const [tempCounterNames, setTempCounterNames] = useState(counterNames);
+  const [editableCounters, setEditableCounters] = useState<CounterDefinition[]>(counterDefinitions);
+  const [overridesText, setOverridesText] = useState<string>(JSON.stringify(playerOverrides, null, 2));
   const [newPlayerName, setNewPlayerName] = useState('');
   const [editingPlayerIds, setEditingPlayerIds] = useState<Set<string>>(new Set());
   const [editingPlayerNames, setEditingPlayerNames] = useState<Record<string, string>>({});
-  const [configMessage, setConfigMessage] = useState<string>('');
+  const [configName, setConfigName] = useState(currentGameConfigName);
   const [bundledConfigs, setBundledConfigs] = useState<GameConfig[]>([]);
+  const [configMessage, setConfigMessage] = useState('');
+
+  useEffect(() => {
+    setEditableCounters(counterDefinitions);
+  }, [counterDefinitions]);
+
+  useEffect(() => {
+    setOverridesText(JSON.stringify(playerOverrides, null, 2));
+  }, [playerOverrides]);
+
+  useEffect(() => {
+    setConfigName(currentGameConfigName);
+  }, [currentGameConfigName]);
 
   useEffect(() => {
     const run = async () => {
@@ -46,13 +66,12 @@ export const Settings: React.FC = () => {
     run();
   }, []);
 
-  const handleCounterNameChange = (counter: keyof typeof counterNames, value: string) => {
-    setTempCounterNames({ ...tempCounterNames, [counter]: value });
-  };
-
-  const handleSaveCounterNames = () => {
-    updateCounterNames(tempCounterNames);
-  };
+  const canSaveCounters = useMemo(() => {
+    return (
+      editableCounters.length > 0 &&
+      editableCounters.every((counter) => counter.id.trim() && counter.name.trim())
+    );
+  }, [editableCounters]);
 
   const handleAddPlayer = () => {
     if (newPlayerName.trim()) {
@@ -68,11 +87,11 @@ export const Settings: React.FC = () => {
 
   const handleSavePlayerName = (id: string) => {
     const newName = editingPlayerNames[id];
-    if (newName.trim()) {
+    if (newName?.trim()) {
       updatePlayerName(id, newName.trim());
-      const newEditing = new Set(editingPlayerIds);
-      newEditing.delete(id);
-      setEditingPlayerIds(newEditing);
+      const next = new Set(editingPlayerIds);
+      next.delete(id);
+      setEditingPlayerIds(next);
     }
   };
 
@@ -82,21 +101,37 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleImportConfig = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
+  const handleSaveCounters = () => {
+    if (!canSaveCounters) {
+      setConfigMessage('Every counter requires both an id and a name.');
       return;
     }
+    setCounterDefinitions(editableCounters);
+    setConfigMessage('Saved counter definitions.');
+  };
+
+  const handleSaveOverrides = () => {
+    try {
+      const parsed = JSON.parse(overridesText) as PlayerOverride[];
+      if (!Array.isArray(parsed)) {
+        throw new Error('Overrides must be an array.');
+      }
+      setPlayerOverrides(parsed);
+      setConfigMessage('Saved player overrides.');
+    } catch (error) {
+      console.error(error);
+      setConfigMessage('Invalid overrides JSON. Expected an array of player override objects.');
+    }
+  };
+
+  const handleImportConfig = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     try {
       const content = await file.text();
       const config = parseGameConfig(content, file.name);
       applyGameConfig(config);
-
-      if (config.counterNames) {
-        setTempCounterNames((prev) => ({ ...prev, ...config.counterNames }));
-      }
-
       setConfigMessage(`Imported config: ${config.name ?? file.name}`);
     } catch (error) {
       console.error(error);
@@ -107,19 +142,27 @@ export const Settings: React.FC = () => {
   };
 
   const handleExportConfig = () => {
-    const payload = {
-      name: currentGameConfigName,
-      counterNames,
-      counterResetsOnTurn,
-      counterVisibleForNonActive,
-      defaultCounterValues,
-      players: players.map((p) => p.name),
+    const payload: GameConfig = {
+      name: configName || currentGameConfigName,
+      counters: counterDefinitions.map((counter) => ({
+        id: counter.id,
+        name: counter.name,
+        icon: counter.icon,
+        initialValue: counter.initialValue,
+        persistsBetweenTurns: counter.persistsBetweenTurns,
+        alwaysDisplayed: counter.alwaysDisplayed,
+      })),
+      players: {
+        defaultPlayerCount,
+        overrides: playerOverrides,
+      },
     };
+
     const blob = new Blob([stringifyGameConfigJson(payload)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
+    const safeName = (payload.name || 'game-config').toLowerCase().replace(/[^a-z0-9]+/g, '-');
     link.href = url;
-    const safeName = currentGameConfigName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     link.download = `${safeName || 'game-config'}.json`;
     link.click();
     URL.revokeObjectURL(url);
@@ -139,9 +182,8 @@ export const Settings: React.FC = () => {
 
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Theme</h2>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <span>Current: {theme === 'generic' ? 'Generic' : 'Star Realms'}</span>
-            <span>Config: {currentGameConfigName}</span>
+          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+            <span>Theme: {theme === 'generic' ? 'Generic' : 'Star Realms'}</span>
             <button className="btn" onClick={toggleTheme}>
               Switch Theme
             </button>
@@ -149,111 +191,173 @@ export const Settings: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Counter Labels</h2>
-          <div className="settings-row">
-            {Object.entries(counterNames).map(([key]) => (
-              <div key={key}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.875rem' }}>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  value={tempCounterNames[key as keyof typeof counterNames]}
-                  onChange={(e) =>
-                    handleCounterNameChange(key as keyof typeof counterNames, e.target.value)
-                  }
-                  style={{ width: '100%', boxSizing: 'border-box' }}
-                />
+          <h2 style={{ marginTop: 0 }}>Game Config Name</h2>
+          <input
+            type="text"
+            className="input"
+            value={configName}
+            onChange={(event) => setConfigName(event.target.value)}
+            placeholder="Config name"
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Counter Definitions</h2>
+          <p style={{ opacity: 0.75, marginBottom: '12px' }}>
+            Counters are fully generic. Use stable ids in configs. Icons are optional and reserved for future UI support.
+          </p>
+
+          <div className="settings-grid">
+            {editableCounters.map((counter, index) => (
+              <div className="panel" key={counter.id}>
+                <div className="settings-grid">
+                  <div className="settings-row">
+                    <label>ID</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={counter.id}
+                      onChange={(event) => {
+                        const next = [...editableCounters];
+                        next[index] = { ...counter, id: event.target.value };
+                        setEditableCounters(next);
+                      }}
+                    />
+                  </div>
+
+                  <div className="settings-row">
+                    <label>Name</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={counter.name}
+                      onChange={(event) => {
+                        const next = [...editableCounters];
+                        next[index] = { ...counter, name: event.target.value };
+                        setEditableCounters(next);
+                      }}
+                    />
+                  </div>
+
+                  <div className="settings-row">
+                    <label>Icon (optional)</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={counter.icon ?? ''}
+                      onChange={(event) => {
+                        const next = [...editableCounters];
+                        next[index] = { ...counter, icon: event.target.value || undefined };
+                        setEditableCounters(next);
+                      }}
+                    />
+                  </div>
+
+                  <div className="settings-row">
+                    <label>Initial Value</label>
+                    <input
+                      type="number"
+                      className="input"
+                      value={counter.initialValue}
+                      onChange={(event) => {
+                        const next = [...editableCounters];
+                        next[index] = { ...counter, initialValue: Number(event.target.value || 0) };
+                        setEditableCounters(next);
+                      }}
+                    />
+                  </div>
+
+                  <div className="toggle-row">
+                    <label htmlFor={`persist-${counter.id}`}>Persists Between Turns</label>
+                    <input
+                      id={`persist-${counter.id}`}
+                      type="checkbox"
+                      checked={counter.persistsBetweenTurns}
+                      onChange={(event) => {
+                        const next = [...editableCounters];
+                        next[index] = { ...counter, persistsBetweenTurns: event.target.checked };
+                        setEditableCounters(next);
+                      }}
+                    />
+                  </div>
+
+                  <div className="toggle-row">
+                    <label htmlFor={`always-${counter.id}`}>Always Displayed (non-active players)</label>
+                    <input
+                      id={`always-${counter.id}`}
+                      type="checkbox"
+                      checked={counter.alwaysDisplayed}
+                      onChange={(event) => {
+                        const next = [...editableCounters];
+                        next[index] = { ...counter, alwaysDisplayed: event.target.checked };
+                        setEditableCounters(next);
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => {
+                      if (editableCounters.length <= 1) {
+                        setConfigMessage('At least one counter is required.');
+                        return;
+                      }
+                      setEditableCounters(editableCounters.filter((_, i) => i !== index));
+                    }}
+                  >
+                    Remove Counter
+                  </button>
+                </div>
               </div>
             ))}
-            <button className="btn" onClick={handleSaveCounterNames} style={{ justifySelf: 'end' }}>
-              Save Labels
+          </div>
+
+          <div className="controls-row" style={{ justifyContent: 'flex-start', marginTop: '12px' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setEditableCounters([...editableCounters, createNewCounter(editableCounters.length)])}
+            >
+              Add Counter
+            </button>
+            <button className="btn" onClick={handleSaveCounters} disabled={!canSaveCounters}>
+              Save Counter Definitions
             </button>
           </div>
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Counter Visibility For Non-Active Players</h2>
-          <p style={{ opacity: 0.75, marginBottom: '12px' }}>
-            Choose which counters stay visible and editable on non-active player cards.
-          </p>
-          <div className="settings-row">
-            {Object.entries(counterVisibleForNonActive).map(([key, value]) => (
-              <div className="toggle-row" key={key}>
-                <label htmlFor={`visibility-${key}`}>
-                  Show {counterNames[key as keyof typeof counterNames]} on non-active players
-                </label>
-                <input
-                  id={`visibility-${key}`}
-                  type="checkbox"
-                  checked={value}
-                  onChange={(e) =>
-                    updateCounterVisibleForNonActive({
-                      [key]: e.target.checked,
-                    } as Partial<typeof counterVisibleForNonActive>)
-                  }
-                />
-              </div>
-            ))}
+          <h2 style={{ marginTop: 0 }}>Player Defaults & Overrides</h2>
+          <div className="settings-grid">
+            <div className="settings-row">
+              <label>Default Player Count</label>
+              <input
+                type="number"
+                min={1}
+                className="input"
+                value={defaultPlayerCount}
+                onChange={(event) => setDefaultPlayerCount(Math.max(1, Number(event.target.value || 1)))}
+              />
+            </div>
+
+            <div className="settings-row">
+              <label>Player Overrides (JSON)</label>
+              <textarea
+                className="input"
+                value={overridesText}
+                onChange={(event) => setOverridesText(event.target.value)}
+                rows={8}
+                style={{ width: '100%', boxSizing: 'border-box' }}
+              />
+              <button className="btn btn-secondary" onClick={handleSaveOverrides}>
+                Save Overrides
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Default Counter Values</h2>
-          <p style={{ opacity: 0.75, marginBottom: '12px' }}>
-            New players and game reset will use these starting values.
-          </p>
-          <div className="settings-row">
-            {Object.entries(defaultCounterValues).map(([key, value]) => (
-              <div key={key}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.875rem' }}>
-                  {counterNames[key as keyof typeof counterNames]}
-                </label>
-                <input
-                  type="number"
-                  className="input"
-                  value={value}
-                  onChange={(e) =>
-                    updateDefaultCounterValues({
-                      [key]: Number(e.target.value || 0),
-                    } as Partial<typeof defaultCounterValues>)
-                  }
-                  style={{ width: '100%', boxSizing: 'border-box' }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Turn Reset Rules</h2>
-          <p style={{ opacity: 0.75, marginBottom: '12px' }}>
-            Enable per-counter reset when moving to the next player's turn.
-          </p>
-          <div className="settings-row">
-            {Object.entries(counterResetsOnTurn).map(([key, value]) => (
-              <div className="toggle-row" key={key}>
-                <label htmlFor={`reset-${key}`}>
-                  Reset {counterNames[key as keyof typeof counterNames]} between turns
-                </label>
-                <input
-                  id={`reset-${key}`}
-                  type="checkbox"
-                  checked={value}
-                  onChange={(e) =>
-                    updateCounterResetsOnTurn({
-                      [key]: e.target.checked,
-                    } as Partial<typeof counterResetsOnTurn>)
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Players</h2>
+          <h2 style={{ marginTop: 0 }}>Players (Live Session)</h2>
           <div style={{ marginBottom: '20px' }}>
             {players.map((player) => (
               <div
@@ -275,10 +379,10 @@ export const Settings: React.FC = () => {
                       type="text"
                       className="input"
                       value={editingPlayerNames[player.id] || ''}
-                      onChange={(e) =>
+                      onChange={(event) =>
                         setEditingPlayerNames({
                           ...editingPlayerNames,
-                          [player.id]: e.target.value,
+                          [player.id]: event.target.value,
                         })
                       }
                       style={{ flex: 1 }}
@@ -316,9 +420,9 @@ export const Settings: React.FC = () => {
               className="input"
               placeholder="New player name"
               value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+              onChange={(event) => setNewPlayerName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
                   handleAddPlayer();
                 }
               }}
@@ -333,18 +437,15 @@ export const Settings: React.FC = () => {
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Bundled Game Formats</h2>
           <p style={{ opacity: 0.7, marginBottom: '15px' }}>
-            These presets are loaded from YAML files bundled with the PWA. New formats can be added with a pull request.
+            Bundled presets are loaded from YAML files in public/configs.
           </p>
           <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
             {bundledConfigs.map((config) => (
               <button
-                key={config.name}
+                key={config.name ?? JSON.stringify(config)}
                 className="btn btn-secondary"
                 onClick={() => {
                   applyGameConfig(config);
-                  if (config.counterNames) {
-                    setTempCounterNames((prev) => ({ ...prev, ...config.counterNames }));
-                  }
                   setConfigMessage(`Applied bundled config: ${config.name ?? 'Unnamed config'}`);
                 }}
               >
@@ -355,9 +456,9 @@ export const Settings: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Game Config Import/Export</h2>
+          <h2 style={{ marginTop: 0 }}>Game Config Import / Export</h2>
           <p style={{ opacity: 0.75, marginBottom: '12px' }}>
-            Share presets with community using JSON or YAML.
+            Import JSON/YAML, or export current settings to JSON.
           </p>
           <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
             <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>

@@ -9,8 +9,7 @@ export const MultiplayerMode: React.FC = () => {
   const {
     players,
     history,
-    counterNames,
-    counterVisibleForNonActive,
+    counterDefinitions,
     currentPlayerIndex,
     setCurrentPlayer,
     setCounter,
@@ -25,10 +24,10 @@ export const MultiplayerMode: React.FC = () => {
 
   const handleCounterChange = (
     playerId: string,
-    counter: keyof (typeof players[0]['counters']),
+    counterId: string,
     value: number
   ) => {
-    setCounter(playerId, counter, value);
+    setCounter(playerId, counterId, value);
   };
 
   return (
@@ -47,7 +46,7 @@ export const MultiplayerMode: React.FC = () => {
         <div className="panel">
           <h3 className="panel-title">Tabletop Layout</h3>
           <p style={{ opacity: 0.75, margin: 0 }}>
-            Tap a player card to mark active turn. Non-active cards show configured counters for fast attack/life updates.
+            Tap a player card to mark active turn. Non-active cards show counters based on each counter's display rules.
           </p>
         </div>
 
@@ -65,9 +64,10 @@ export const MultiplayerMode: React.FC = () => {
                   <PlayerCard
                     player={player}
                     isActive={isActive}
-                    onCounterChange={(counter, value) => handleCounterChange(player.id, counter, value)}
-                    counterNames={counterNames}
-                    visibleCounters={isActive ? { authority: true, money: true, attack: true } : counterVisibleForNonActive}
+                    onCounterChange={(counterId, value) =>
+                      handleCounterChange(player.id, counterId, value)
+                    }
+                    counterDefinitions={counterDefinitions}
                     compact={!isActive}
                   />
                 </button>

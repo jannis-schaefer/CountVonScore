@@ -1,25 +1,27 @@
 name: Star Realms
 
-counterNames:
-  authority: Authority
-  money: Trade
-  attack: Combat
+counters:
+  - id: authority
+    name: Authority
+    icon: authority
+    initialValue: 50
+    persistsBetweenTurns: true
+    alwaysDisplayed: true
 
-counterResetsOnTurn:
-  authority: false
-  money: true
-  attack: true
+  - id: trade
+    name: Trade
+    icon: trade
+    initialValue: 0
+    persistsBetweenTurns: false
+    alwaysDisplayed: false
 
-counterVisibleForNonActive:
-  authority: true
-  money: false
-  attack: true
-
-defaultCounterValues:
-  authority: 50
-  money: 0
-  attack: 0
+  - id: combat
+    name: Combat
+    icon: combat
+    initialValue: 0
+    persistsBetweenTurns: false
+    alwaysDisplayed: true
 
 players:
-  - Player 1
-  - Player 2
+  defaultPlayerCount: 2
+  overrides: []

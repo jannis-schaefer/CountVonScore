@@ -1,25 +1,24 @@
 name: Generic
 
-counterNames:
-  authority: Counter A
-  money: Counter B
-  attack: Counter C
+counters:
+  - id: counter-a
+    name: Counter A
+    initialValue: 0
+    persistsBetweenTurns: true
+    alwaysDisplayed: true
 
-counterResetsOnTurn:
-  authority: false
-  money: false
-  attack: false
+  - id: counter-b
+    name: Counter B
+    initialValue: 0
+    persistsBetweenTurns: true
+    alwaysDisplayed: false
 
-counterVisibleForNonActive:
-  authority: true
-  money: false
-  attack: false
-
-defaultCounterValues:
-  authority: 0
-  money: 0
-  attack: 0
+  - id: counter-c
+    name: Counter C
+    initialValue: 0
+    persistsBetweenTurns: true
+    alwaysDisplayed: false
 
 players:
-  - Player 1
-  - Player 2
+  defaultPlayerCount: 2
+  overrides: []

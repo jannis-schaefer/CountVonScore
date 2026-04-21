@@ -11,8 +11,7 @@ export const SharedDeviceMode: React.FC = () => {
     players,
     currentPlayerIndex,
     history,
-    counterNames,
-    counterVisibleForNonActive,
+    counterDefinitions,
     setCounter,
     setCurrentPlayer,
     nextPlayer,
@@ -30,10 +29,10 @@ export const SharedDeviceMode: React.FC = () => {
 
   const handleCounterChange = (
     playerId: string,
-    counter: keyof (typeof players[0]['counters']),
+    counterId: string,
     value: number
   ) => {
-    setCounter(playerId, counter, value);
+    setCounter(playerId, counterId, value);
   };
 
   return (
@@ -73,9 +72,10 @@ export const SharedDeviceMode: React.FC = () => {
                   <PlayerCard
                     player={player}
                     isActive={isActive}
-                    onCounterChange={(counter, value) => handleCounterChange(player.id, counter, value)}
-                    counterNames={counterNames}
-                    visibleCounters={isActive ? { authority: true, money: true, attack: true } : counterVisibleForNonActive}
+                    onCounterChange={(counterId, value) =>
+                      handleCounterChange(player.id, counterId, value)
+                    }
+                    counterDefinitions={counterDefinitions}
                     compact={!isActive}
                   />
                 </button>

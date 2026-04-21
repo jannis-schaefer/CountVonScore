@@ -1,25 +1,24 @@
 name: Magic-Like
 
-counterNames:
-  authority: Life
-  money: Mana
-  attack: Damage
+counters:
+  - id: life
+    name: Life
+    initialValue: 20
+    persistsBetweenTurns: true
+    alwaysDisplayed: true
 
-counterResetsOnTurn:
-  authority: false
-  money: true
-  attack: true
+  - id: mana
+    name: Mana
+    initialValue: 0
+    persistsBetweenTurns: false
+    alwaysDisplayed: false
 
-counterVisibleForNonActive:
-  authority: true
-  money: false
-  attack: true
-
-defaultCounterValues:
-  authority: 20
-  money: 0
-  attack: 0
+  - id: damage
+    name: Damage
+    initialValue: 0
+    persistsBetweenTurns: false
+    alwaysDisplayed: true
 
 players:
-  - Player 1
-  - Player 2
+  defaultPlayerCount: 2
+  overrides: []
