@@ -24,7 +24,6 @@ export const Settings: React.FC = () => {
     eliminationCounterId,
     eliminationThreshold,
     currentGameConfigName,
-    applyGameConfig,
     setCounterDefinitions,
     setDefaultPlayerCount,
     setPlayerOverrides,
@@ -37,7 +36,13 @@ export const Settings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
 
   const [editableCounters, setEditableCounters] = useState<CounterDefinition[]>(counterDefinitions);
+  const [editableDefaultPlayerCount, setEditableDefaultPlayerCount] = useState<number>(defaultPlayerCount);
   const [overridesText, setOverridesText] = useState<string>(JSON.stringify(playerOverrides, null, 2));
+  const [editableEliminationEnabled, setEditableEliminationEnabled] = useState<boolean>(eliminationEnabled);
+  const [editableEliminationCounterId, setEditableEliminationCounterId] =
+    useState<string>(eliminationCounterId);
+  const [editableEliminationThreshold, setEditableEliminationThreshold] =
+    useState<number>(eliminationThreshold);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [editingPlayerIds, setEditingPlayerIds] = useState<Set<string>>(new Set());
   const [editingPlayerNames, setEditingPlayerNames] = useState<Record<string, string>>({});
@@ -52,6 +57,22 @@ export const Settings: React.FC = () => {
   useEffect(() => {
     setOverridesText(JSON.stringify(playerOverrides, null, 2));
   }, [playerOverrides]);
+
+  useEffect(() => {
+    setEditableDefaultPlayerCount(defaultPlayerCount);
+  }, [defaultPlayerCount]);
+
+  useEffect(() => {
+    setEditableEliminationEnabled(eliminationEnabled);
+  }, [eliminationEnabled]);
+
+  useEffect(() => {
+    setEditableEliminationCounterId(eliminationCounterId);
+  }, [eliminationCounterId]);
+
+  useEffect(() => {
+    setEditableEliminationThreshold(eliminationThreshold);
+  }, [eliminationThreshold]);
 
   useEffect(() => {
     setConfigName(currentGameConfigName);
@@ -106,48 +127,69 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleSaveCounters = () => {
+  const applyConfigToDraft = (config: GameConfig) => {
+    const nextCounters = (config.counters ?? []).map((counter, index) => ({
+      id: counter.id?.trim() || `counter-${Date.now()}-${index}`,
+      name: counter.name,
+      icon: counter.icon,
+      initialValue: counter.initialValue,
+      persistsBetweenTurns: counter.persistsBetweenTurns,
+      alwaysDisplayed: counter.alwaysDisplayed,
+    }));
+
+    if (nextCounters.length > 0) {
+      setEditableCounters(nextCounters);
+    }
+
+    setConfigName(config.name ?? '');
+    setEditableDefaultPlayerCount(
+      Math.max(1, Number(config.players?.defaultPlayerCount ?? defaultPlayerCount ?? 1))
+    );
+    setOverridesText(JSON.stringify(config.players?.overrides ?? [], null, 2));
+    setEditableEliminationEnabled(config.elimination?.enabled ?? eliminationEnabled);
+    setEditableEliminationCounterId(
+      config.elimination?.counterId ?? nextCounters[0]?.id ?? counterDefinitions[0]?.id ?? ''
+    );
+    setEditableEliminationThreshold(config.elimination?.threshold ?? eliminationThreshold);
+  };
+
+  const handleApplySettings = () => {
     if (!canSaveCounters) {
       setConfigMessage('Every counter requires both an id and a name.');
       return;
     }
 
-    const applyToCurrentGame = window.confirm(
-      'Apply these counter definition changes to the current game state now?\n\n' +
-      'OK: Apply now\nCancel: Save without recalculating existing totals'
-    );
-
-    if (!applyToCurrentGame) {
-      setCounterDefinitions(editableCounters, { recalculateFromInitialValues: false });
-      setConfigMessage('Saved counter definitions without recalculating current totals.');
-      return;
-    }
-
-    const recalculateFromInitialValues = window.confirm(
-      'Recalculate current and historical totals based on changes to counter starting values?\n\n' +
-      'OK: Recalculate totals\nCancel: Keep existing totals as-is'
-    );
-
-    setCounterDefinitions(editableCounters, { recalculateFromInitialValues });
-    setConfigMessage(
-      recalculateFromInitialValues
-        ? 'Saved counter definitions and recalculated totals from updated starting values.'
-        : 'Saved counter definitions and kept current totals unchanged.'
-    );
-  };
-
-  const handleSaveOverrides = () => {
+    let parsedOverrides: PlayerOverride[];
     try {
       const parsed = JSON.parse(overridesText) as PlayerOverride[];
       if (!Array.isArray(parsed)) {
         throw new Error('Overrides must be an array.');
       }
-      setPlayerOverrides(parsed);
-      setConfigMessage('Saved player overrides.');
+      parsedOverrides = parsed;
     } catch (error) {
       console.error(error);
       setConfigMessage('Invalid overrides JSON. Expected an array of player override objects.');
+      return;
     }
+
+    const countersChanged = JSON.stringify(editableCounters) !== JSON.stringify(counterDefinitions);
+    const recalculateFromInitialValues = countersChanged
+      ? window.confirm(
+          'Recalculate current and historical totals based on changes to counter starting values?\n\n' +
+          'OK: Recalculate totals\nCancel: Keep existing totals as-is'
+        )
+      : false;
+
+    setCounterDefinitions(editableCounters, { recalculateFromInitialValues });
+    setCurrentGameConfigName(configName);
+    setDefaultPlayerCount(Math.max(1, Number(editableDefaultPlayerCount || 1)));
+    setPlayerOverrides(parsedOverrides);
+    setEliminationConfig({
+      enabled: editableEliminationEnabled,
+      counterId: editableEliminationCounterId,
+      threshold: Number(editableEliminationThreshold || 0),
+    });
+    navigate(-1);
   };
 
   const handleImportConfig = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,8 +199,8 @@ export const Settings: React.FC = () => {
     try {
       const content = await file.text();
       const config = parseGameConfig(content, file.name);
-      applyGameConfig(config);
-      setConfigMessage(`Imported config: ${config.name ?? file.name}`);
+      applyConfigToDraft(config);
+      setConfigMessage(`Imported config into draft: ${config.name ?? file.name}`);
     } catch (error) {
       console.error(error);
       setConfigMessage('Failed to import config. Check JSON/YAML format.');
@@ -170,7 +212,7 @@ export const Settings: React.FC = () => {
   const handleExportConfig = () => {
     const payload: GameConfig = {
       name: configName || currentGameConfigName,
-      counters: counterDefinitions.map((counter) => ({
+      counters: editableCounters.map((counter) => ({
         id: counter.id,
         name: counter.name,
         icon: counter.icon,
@@ -179,13 +221,20 @@ export const Settings: React.FC = () => {
         alwaysDisplayed: counter.alwaysDisplayed,
       })),
       players: {
-        defaultPlayerCount,
-        overrides: playerOverrides,
+        defaultPlayerCount: editableDefaultPlayerCount,
+        overrides: (() => {
+          try {
+            const parsed = JSON.parse(overridesText) as PlayerOverride[];
+            return Array.isArray(parsed) ? parsed : playerOverrides;
+          } catch {
+            return playerOverrides;
+          }
+        })(),
       },
       elimination: {
-        enabled: eliminationEnabled,
-        counterId: eliminationCounterId,
-        threshold: eliminationThreshold,
+        enabled: editableEliminationEnabled,
+        counterId: editableEliminationCounterId,
+        threshold: editableEliminationThreshold,
       },
     };
 
@@ -205,10 +254,12 @@ export const Settings: React.FC = () => {
       <div className="page-wrap settings-grid">
         <div className="header-row">
           <button className="btn btn-secondary" onClick={() => navigate(-1)}>
-            Back
+            Cancel
           </button>
           <h1 className="header-title">Settings</h1>
-          <div />
+          <button className="btn" onClick={handleApplySettings} disabled={!canSaveCounters}>
+            Apply
+          </button>
         </div>
 
         <div className="card">
@@ -232,15 +283,6 @@ export const Settings: React.FC = () => {
               placeholder="Config name"
               style={{ width: '100%', boxSizing: 'border-box', maxWidth: '360px' }}
             />
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                setCurrentGameConfigName(configName);
-                setConfigMessage('Saved game config name.');
-              }}
-            >
-              Save Name
-            </button>
           </div>
         </div>
 
@@ -362,9 +404,6 @@ export const Settings: React.FC = () => {
             >
               Add Counter
             </button>
-            <button className="btn" onClick={handleSaveCounters} disabled={!canSaveCounters}>
-              Save Counter Definitions
-            </button>
           </div>
         </div>
 
@@ -377,8 +416,10 @@ export const Settings: React.FC = () => {
                 type="number"
                 min={1}
                 className="input"
-                value={defaultPlayerCount}
-                onChange={(event) => setDefaultPlayerCount(Math.max(1, Number(event.target.value || 1)))}
+                value={editableDefaultPlayerCount}
+                onChange={(event) =>
+                  setEditableDefaultPlayerCount(Math.max(1, Number(event.target.value || 1)))
+                }
               />
             </div>
 
@@ -391,9 +432,6 @@ export const Settings: React.FC = () => {
                 rows={8}
                 style={{ width: '100%', boxSizing: 'border-box' }}
               />
-              <button className="btn btn-secondary" onClick={handleSaveOverrides}>
-                Save Overrides
-              </button>
             </div>
           </div>
         </div>
@@ -409,14 +447,8 @@ export const Settings: React.FC = () => {
               <input
                 id="elimination-enabled"
                 type="checkbox"
-                checked={eliminationEnabled}
-                onChange={(event) =>
-                  setEliminationConfig({
-                    enabled: event.target.checked,
-                    counterId: eliminationCounterId,
-                    threshold: eliminationThreshold,
-                  })
-                }
+                checked={editableEliminationEnabled}
+                onChange={(event) => setEditableEliminationEnabled(event.target.checked)}
               />
             </div>
 
@@ -424,16 +456,10 @@ export const Settings: React.FC = () => {
               <label>Monitored Counter</label>
               <select
                 className="input"
-                value={eliminationCounterId}
-                onChange={(event) =>
-                  setEliminationConfig({
-                    enabled: eliminationEnabled,
-                    counterId: event.target.value,
-                    threshold: eliminationThreshold,
-                  })
-                }
+                value={editableEliminationCounterId}
+                onChange={(event) => setEditableEliminationCounterId(event.target.value)}
               >
-                {counterDefinitions.map((counter) => (
+                {editableCounters.map((counter) => (
                   <option key={counter.id} value={counter.id}>
                     {counter.name}
                   </option>
@@ -446,14 +472,8 @@ export const Settings: React.FC = () => {
               <input
                 type="number"
                 className="input"
-                value={eliminationThreshold}
-                onChange={(event) =>
-                  setEliminationConfig({
-                    enabled: eliminationEnabled,
-                    counterId: eliminationCounterId,
-                    threshold: Number(event.target.value || 0),
-                  })
-                }
+                value={editableEliminationThreshold}
+                onChange={(event) => setEditableEliminationThreshold(Number(event.target.value || 0))}
               />
             </div>
           </div>
@@ -548,8 +568,8 @@ export const Settings: React.FC = () => {
                 key={config.name ?? JSON.stringify(config)}
                 className="btn btn-secondary"
                 onClick={() => {
-                  applyGameConfig(config);
-                  setConfigMessage(`Applied bundled config: ${config.name ?? 'Unnamed config'}`);
+                  applyConfigToDraft(config);
+                  setConfigMessage(`Loaded bundled config into draft: ${config.name ?? 'Unnamed config'}`);
                 }}
               >
                 {config.name ?? 'Unnamed config'}

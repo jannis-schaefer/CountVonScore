@@ -27,6 +27,6 @@ players:
   overrides: []
 
 elimination:
-  enabled: false
+  enabled: yes
   counterId: authority
   threshold: 0
