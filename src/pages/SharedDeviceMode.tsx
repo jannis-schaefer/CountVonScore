@@ -12,7 +12,7 @@ export const SharedDeviceMode: React.FC = () => {
     viewedPlayers,
     viewedTurnNumber,
     isHistoricalTurnDirty,
-    turnRecords,
+    startingPlayerIndex,
     currentPlayerIndex,
     turnNumber,
     history,
@@ -51,10 +51,9 @@ export const SharedDeviceMode: React.FC = () => {
 
   const displayedPlayers = viewedPlayers ?? players;
   const isViewingHistoricalTurn = viewedTurnNumber !== null;
-  const viewedTurnRecord = viewedTurnNumber !== null
-    ? turnRecords.find((record) => record.turnNumber === viewedTurnNumber)
-    : undefined;
-  const displayedPlayerIndex = viewedTurnRecord?.playerIndex ?? currentPlayerIndex;
+  const displayedPlayerIndex = viewedTurnNumber !== null && displayedPlayers.length > 0
+    ? (startingPlayerIndex + (viewedTurnNumber - 1)) % displayedPlayers.length
+    : currentPlayerIndex;
   const currentPlayer = displayedPlayers[displayedPlayerIndex];
   const canNavigatePrevious = isViewingHistoricalTurn ? viewedTurnNumber! > 1 && !isHistoricalTurnDirty : turnNumber > 1;
   const canNavigateNext = !isHistoricalTurnDirty;
@@ -63,6 +62,7 @@ export const SharedDeviceMode: React.FC = () => {
       ? 'Return to Current'
       : 'Next Turn'
     : 'End Turn';
+  const hasUndoAvailable = history.length > 0 || (!isViewingHistoricalTurn && turnNumber > 1);
 
   const handleCounterChange = (
     playerId: string,
@@ -225,7 +225,7 @@ export const SharedDeviceMode: React.FC = () => {
                 setSelectingManually(false);
               }}
               onOpenSettings={() => navigate('/settings')}
-              hasHistory={history.length > 0}
+              hasHistory={hasUndoAvailable}
             />
           </div>
         </div>

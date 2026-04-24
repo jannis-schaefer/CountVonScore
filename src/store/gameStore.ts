@@ -45,11 +45,16 @@ export interface TurnDeltaEntry {
 }
 
 export interface TurnRecord {
-  turnNumber: number;
-  playerIndex: number;
   startPlayers: Player[];
   endPlayers: Player[];
-  delta: TurnDeltaEntry[];
+  latestKeyTurnNumber: number;
+}
+
+export interface TurnActionEntry {
+  playerId: string;
+  counterId: string;
+  previousValue: number;
+  nextValue: number;
 }
 
 export interface GameHistoryEntry {
@@ -63,6 +68,7 @@ export interface GameHistoryEntry {
 export interface GameState {
   players: Player[];
   turnStartPlayers: Player[];
+  currentTurnActions: TurnActionEntry[];
   turnRecords: TurnRecord[];
   viewedTurnNumber: number | null;
   viewedPlayers: Player[] | null;
@@ -116,6 +122,7 @@ interface GameStore extends GameState {
 }
 
 const MAX_HISTORY = 50;
+const KEY_TURN_INTERVAL = 8;
 
 const createDefaultCounterDefinitions = (): CounterDefinition[] => [
   {
@@ -164,19 +171,11 @@ const clonePlayers = (players: Player[]): Player[] => {
   }));
 };
 
-const cloneTurnDelta = (delta: TurnDeltaEntry[]): TurnDeltaEntry[] => {
-  return delta.map((entry) => ({
-    playerId: entry.playerId,
-    counters: { ...entry.counters },
-  }));
-};
-
 const cloneTurnRecords = (records: TurnRecord[]): TurnRecord[] => {
   return records.map((record) => ({
     ...record,
     startPlayers: clonePlayers(record.startPlayers),
     endPlayers: clonePlayers(record.endPlayers),
-    delta: cloneTurnDelta(record.delta),
   }));
 };
 
@@ -243,6 +242,10 @@ const computeCurrentPlayerIndex = (
 ): number => {
   if (playerCount === 0) return 0;
   return (startingPlayerIndex + (turnNumber - 1)) % playerCount;
+};
+
+const getLatestKeyTurnNumber = (turnNumber: number): number => {
+  return turnNumber - ((turnNumber - 1) % KEY_TURN_INTERVAL);
 };
 
 const buildTurnDelta = (startPlayers: Player[], endPlayers: Player[]): TurnDeltaEntry[] => {
@@ -346,7 +349,10 @@ const getDisplayedPlayers = (state: GameState): Player[] => {
 };
 
 const getTurnRecord = (turnRecords: TurnRecord[], turnNumber: number): TurnRecord | undefined => {
-  return turnRecords.find((record) => record.turnNumber === turnNumber);
+  if (turnNumber < 1) {
+    return undefined;
+  }
+  return turnRecords[turnNumber - 1];
 };
 
 const clearHistoricalViewState = () => ({
@@ -373,15 +379,13 @@ const normalizeTurnRecords = (records: unknown): TurnRecord[] => {
     return [];
   }
 
-  return records.flatMap((record) => {
+  return records.flatMap((record, index) => {
     if (!record || typeof record !== 'object') {
       return [];
     }
 
     const candidate = record as Partial<TurnRecord>;
     if (
-      typeof candidate.turnNumber !== 'number' ||
-      typeof candidate.playerIndex !== 'number' ||
       !Array.isArray(candidate.startPlayers) ||
       !Array.isArray(candidate.endPlayers)
     ) {
@@ -392,15 +396,47 @@ const normalizeTurnRecords = (records: unknown): TurnRecord[] => {
     const normalizedEnd = clonePlayers(candidate.endPlayers as Player[]);
 
     return [{
-      turnNumber: candidate.turnNumber,
-      playerIndex: candidate.playerIndex,
       startPlayers: normalizedStart,
       endPlayers: normalizedEnd,
-      delta: Array.isArray(candidate.delta)
-        ? cloneTurnDelta(candidate.delta as TurnDeltaEntry[])
-        : buildTurnDelta(normalizedStart, normalizedEnd),
+      latestKeyTurnNumber:
+        typeof candidate.latestKeyTurnNumber === 'number' && candidate.latestKeyTurnNumber > 0
+          ? candidate.latestKeyTurnNumber
+          : getLatestKeyTurnNumber(index + 1),
     }];
   });
+};
+
+const buildReopenUndoEntries = (
+  startPlayers: Player[],
+  endPlayers: Player[],
+  turnNumber: number
+): GameHistoryEntry[] => {
+  const entries: GameHistoryEntry[] = [];
+
+  for (let playerIndex = 0; playerIndex < endPlayers.length; playerIndex += 1) {
+    const endPlayer = endPlayers[playerIndex];
+    const startPlayer = startPlayers.find((player) => player.id === endPlayer.id);
+    if (!startPlayer) {
+      continue;
+    }
+
+    const counterIds = new Set([...Object.keys(endPlayer.counters), ...Object.keys(startPlayer.counters)]);
+    const hasDifference = Array.from(counterIds).some(
+      (counterId) => (endPlayer.counters[counterId] ?? 0) !== (startPlayer.counters[counterId] ?? 0)
+    );
+
+    if (hasDifference) {
+      entries.push({
+        playerIndex,
+        action: 'reopen-turn',
+        previousState: { ...startPlayer.counters },
+        scope: 'historical',
+        turnNumber,
+      });
+    }
+  }
+
+  return entries;
 };
 
 const remapPlayerCountersToDefinitions = (
@@ -511,6 +547,7 @@ const initialPlayers = createInitialPlayers();
 const initialGameState: GameState = {
   players: initialPlayers,
   turnStartPlayers: clonePlayers(initialPlayers),
+  currentTurnActions: [],
   turnRecords: [],
   viewedTurnNumber: null,
   viewedPlayers: null,
@@ -542,6 +579,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players,
         turnStartPlayers: clonePlayers(players),
+        currentTurnActions: [],
         turnRecords: [],
         defaultPlayerCount: players.length,
         ...clearHistoricalViewState(),
@@ -557,6 +595,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players: adjusted,
         turnStartPlayers: clonePlayers(adjusted),
+        currentTurnActions: [],
         turnRecords: [],
         startingPlayerIndex: newStarting,
         currentPlayerIndex: computeCurrentPlayerIndex(newStarting, state.turnNumber, adjusted.length),
@@ -604,6 +643,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       return {
         players,
+        currentTurnActions: [
+          ...state.currentTurnActions,
+          {
+            playerId,
+            counterId,
+            previousValue: previous[counterId] ?? 0,
+            nextValue: player.counters[counterId],
+          },
+        ],
         history: appendHistoryEntry(state.history, entry),
       };
     });
@@ -648,6 +696,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       return {
         players,
+        currentTurnActions: [
+          ...state.currentTurnActions,
+          {
+            playerId,
+            counterId,
+            previousValue: previous[counterId] ?? 0,
+            nextValue: value,
+          },
+        ],
         history: appendHistoryEntry(state.history, entry),
       };
     });
@@ -688,11 +745,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const finalizedPlayers = clonePlayers(state.players);
       const newTurnRecord: TurnRecord = {
-        turnNumber: state.turnNumber,
-        playerIndex: state.currentPlayerIndex,
         startPlayers: clonePlayers(state.turnStartPlayers),
         endPlayers: finalizedPlayers,
-        delta: buildTurnDelta(state.turnStartPlayers, finalizedPlayers),
+        latestKeyTurnNumber: getLatestKeyTurnNumber(state.turnNumber),
       };
 
       const nextPlayers = transitionToNextTurnStart(
@@ -705,6 +760,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players: nextPlayers,
         turnStartPlayers: clonePlayers(nextPlayers),
+        currentTurnActions: [],
         turnRecords: [...state.turnRecords, newTurnRecord],
         turnNumber: nextTurnNumber,
         currentPlayerIndex: computeCurrentPlayerIndex(
@@ -731,7 +787,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }
 
         return {
-          viewedTurnNumber: previousRecord.turnNumber,
+          viewedTurnNumber: state.viewedTurnNumber - 1,
           viewedPlayers: clonePlayers(previousRecord.endPlayers),
           history: [],
         };
@@ -748,7 +804,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       return {
-        viewedTurnNumber: previousRecord.turnNumber,
+        viewedTurnNumber: latestFinishedTurnNumber,
         viewedPlayers: clonePlayers(previousRecord.endPlayers),
         history: [],
       };
@@ -772,38 +828,52 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return state;
       }
 
-      const editedIndex = state.turnRecords.findIndex((record) => record.turnNumber === state.viewedTurnNumber);
-      if (editedIndex === -1) {
+      const editedTurnNumber = state.viewedTurnNumber;
+      const editedIndexFromTurn = editedTurnNumber - 1;
+      if (editedIndexFromTurn < 0 || editedIndexFromTurn >= state.turnRecords.length) {
         return state;
       }
 
       const updatedRecords = cloneTurnRecords(state.turnRecords);
-      updatedRecords[editedIndex] = {
-        ...updatedRecords[editedIndex],
+      updatedRecords[editedIndexFromTurn] = {
+        ...updatedRecords[editedIndexFromTurn],
         endPlayers: clonePlayers(state.viewedPlayers),
-        delta: buildTurnDelta(updatedRecords[editedIndex].startPlayers, state.viewedPlayers),
+        latestKeyTurnNumber: getLatestKeyTurnNumber(editedTurnNumber),
       };
 
-      for (let index = editedIndex + 1; index < updatedRecords.length; index += 1) {
+      for (let index = editedIndexFromTurn + 1; index < updatedRecords.length; index += 1) {
         const previousRecord = updatedRecords[index - 1];
         const originalRecord = updatedRecords[index];
+        const previousTurnNumber = index;
+        const previousTurnPlayerIndex = computeCurrentPlayerIndex(
+          state.startingPlayerIndex,
+          previousTurnNumber,
+          previousRecord.endPlayers.length
+        );
         const nextStartPlayers = transitionToNextTurnStart(
           previousRecord.endPlayers,
-          previousRecord.playerIndex,
+          previousTurnPlayerIndex,
           state.counterDefinitions
         );
+
+        const originalDelta = buildTurnDelta(originalRecord.startPlayers, originalRecord.endPlayers);
 
         updatedRecords[index] = {
           ...originalRecord,
           startPlayers: nextStartPlayers,
-          endPlayers: applyTurnDelta(nextStartPlayers, originalRecord.delta),
+          endPlayers: applyTurnDelta(nextStartPlayers, originalDelta),
+          latestKeyTurnNumber: getLatestKeyTurnNumber(index + 1),
         };
       }
 
       const recalculatedCurrentTurnStart = updatedRecords.length > 0
         ? transitionToNextTurnStart(
             updatedRecords[updatedRecords.length - 1].endPlayers,
-            updatedRecords[updatedRecords.length - 1].playerIndex,
+            computeCurrentPlayerIndex(
+              state.startingPlayerIndex,
+              updatedRecords.length,
+              updatedRecords[updatedRecords.length - 1].endPlayers.length
+            ),
             state.counterDefinitions
           )
         : clonePlayers(state.turnStartPlayers);
@@ -827,8 +897,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return state;
       }
 
-      const editedIndex = state.turnRecords.findIndex((record) => record.turnNumber === state.viewedTurnNumber);
-      if (editedIndex === -1) {
+      const editedTurnNumber = state.viewedTurnNumber;
+      const editedIndex = editedTurnNumber - 1;
+      if (editedIndex < 0 || editedIndex >= state.turnRecords.length) {
         return state;
       }
 
@@ -837,12 +908,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
       updatedRecords[editedIndex] = {
         ...editedRecord,
         endPlayers: clonePlayers(state.viewedPlayers),
-        delta: buildTurnDelta(editedRecord.startPlayers, state.viewedPlayers),
+        latestKeyTurnNumber: getLatestKeyTurnNumber(editedTurnNumber),
       };
+
+      const editedPlayerIndex = computeCurrentPlayerIndex(
+        state.startingPlayerIndex,
+        editedTurnNumber,
+        updatedRecords[editedIndex].endPlayers.length
+      );
 
       const nextPlayers = transitionToNextTurnStart(
         updatedRecords[editedIndex].endPlayers,
-        updatedRecords[editedIndex].playerIndex,
+        editedPlayerIndex,
         state.counterDefinitions
       );
       const nextTurnNumber = state.viewedTurnNumber + 1;
@@ -850,6 +927,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players: nextPlayers,
         turnStartPlayers: clonePlayers(nextPlayers),
+        currentTurnActions: [],
         turnRecords: updatedRecords,
         turnNumber: nextTurnNumber,
         currentPlayerIndex: computeCurrentPlayerIndex(
@@ -874,6 +952,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         players,
         turnStartPlayers: clonePlayers(players),
+        currentTurnActions: [],
         turnRecords: [],
         startingPlayerIndex: 0,
         turnNumber: 1,
@@ -887,6 +966,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
   undo: () => {
     set((state) => {
       if (state.history.length === 0) {
+        if (state.viewedTurnNumber === null && state.turnNumber > 1) {
+          const reopenTurnNumber = state.turnNumber - 1;
+          const reopenRecord = getTurnRecord(state.turnRecords, reopenTurnNumber);
+          if (!reopenRecord) {
+            return state;
+          }
+
+          return {
+            viewedTurnNumber: reopenTurnNumber,
+            viewedPlayers: clonePlayers(reopenRecord.endPlayers),
+            isHistoricalTurnDirty: false,
+            currentTurnActions: [],
+            history: buildReopenUndoEntries(reopenRecord.startPlayers, reopenRecord.endPlayers, reopenTurnNumber),
+          };
+        }
+
         return state;
       }
 
@@ -933,6 +1028,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       player.counters = { ...lastEntry.previousState };
       return {
         players,
+        currentTurnActions: state.currentTurnActions.slice(0, -1),
         history: state.history.slice(0, -1),
       };
     });
@@ -984,6 +1080,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             ? !playersEqual(viewedPlayers, viewedRecord.endPlayers)
             : false,
         history: [],
+        currentTurnActions: [],
       };
     });
     get().saveGame();
@@ -1042,6 +1139,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             ? !playersEqual(viewedPlayers, viewedRecord.endPlayers)
             : false,
         history: [],
+        currentTurnActions: [],
       };
     });
     get().saveGame();
@@ -1055,6 +1153,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         gameMode: mode,
         players,
         turnStartPlayers: clonePlayers(players),
+        currentTurnActions: [],
         turnRecords: [],
         defaultPlayerCount: Math.max(1, playerCount),
         startingPlayerIndex: 0,
@@ -1106,6 +1205,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           ...savedGame,
           players,
           turnStartPlayers,
+          currentTurnActions: [],
           turnRecords,
           viewedTurnNumber: null,
           viewedPlayers: null,
