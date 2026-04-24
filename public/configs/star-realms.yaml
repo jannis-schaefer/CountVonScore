@@ -25,3 +25,8 @@ counters:
 players:
   defaultPlayerCount: 2
   overrides: []
+
+elimination:
+  enabled: false
+  counterId: authority
+  threshold: 0

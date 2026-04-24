@@ -97,6 +97,17 @@ export const parseGameConfig = (raw: string, fileName?: string): GameConfig => {
       ? undefined
       : Math.max(1, Math.floor(Number(normalizedDefaultPlayerCount)) || 1);
 
+  const elimination = config.elimination
+    ? {
+        enabled: parseBooleanLike(config.elimination.enabled ?? false, 'enabled', 'elimination'),
+        counterId:
+          typeof config.elimination.counterId === 'string' ? config.elimination.counterId : undefined,
+        threshold: Number.isFinite(Number(config.elimination.threshold ?? 0))
+          ? Number(config.elimination.threshold ?? 0)
+          : 0,
+      }
+    : undefined;
+
   return {
     ...config,
     counters: normalizedCounters,
@@ -106,6 +117,7 @@ export const parseGameConfig = (raw: string, fileName?: string): GameConfig => {
           overrides: config.players.overrides ?? [],
         }
       : undefined,
+    elimination,
   };
 };
 

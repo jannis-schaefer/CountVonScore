@@ -31,6 +31,11 @@ export interface GameConfig {
     defaultPlayerCount?: number;
     overrides?: PlayerOverride[];
   };
+  elimination?: {
+    enabled?: boolean;
+    counterId?: string;
+    threshold?: number;
+  };
 }
 
 export interface Player {
@@ -45,6 +50,7 @@ export interface TurnDeltaEntry {
 }
 
 export interface TurnRecord {
+  actingPlayerId: string;
   startPlayers: Player[];
   endPlayers: Player[];
   latestKeyTurnNumber: number;
@@ -82,6 +88,9 @@ export interface GameState {
   counterDefinitions: CounterDefinition[];
   defaultPlayerCount: number;
   playerOverrides: PlayerOverride[];
+  eliminationEnabled: boolean;
+  eliminationCounterId: string;
+  eliminationThreshold: number;
   currentGameConfigName: string;
   theme: 'generic' | 'starRealms';
 }
@@ -113,6 +122,11 @@ interface GameStore extends GameState {
   ) => void;
   setDefaultPlayerCount: (count: number) => void;
   setPlayerOverrides: (overrides: PlayerOverride[]) => void;
+  setEliminationConfig: (config: {
+    enabled: boolean;
+    counterId: string;
+    threshold: number;
+  }) => void;
   setCurrentGameConfigName: (name: string) => void;
   applyGameConfig: (config: GameConfig) => void;
   startNewGame: (options: { mode: 'shared' | 'multiplayer'; playerCount: number }) => void;
@@ -242,6 +256,78 @@ const computeCurrentPlayerIndex = (
 ): number => {
   if (playerCount === 0) return 0;
   return (startingPlayerIndex + (turnNumber - 1)) % playerCount;
+};
+
+const resolveEliminationCounterId = (
+  counterDefinitions: CounterDefinition[],
+  candidate?: string
+): string => {
+  if (candidate && counterDefinitions.some((counter) => counter.id === candidate)) {
+    return candidate;
+  }
+  return counterDefinitions[0]?.id ?? 'counter-1';
+};
+
+const isPlayerEliminated = (
+  player: Player,
+  config: { enabled: boolean; counterId: string; threshold: number }
+): boolean => {
+  if (!config.enabled) {
+    return false;
+  }
+
+  const monitoredValue = player.counters[config.counterId] ?? 0;
+  return monitoredValue < config.threshold;
+};
+
+const getNextActivePlayerIndex = (
+  players: Player[],
+  fromIndex: number,
+  config: { enabled: boolean; counterId: string; threshold: number }
+): number => {
+  if (players.length === 0) {
+    return 0;
+  }
+
+  if (!config.enabled) {
+    return (fromIndex + 1 + players.length) % players.length;
+  }
+
+  const aliveIndexes = players
+    .map((player, index) => ({ player, index }))
+    .filter(({ player }) => !isPlayerEliminated(player, config))
+    .map(({ index }) => index);
+
+  if (aliveIndexes.length === 0) {
+    return Math.max(0, Math.min(fromIndex, players.length - 1));
+  }
+
+  const start = (fromIndex + 1 + players.length) % players.length;
+  for (let offset = 0; offset < players.length; offset += 1) {
+    const candidate = (start + offset) % players.length;
+    if (aliveIndexes.includes(candidate)) {
+      return candidate;
+    }
+  }
+
+  return aliveIndexes[0];
+};
+
+const ensureCurrentPlayerIndex = (
+  players: Player[],
+  currentIndex: number,
+  config: { enabled: boolean; counterId: string; threshold: number }
+): number => {
+  if (players.length === 0) {
+    return 0;
+  }
+
+  const boundedIndex = Math.max(0, Math.min(currentIndex, players.length - 1));
+  if (!config.enabled || !isPlayerEliminated(players[boundedIndex], config)) {
+    return boundedIndex;
+  }
+
+  return getNextActivePlayerIndex(players, boundedIndex - 1, config);
 };
 
 const getLatestKeyTurnNumber = (turnNumber: number): number => {
@@ -396,6 +482,10 @@ const normalizeTurnRecords = (records: unknown): TurnRecord[] => {
     const normalizedEnd = clonePlayers(candidate.endPlayers as Player[]);
 
     return [{
+      actingPlayerId:
+        typeof candidate.actingPlayerId === 'string'
+          ? candidate.actingPlayerId
+          : normalizedStart[0]?.id ?? normalizedEnd[0]?.id ?? '',
       startPlayers: normalizedStart,
       endPlayers: normalizedEnd,
       latestKeyTurnNumber:
@@ -471,7 +561,8 @@ const remapTurnRecordsToDefinitions = (
       ...record,
       startPlayers,
       endPlayers,
-      delta: buildTurnDelta(startPlayers, endPlayers),
+      actingPlayerId:
+        startPlayers.find((player) => player.id === record.actingPlayerId)?.id ?? startPlayers[0]?.id ?? '',
     };
   });
 };
@@ -536,7 +627,7 @@ const applyInitialValueDeltasToTurnRecords = (
       ...record,
       startPlayers,
       endPlayers,
-      delta: buildTurnDelta(startPlayers, endPlayers),
+      actingPlayerId: record.actingPlayerId,
     };
   });
 };
@@ -561,6 +652,9 @@ const initialGameState: GameState = {
   counterDefinitions: initialCounterDefinitions,
   defaultPlayerCount: 2,
   playerOverrides: [],
+  eliminationEnabled: false,
+  eliminationCounterId: initialCounterDefinitions[0].id,
+  eliminationThreshold: 0,
   currentGameConfigName: 'Generic',
   theme: 'starRealms',
 };
@@ -581,6 +675,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         turnStartPlayers: clonePlayers(players),
         currentTurnActions: [],
         turnRecords: [],
+        currentPlayerIndex: ensureCurrentPlayerIndex(players, state.currentPlayerIndex, {
+          enabled: state.eliminationEnabled,
+          counterId: state.eliminationCounterId,
+          threshold: state.eliminationThreshold,
+        }),
         defaultPlayerCount: players.length,
         ...clearHistoricalViewState(),
       };
@@ -598,7 +697,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         currentTurnActions: [],
         turnRecords: [],
         startingPlayerIndex: newStarting,
-        currentPlayerIndex: computeCurrentPlayerIndex(newStarting, state.turnNumber, adjusted.length),
+        currentPlayerIndex: ensureCurrentPlayerIndex(adjusted, state.currentPlayerIndex, {
+          enabled: state.eliminationEnabled,
+          counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+          threshold: state.eliminationThreshold,
+        }),
         defaultPlayerCount: adjusted.length,
         ...clearHistoricalViewState(),
       };
@@ -745,6 +848,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const finalizedPlayers = clonePlayers(state.players);
       const newTurnRecord: TurnRecord = {
+        actingPlayerId: currentPlayer.id,
         startPlayers: clonePlayers(state.turnStartPlayers),
         endPlayers: finalizedPlayers,
         latestKeyTurnNumber: getLatestKeyTurnNumber(state.turnNumber),
@@ -756,6 +860,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         state.counterDefinitions
       );
       const nextTurnNumber = state.turnNumber + 1;
+      const nextPlayerIndex = getNextActivePlayerIndex(nextPlayers, state.currentPlayerIndex, {
+        enabled: state.eliminationEnabled,
+        counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+        threshold: state.eliminationThreshold,
+      });
 
       return {
         players: nextPlayers,
@@ -763,11 +872,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         currentTurnActions: [],
         turnRecords: [...state.turnRecords, newTurnRecord],
         turnNumber: nextTurnNumber,
-        currentPlayerIndex: computeCurrentPlayerIndex(
-          state.startingPlayerIndex,
-          nextTurnNumber,
-          nextPlayers.length
-        ),
+        currentPlayerIndex: nextPlayerIndex,
         history: [],
       };
     });
@@ -814,9 +919,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setStartingPlayer: (index: number) => {
     set((state) => {
       const newStarting = Math.max(0, Math.min(index, state.players.length - 1));
+      const eliminationConfig = {
+        enabled: state.eliminationEnabled,
+        counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+        threshold: state.eliminationThreshold,
+      };
       return {
         startingPlayerIndex: newStarting,
-        currentPlayerIndex: computeCurrentPlayerIndex(newStarting, state.turnNumber, state.players.length),
+        currentPlayerIndex: ensureCurrentPlayerIndex(state.players, newStarting, eliminationConfig),
       };
     });
     get().saveGame();
@@ -838,17 +948,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
       updatedRecords[editedIndexFromTurn] = {
         ...updatedRecords[editedIndexFromTurn],
         endPlayers: clonePlayers(state.viewedPlayers),
+        actingPlayerId:
+          updatedRecords[editedIndexFromTurn].actingPlayerId ||
+          updatedRecords[editedIndexFromTurn].startPlayers[state.currentPlayerIndex]?.id ||
+          updatedRecords[editedIndexFromTurn].startPlayers[0]?.id ||
+          '',
         latestKeyTurnNumber: getLatestKeyTurnNumber(editedTurnNumber),
       };
 
       for (let index = editedIndexFromTurn + 1; index < updatedRecords.length; index += 1) {
         const previousRecord = updatedRecords[index - 1];
         const originalRecord = updatedRecords[index];
-        const previousTurnNumber = index;
-        const previousTurnPlayerIndex = computeCurrentPlayerIndex(
-          state.startingPlayerIndex,
-          previousTurnNumber,
-          previousRecord.endPlayers.length
+        const previousTurnPlayerIndex = Math.max(
+          0,
+          previousRecord.endPlayers.findIndex((player) => player.id === previousRecord.actingPlayerId)
         );
         const nextStartPlayers = transitionToNextTurnStart(
           previousRecord.endPlayers,
@@ -860,6 +973,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
         updatedRecords[index] = {
           ...originalRecord,
+          actingPlayerId:
+            nextStartPlayers[
+              getNextActivePlayerIndex(nextStartPlayers, previousTurnPlayerIndex, {
+                enabled: state.eliminationEnabled,
+                counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+                threshold: state.eliminationThreshold,
+              })
+            ]?.id ?? nextStartPlayers[0]?.id ?? '',
           startPlayers: nextStartPlayers,
           endPlayers: applyTurnDelta(nextStartPlayers, originalDelta),
           latestKeyTurnNumber: getLatestKeyTurnNumber(index + 1),
@@ -869,10 +990,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const recalculatedCurrentTurnStart = updatedRecords.length > 0
         ? transitionToNextTurnStart(
             updatedRecords[updatedRecords.length - 1].endPlayers,
-            computeCurrentPlayerIndex(
-              state.startingPlayerIndex,
-              updatedRecords.length,
-              updatedRecords[updatedRecords.length - 1].endPlayers.length
+            Math.max(
+              0,
+              updatedRecords[updatedRecords.length - 1].endPlayers.findIndex(
+                (player) => player.id === updatedRecords[updatedRecords.length - 1].actingPlayerId
+              )
             ),
             state.counterDefinitions
           )
@@ -908,13 +1030,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
       updatedRecords[editedIndex] = {
         ...editedRecord,
         endPlayers: clonePlayers(state.viewedPlayers),
+        actingPlayerId:
+          editedRecord.actingPlayerId || editedRecord.startPlayers[0]?.id || '',
         latestKeyTurnNumber: getLatestKeyTurnNumber(editedTurnNumber),
       };
 
-      const editedPlayerIndex = computeCurrentPlayerIndex(
-        state.startingPlayerIndex,
-        editedTurnNumber,
-        updatedRecords[editedIndex].endPlayers.length
+      const editedPlayerIndex = Math.max(
+        0,
+        updatedRecords[editedIndex].endPlayers.findIndex(
+          (player) => player.id === updatedRecords[editedIndex].actingPlayerId
+        )
       );
 
       const nextPlayers = transitionToNextTurnStart(
@@ -923,6 +1048,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         state.counterDefinitions
       );
       const nextTurnNumber = state.viewedTurnNumber + 1;
+      const nextPlayerIndex = getNextActivePlayerIndex(nextPlayers, editedPlayerIndex, {
+        enabled: state.eliminationEnabled,
+        counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+        threshold: state.eliminationThreshold,
+      });
 
       return {
         players: nextPlayers,
@@ -930,11 +1060,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         currentTurnActions: [],
         turnRecords: updatedRecords,
         turnNumber: nextTurnNumber,
-        currentPlayerIndex: computeCurrentPlayerIndex(
-          state.startingPlayerIndex,
-          nextTurnNumber,
-          nextPlayers.length
-        ),
+        currentPlayerIndex: nextPlayerIndex,
         ...clearHistoricalViewState(),
       };
     });
@@ -956,7 +1082,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         turnRecords: [],
         startingPlayerIndex: 0,
         turnNumber: 1,
-        currentPlayerIndex: 0,
+        currentPlayerIndex: ensureCurrentPlayerIndex(players, 0, {
+          enabled: state.eliminationEnabled,
+          counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+          threshold: state.eliminationThreshold,
+        }),
         ...clearHistoricalViewState(),
       };
     });
@@ -1075,10 +1205,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
         turnStartPlayers,
         turnRecords,
         viewedPlayers,
+        eliminationCounterId: resolveEliminationCounterId(definitions, state.eliminationCounterId),
         isHistoricalTurnDirty:
           state.viewedTurnNumber !== null && viewedPlayers && viewedRecord
             ? !playersEqual(viewedPlayers, viewedRecord.endPlayers)
             : false,
+        currentPlayerIndex: ensureCurrentPlayerIndex(players, state.currentPlayerIndex, {
+          enabled: state.eliminationEnabled,
+          counterId: resolveEliminationCounterId(definitions, state.eliminationCounterId),
+          threshold: state.eliminationThreshold,
+        }),
         history: [],
         currentTurnActions: [],
       };
@@ -1093,6 +1229,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setPlayerOverrides: (overrides: PlayerOverride[]) => {
     set({ playerOverrides: overrides });
+    get().saveGame();
+  },
+
+  setEliminationConfig: (config) => {
+    set((state) => {
+      const eliminationCounterId = resolveEliminationCounterId(state.counterDefinitions, config.counterId);
+      return {
+        eliminationEnabled: config.enabled,
+        eliminationCounterId,
+        eliminationThreshold: config.threshold,
+        currentPlayerIndex: ensureCurrentPlayerIndex(state.players, state.currentPlayerIndex, {
+          enabled: config.enabled,
+          counterId: eliminationCounterId,
+          threshold: config.threshold,
+        }),
+      };
+    });
     get().saveGame();
   },
 
@@ -1113,6 +1266,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       );
 
       const playerOverrides = config.players?.overrides ?? state.playerOverrides;
+      const eliminationEnabled = config.elimination?.enabled ?? state.eliminationEnabled;
+      const eliminationCounterId = resolveEliminationCounterId(
+        nextDefinitions,
+        config.elimination?.counterId ?? state.eliminationCounterId
+      );
+      const eliminationThreshold = config.elimination?.threshold ?? state.eliminationThreshold;
       const players = remapPlayersToDefinitions(state.players, nextDefinitions);
       const turnStartPlayers = remapPlayersToDefinitions(state.turnStartPlayers, nextDefinitions);
       const turnRecords = remapTurnRecordsToDefinitions(state.turnRecords, nextDefinitions);
@@ -1128,11 +1287,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
         counterDefinitions: nextDefinitions,
         defaultPlayerCount,
         playerOverrides,
+        eliminationEnabled,
+        eliminationCounterId,
+        eliminationThreshold,
         players,
         turnStartPlayers,
         turnRecords,
         viewedPlayers,
-        currentPlayerIndex: Math.min(state.currentPlayerIndex, players.length - 1),
+        currentPlayerIndex: ensureCurrentPlayerIndex(players, state.currentPlayerIndex, {
+          enabled: eliminationEnabled,
+          counterId: eliminationCounterId,
+          threshold: eliminationThreshold,
+        }),
         currentGameConfigName: config.name ?? state.currentGameConfigName,
         isHistoricalTurnDirty:
           state.viewedTurnNumber !== null && viewedPlayers && viewedRecord
@@ -1158,7 +1324,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         defaultPlayerCount: Math.max(1, playerCount),
         startingPlayerIndex: 0,
         turnNumber: 1,
-        currentPlayerIndex: 0,
+        currentPlayerIndex: ensureCurrentPlayerIndex(players, 0, {
+          enabled: state.eliminationEnabled,
+          counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+          threshold: state.eliminationThreshold,
+        }),
         hasSavedGame: true,
         ...clearHistoricalViewState(),
       };
@@ -1200,6 +1370,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
             ? clonePlayers(savedGame.turnStartPlayers as Player[])
             : clonePlayers(players);
 
+        const eliminationEnabled = savedGame.eliminationEnabled === true;
+        const eliminationCounterId = resolveEliminationCounterId(
+          mergedDefinitions,
+          typeof savedGame.eliminationCounterId === 'string' ? savedGame.eliminationCounterId : undefined
+        );
+        const eliminationThreshold =
+          typeof savedGame.eliminationThreshold === 'number' ? savedGame.eliminationThreshold : 0;
+        const currentPlayerIndex =
+          typeof savedGame.currentPlayerIndex === 'number'
+            ? savedGame.currentPlayerIndex
+            : computeCurrentPlayerIndex(startingPlayerIndex, turnNumber, players.length);
+
         const mergedState: GameState = {
           ...initialGameState,
           ...savedGame,
@@ -1212,7 +1394,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
           isHistoricalTurnDirty: false,
           startingPlayerIndex,
           turnNumber,
-          currentPlayerIndex: computeCurrentPlayerIndex(startingPlayerIndex, turnNumber, players.length),
+          currentPlayerIndex: ensureCurrentPlayerIndex(players, currentPlayerIndex, {
+            enabled: eliminationEnabled,
+            counterId: eliminationCounterId,
+            threshold: eliminationThreshold,
+          }),
           history: [],
           hasSavedGame: true,
           counterDefinitions: mergedDefinitions,
@@ -1222,6 +1408,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
               : initialGameState.defaultPlayerCount,
           playerOverrides:
             (savedGame.playerOverrides as PlayerOverride[] | undefined) ?? initialGameState.playerOverrides,
+          eliminationEnabled,
+          eliminationCounterId,
+          eliminationThreshold,
           currentGameConfigName:
             savedGame.currentGameConfigName ?? initialGameState.currentGameConfigName,
           theme: savedGame.theme === 'generic' ? 'generic' : 'starRealms',
@@ -1252,6 +1441,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         counterDefinitions: state.counterDefinitions,
         defaultPlayerCount: state.defaultPlayerCount,
         playerOverrides: state.playerOverrides,
+        eliminationEnabled: state.eliminationEnabled,
+        eliminationCounterId: state.eliminationCounterId,
+        eliminationThreshold: state.eliminationThreshold,
         currentGameConfigName: state.currentGameConfigName,
         theme: state.theme,
       };

@@ -20,11 +20,15 @@ export const Settings: React.FC = () => {
     counterDefinitions,
     defaultPlayerCount,
     playerOverrides,
+    eliminationEnabled,
+    eliminationCounterId,
+    eliminationThreshold,
     currentGameConfigName,
     applyGameConfig,
     setCounterDefinitions,
     setDefaultPlayerCount,
     setPlayerOverrides,
+    setEliminationConfig,
     setCurrentGameConfigName,
     addPlayer,
     removePlayer,
@@ -177,6 +181,11 @@ export const Settings: React.FC = () => {
       players: {
         defaultPlayerCount,
         overrides: playerOverrides,
+      },
+      elimination: {
+        enabled: eliminationEnabled,
+        counterId: eliminationCounterId,
+        threshold: eliminationThreshold,
       },
     };
 
@@ -385,6 +394,67 @@ export const Settings: React.FC = () => {
               <button className="btn btn-secondary" onClick={handleSaveOverrides}>
                 Save Overrides
               </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Elimination / Win Condition</h2>
+          <p style={{ opacity: 0.75, marginBottom: '12px' }}>
+            When enabled, players with monitored counter value below threshold are skipped in turn order.
+          </p>
+          <div className="settings-grid">
+            <div className="toggle-row">
+              <label htmlFor="elimination-enabled">Enable Elimination</label>
+              <input
+                id="elimination-enabled"
+                type="checkbox"
+                checked={eliminationEnabled}
+                onChange={(event) =>
+                  setEliminationConfig({
+                    enabled: event.target.checked,
+                    counterId: eliminationCounterId,
+                    threshold: eliminationThreshold,
+                  })
+                }
+              />
+            </div>
+
+            <div className="settings-row">
+              <label>Monitored Counter</label>
+              <select
+                className="input"
+                value={eliminationCounterId}
+                onChange={(event) =>
+                  setEliminationConfig({
+                    enabled: eliminationEnabled,
+                    counterId: event.target.value,
+                    threshold: eliminationThreshold,
+                  })
+                }
+              >
+                {counterDefinitions.map((counter) => (
+                  <option key={counter.id} value={counter.id}>
+                    {counter.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="settings-row">
+              <label>Minimum Value (alive if &gt;= threshold)</label>
+              <input
+                type="number"
+                className="input"
+                value={eliminationThreshold}
+                onChange={(event) =>
+                  setEliminationConfig({
+                    enabled: eliminationEnabled,
+                    counterId: eliminationCounterId,
+                    threshold: Number(event.target.value || 0),
+                  })
+                }
+              />
             </div>
           </div>
         </div>

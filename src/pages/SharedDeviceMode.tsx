@@ -12,7 +12,7 @@ export const SharedDeviceMode: React.FC = () => {
     viewedPlayers,
     viewedTurnNumber,
     isHistoricalTurnDirty,
-    startingPlayerIndex,
+    turnRecords,
     currentPlayerIndex,
     turnNumber,
     history,
@@ -51,8 +51,9 @@ export const SharedDeviceMode: React.FC = () => {
 
   const displayedPlayers = viewedPlayers ?? players;
   const isViewingHistoricalTurn = viewedTurnNumber !== null;
+  const viewedTurnRecord = viewedTurnNumber !== null ? turnRecords[viewedTurnNumber - 1] : undefined;
   const displayedPlayerIndex = viewedTurnNumber !== null && displayedPlayers.length > 0
-    ? (startingPlayerIndex + (viewedTurnNumber - 1)) % displayedPlayers.length
+    ? Math.max(0, displayedPlayers.findIndex((player) => player.id === viewedTurnRecord?.actingPlayerId))
     : currentPlayerIndex;
   const currentPlayer = displayedPlayers[displayedPlayerIndex];
   const canNavigatePrevious = isViewingHistoricalTurn ? viewedTurnNumber! > 1 && !isHistoricalTurnDirty : turnNumber > 1;
