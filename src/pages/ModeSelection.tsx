@@ -170,7 +170,10 @@ export const ModeSelection: React.FC = () => {
 
         <div className="panel">
           <div className="controls-row" style={{ justifyContent: 'space-between' }}>
-            <button className="btn btn-secondary" onClick={() => navigate('/settings')}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => navigate('/settings', { state: { context: 'new-game-setup' } })}
+            >
               Edit Game Settings
             </button>
             <div className="controls-row" style={{ justifyContent: 'flex-end' }}>

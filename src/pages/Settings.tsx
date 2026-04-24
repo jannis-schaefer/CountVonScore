@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
 import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigYaml } from '../utils/gameConfig';
@@ -15,6 +15,7 @@ const createNewCounter = (index: number): CounterDefinition => ({
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     players,
     counterDefinitions,
@@ -173,7 +174,10 @@ export const Settings: React.FC = () => {
     }
 
     const countersChanged = JSON.stringify(editableCounters) !== JSON.stringify(counterDefinitions);
-    const recalculateFromInitialValues = countersChanged
+    const isNewGameSetup =
+      typeof (location.state as { context?: unknown } | null)?.context === 'string' &&
+      (location.state as { context?: string }).context === 'new-game-setup';
+    const recalculateFromInitialValues = countersChanged && !isNewGameSetup
       ? window.confirm(
           'Recalculate current and historical totals based on changes to counter starting values?\n\n' +
           'OK: Recalculate totals\nCancel: Keep existing totals as-is'
