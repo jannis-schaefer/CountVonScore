@@ -5,8 +5,11 @@ import { ThemeProvider } from './context/ThemeContext';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import './App.css';
 import './styles/layout.css';
-import './styles/generic.css';
-import './styles/starRealms.css';
+// Theme CSS files - automatically discovered from src/styles/themes/
+// Add new themes by creating .css files in that folder with @theme-id, @theme-label, @theme-description metadata
+// Then run: npm run generate-themes
+import './styles/themes/generic.css';
+import './styles/themes/starRealms.css';
 
 // Pages
 import { HomeMenu } from './pages/HomeMenu';

@@ -13,11 +13,11 @@ export const BundledPresetsSection: React.FC<Props> = ({
   setConfigMessage,
 }) => (
   <div className="card">
-    <h2 style={{ marginTop: 0 }}>Bundled Game Formats</h2>
-    <p style={{ opacity: 0.7, marginBottom: '15px' }}>
+    <h2 className="mt-0">Bundled Game Formats</h2>
+    <p className="text-muted mb-15">
       Bundled presets are loaded from YAML files in public/configs.
     </p>
-    <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+    <div className="controls-row controls-start">
       {bundledConfigs.map((config) => (
         <button
           key={config.name ?? JSON.stringify(config)}

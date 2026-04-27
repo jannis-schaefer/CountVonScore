@@ -30,8 +30,8 @@ export const EliminationSection: React.FC<Props> = ({
   editableCounters,
 }) => (
   <div className="card">
-    <h2 style={{ marginTop: 0 }}>Elimination / Win Condition</h2>
-    <p style={{ opacity: 0.75, marginBottom: '12px' }}>
+    <h2 className="mt-0">Elimination / Win Condition</h2>
+    <p className="text-muted-soft mb-12">
       Configure whether players are removed from turn rotation by losing or by finishing in placement order.
     </p>
     <div className="settings-grid">

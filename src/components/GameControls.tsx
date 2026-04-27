@@ -25,12 +25,11 @@ export const GameControls: React.FC<GameControlsProps> = ({
   };
 
   return (
-    <div className="controls-row" style={{ padding: '8px' }}>
+    <div className="controls-row p-8">
       <button
-        className="btn btn-secondary"
+        className={`btn btn-secondary btn-min-100 ${!hasHistory ? 'btn-disabled' : ''}`}
         onClick={onUndo}
         disabled={!hasHistory}
-        style={{ minWidth: '100px', opacity: hasHistory ? 1 : 0.5, cursor: hasHistory ? 'pointer' : 'not-allowed' }}
       >
         Undo
       </button>
@@ -48,10 +47,10 @@ export const GameControls: React.FC<GameControlsProps> = ({
         </>
       ) : (
         <>
-          <button className="btn btn-danger" onClick={handleResetClick} style={{ minWidth: '100px' }}>
+          <button className="btn btn-danger btn-min-100" onClick={handleResetClick}>
             Reset
           </button>
-          <button className="btn btn-secondary" onClick={onOpenSettings} style={{ minWidth: '100px' }}>
+          <button className="btn btn-secondary btn-min-100" onClick={onOpenSettings}>
             Settings
           </button>
         </>

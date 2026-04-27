@@ -72,17 +72,16 @@ export const MultiplayerMode: React.FC = () => {
 
         <div className="panel">
           <h3 className="panel-title">Tracked Player</h3>
-          <p style={{ opacity: 0.75, margin: 0 }}>
+          <p className="text-muted-soft mb-0">
             This device tracks one player only. Switch which player this device is tracking here.
           </p>
-          <div className="controls-row" style={{ justifyContent: 'flex-start', marginTop: '10px' }}>
+          <div className="controls-row controls-start mt-10">
             <label htmlFor="tracked-player">Player</label>
             <select
               id="tracked-player"
-              className="input"
+              className="input w-fit-240"
               value={trackedPlayerIndex}
               onChange={(event) => setTrackedPlayerIndex(Number(event.target.value))}
-              style={{ maxWidth: '240px' }}
             >
               {players.map((player, index) => (
                 <option key={player.id} value={index}>

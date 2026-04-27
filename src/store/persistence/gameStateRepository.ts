@@ -3,7 +3,7 @@ import type { EliminationOutcome, EliminationRule } from '../engine/elimination'
 
 const GAME_STATE_KEY = 'gameState';
 
-type ThemeName = 'generic' | 'starRealms';
+type ThemeName = string;
 type GameMode = 'shared' | 'multiplayer' | null;
 
 export interface PersistedCounterDefinition {

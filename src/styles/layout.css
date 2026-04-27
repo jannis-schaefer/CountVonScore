@@ -93,8 +93,20 @@
   margin-bottom: 10px;
 }
 
+.mb-12 {
+  margin-bottom: 12px;
+}
+
+.mb-15 {
+  margin-bottom: 15px;
+}
+
 .mb-16 {
   margin-bottom: 16px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
 }
 
 .mx-auto {
@@ -104,6 +116,17 @@
 
 .w-full {
   width: 100%;
+}
+
+.w-fit-360 {
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+}
+
+.w-fit-240 {
+  width: 100%;
+  max-width: 240px;
 }
 
 .max-w-760 {
@@ -124,6 +147,35 @@
 
 .input-small {
   width: 120px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.btn-min-100 {
+  min-width: 100px;
+}
+
+.btn-min-120 {
+  min-width: 120px;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.p-8 {
+  padding: 8px;
+}
+
+.flex-1 {
+  flex: 1;
 }
 
 .controls-start {
@@ -222,6 +274,34 @@
 .turn-nav-meta {
   opacity: 0.7;
   font-size: 0.9rem;
+}
+
+.turn-nav-label {
+  font-size: 0.85rem;
+  opacity: 0.65;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.turn-nav-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.player-live-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--primary-bg);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.row-tight {
+  display: flex;
+  gap: 10px;
 }
 
 .turn-nav-actions {

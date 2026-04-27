@@ -42,32 +42,19 @@ export const PlayersLiveSection: React.FC<Props> = ({
 
   return (
     <div className="card">
-      <h2 style={{ marginTop: 0 }}>Players (Live Session)</h2>
-      <div style={{ marginBottom: '20px' }}>
+      <h2 className="mt-0">Players (Live Session)</h2>
+      <div className="mb-20">
         {players.map((player) => (
-          <div
-            key={player.id}
-            style={{
-              display: 'flex',
-              gap: '10px',
-              alignItems: 'center',
-              padding: '10px',
-              backgroundColor: 'var(--primary-bg)',
-              borderRadius: '8px',
-              marginBottom: '10px',
-              border: '1px solid var(--border-color)',
-            }}
-          >
+          <div key={player.id} className="player-live-row">
             {editingPlayerIds.has(player.id) ? (
               <>
                 <input
                   type="text"
-                  className="input"
+                  className="input flex-1"
                   value={editingPlayerNames[player.id] || ''}
                   onChange={(event) =>
                     setEditingPlayerNames({ ...editingPlayerNames, [player.id]: event.target.value })
                   }
-                  style={{ flex: 1 }}
                 />
                 <button className="btn" onClick={() => handleSavePlayerName(player.id)}>
                   Save
@@ -75,7 +62,7 @@ export const PlayersLiveSection: React.FC<Props> = ({
               </>
             ) : (
               <>
-                <span style={{ flex: 1 }}>{player.name}</span>
+                <span className="flex-1">{player.name}</span>
                 <button
                   className="btn btn-secondary"
                   onClick={() => handleStartEditPlayer(player.id, player.name)}
@@ -85,10 +72,9 @@ export const PlayersLiveSection: React.FC<Props> = ({
               </>
             )}
             <button
-              className="btn btn-danger"
+              className={`btn btn-danger ${players.length === 1 ? 'btn-disabled' : ''}`}
               onClick={() => { if (players.length > 1) removePlayer(player.id); }}
               disabled={players.length === 1}
-              style={{ opacity: players.length === 1 ? 0.5 : 1 }}
             >
               Delete
             </button>
@@ -96,15 +82,14 @@ export const PlayersLiveSection: React.FC<Props> = ({
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px' }}>
+      <div className="row-tight">
         <input
           type="text"
-          className="input"
+          className="input flex-1"
           placeholder="New player name"
           value={newPlayerName}
           onChange={(event) => setNewPlayerName(event.target.value)}
           onKeyDown={(event) => { if (event.key === 'Enter') handleAddPlayer(); }}
-          style={{ flex: 1 }}
         />
         <button className="btn" onClick={handleAddPlayer} disabled={!newPlayerName.trim()}>
           Add Player

@@ -31,11 +31,11 @@ export const TurnNavigation: React.FC<TurnNavigationProps> = ({
 }) => {
   return (
     <div className="turn-nav">
-      <div style={{ fontSize: '0.85rem', opacity: 0.65, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+      <div className="turn-nav-label">
         Turn {turnNumber}
         {isViewingHistoricalTurn ? ` of ${latestTurnNumber - 1}` : ''}
       </div>
-      <div style={{ fontSize: '1.25rem', fontWeight: '600' }}>
+      <div className="turn-nav-title">
         {isViewingHistoricalTurn ? `${currentPlayerName}'s Result` : `${currentPlayerName}'s Turn`}
       </div>
       <div className="turn-nav-meta">
@@ -44,18 +44,16 @@ export const TurnNavigation: React.FC<TurnNavigationProps> = ({
       </div>
       <div className="turn-nav-actions">
         <button
-          className="btn btn-secondary"
+          className={`btn btn-secondary btn-min-120 ${disablePrevious ? 'btn-disabled' : ''}`}
           onClick={onPreviousPlayer}
           disabled={disablePrevious}
-          style={{ minWidth: '120px', opacity: disablePrevious ? 0.5 : 1, cursor: disablePrevious ? 'not-allowed' : 'pointer' }}
         >
           {previousLabel}
         </button>
         <button
-          className="btn"
+          className={`btn btn-min-120 ${disableNext ? 'btn-disabled' : ''}`}
           onClick={onNextPlayer}
           disabled={disableNext}
-          style={{ minWidth: '120px', opacity: disableNext ? 0.5 : 1, cursor: disableNext ? 'not-allowed' : 'pointer' }}
         >
           {nextLabel}
         </button>

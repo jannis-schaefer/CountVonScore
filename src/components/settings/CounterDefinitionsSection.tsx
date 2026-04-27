@@ -21,8 +21,8 @@ export const CounterDefinitionsSection: React.FC<Props> = ({
   setConfigMessage,
 }) => (
   <div className="card">
-    <h2 style={{ marginTop: 0 }}>Counter Definitions</h2>
-    <p style={{ opacity: 0.75, marginBottom: '12px' }}>
+    <h2 className="mt-0">Counter Definitions</h2>
+    <p className="text-muted-soft mb-12">
       Counters are fully generic. Use stable ids in configs. Icons are optional and reserved for future UI support.
     </p>
 
@@ -131,7 +131,7 @@ export const CounterDefinitionsSection: React.FC<Props> = ({
       ))}
     </div>
 
-    <div className="controls-row" style={{ justifyContent: 'flex-start', marginTop: '12px' }}>
+    <div className="controls-row controls-start mt-10">
       <button
         className="btn btn-secondary"
         onClick={() => setEditableCounters([...editableCounters, createNewCounter(editableCounters.length)])}

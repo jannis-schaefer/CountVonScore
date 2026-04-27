@@ -15,7 +15,7 @@ export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { players, addPlayer, removePlayer, updatePlayerName } = useGameStore();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, selectTheme, availableThemes } = useTheme();
   const draft = useSettingsDraft();
   const [showRecalculateDialog, setShowRecalculateDialog] = React.useState(false);
 
@@ -57,25 +57,32 @@ export const Settings: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Theme</h2>
-          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
-            <span>Theme: {theme === 'generic' ? 'Generic' : 'Star Realms'}</span>
-            <button className="btn" onClick={toggleTheme}>
-              Switch Theme
-            </button>
+          <h2 className="mt-0">Theme</h2>
+          <div className="controls-row controls-start">
+            <select
+              className="input"
+              value={theme}
+              onChange={(e) => selectTheme(e.target.value)}
+            >
+              {availableThemes.map((themeOption) => (
+                <option key={themeOption.id} value={themeOption.id}>
+                  {themeOption.label}
+                  {themeOption.description ? ` – ${themeOption.description}` : ''}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Game Config Name</h2>
-          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+          <h2 className="mt-0">Game Config Name</h2>
+          <div className="controls-row controls-start">
             <input
               type="text"
-              className="input"
+              className="input w-fit-360"
               value={draft.configName}
               onChange={(event) => draft.setConfigName(event.target.value)}
               placeholder="Config name"
-              style={{ width: '100%', boxSizing: 'border-box', maxWidth: '360px' }}
             />
           </div>
         </div>

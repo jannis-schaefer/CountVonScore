@@ -15,6 +15,7 @@ import {
   savePersistedGameState,
   type PersistedGameState,
 } from './persistence/gameStateRepository';
+import { DEFAULT_THEME_ID } from '../config/themes';
 
 export type CounterValues = Record<string, number>;
 
@@ -111,7 +112,7 @@ export interface GameState {
   eliminationOutcome: EliminationOutcome;
   eliminationRule: EliminationRule;
   currentGameConfigName: string;
-  theme: 'generic' | 'starRealms';
+  theme: string;
 }
 
 interface GameStore extends GameState {
@@ -133,7 +134,7 @@ interface GameStore extends GameState {
   undo: () => void;
 
   setGameMode: (mode: 'shared' | 'multiplayer') => void;
-  setTheme: (theme: 'generic' | 'starRealms') => void;
+  setTheme: (theme: string) => void;
 
   setCounterDefinitions: (
     definitions: CounterDefinition[],
@@ -509,7 +510,7 @@ const initialGameState: GameState = {
   eliminationOutcome: 'loss',
   eliminationRule: 'stayAboveMinimum',
   currentGameConfigName: 'Generic',
-  theme: 'starRealms',
+  theme: DEFAULT_THEME_ID,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -935,7 +936,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setGameMode: (mode: 'shared' | 'multiplayer') => set({ gameMode: mode }),
 
-  setTheme: (theme: 'generic' | 'starRealms') => {
+  setTheme: (theme: string) => {
     set({ theme });
     get().saveGame();
   },

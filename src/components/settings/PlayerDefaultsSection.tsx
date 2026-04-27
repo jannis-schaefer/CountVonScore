@@ -14,7 +14,7 @@ export const PlayerDefaultsSection: React.FC<Props> = ({
   setOverridesText,
 }) => (
   <div className="card">
-    <h2 style={{ marginTop: 0 }}>Player Defaults &amp; Overrides</h2>
+    <h2 className="mt-0">Player Defaults &amp; Overrides</h2>
     <div className="settings-grid">
       <div className="settings-row">
         <label>Default Player Count</label>
@@ -32,11 +32,10 @@ export const PlayerDefaultsSection: React.FC<Props> = ({
       <div className="settings-row">
         <label>Player Overrides (JSON)</label>
         <textarea
-          className="input"
+          className="input w-full"
           value={overridesText}
           onChange={(event) => setOverridesText(event.target.value)}
           rows={8}
-          style={{ width: '100%', boxSizing: 'border-box' }}
         />
       </div>
     </div>
