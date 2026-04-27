@@ -61,6 +61,118 @@
   gap: 12px;
 }
 
+.stack-tight {
+  gap: 8px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  opacity: 0.85;
+}
+
+.text-muted-soft {
+  opacity: 0.75;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.max-w-760 {
+  max-width: 760px;
+}
+
+.max-w-900 {
+  max-width: 900px;
+}
+
+.max-w-620 {
+  max-width: 620px;
+}
+
+.max-w-640 {
+  max-width: 640px;
+}
+
+.input-small {
+  width: 120px;
+}
+
+.controls-start {
+  justify-content: flex-start;
+}
+
+.controls-end {
+  justify-content: flex-end;
+}
+
+.controls-between {
+  justify-content: space-between;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.hero-title-large {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 520px;
+  margin: 0;
+}
+
+.modal-message {
+  white-space: pre-wrap;
+  opacity: 0.9;
+}
+
+.modal-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
 .panel {
   border-radius: 12px;
   padding: 14px;

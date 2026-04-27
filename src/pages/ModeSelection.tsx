@@ -85,19 +85,19 @@ export const ModeSelection: React.FC = () => {
 
   return (
     <div className="page-center">
-      <div className="page-wrap stack" style={{ maxWidth: '900px' }}>
-        <div className="stack" style={{ textAlign: 'center', gap: '8px' }}>
-          <h1 className="header-title" style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)' }}>
+      <div className="page-wrap stack max-w-900">
+        <div className="stack stack-tight text-center">
+          <h1 className="header-title hero-title-large">
             New Game
           </h1>
-          <p style={{ opacity: 0.85, maxWidth: '640px', margin: '0 auto' }}>
+          <p className="text-muted max-w-640 mx-auto">
             Choose how this device will be used: shared table tracking or single-player tracking.
           </p>
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Mode</h2>
-          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+          <h2 className="mt-0">Mode</h2>
+          <div className="controls-row controls-start">
             <button
               className={`btn ${mode === 'shared' ? '' : 'btn-secondary'}`}
               onClick={() => {
@@ -117,14 +117,14 @@ export const ModeSelection: React.FC = () => {
               Personal Device (One Player)
             </button>
           </div>
-          <p style={{ opacity: 0.75, marginTop: '10px', marginBottom: 0 }}>
+          <p className="text-muted-soft mt-10 mb-0">
             Shared Device is for one phone/tablet used by everyone. Personal Device is for a single player tracking only their own stats.
           </p>
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Preset (Optional)</h2>
-          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+          <h2 className="mt-0">Preset (Optional)</h2>
+          <div className="controls-row controls-start">
             <button
               className="btn btn-secondary"
               onClick={() => handleApplyPreset(defaultConfig)}
@@ -151,34 +151,33 @@ export const ModeSelection: React.FC = () => {
             ))}
           </div>
           {selectedConfigName ? (
-            <p style={{ opacity: 0.8, marginTop: '10px' }}>Selected: {selectedConfigName}</p>
+            <p className="text-muted mt-10">Selected: {selectedConfigName}</p>
           ) : null}
         </div>
 
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>Player Count</h2>
+          <h2 className="mt-0">Player Count</h2>
           <input
             type="number"
             min={1}
-            className="input"
+            className="input input-small"
             value={playerCount}
             onChange={(event) => {
               setPlayerCount(Math.max(1, Number(event.target.value || 1)));
               setIsDirty(true);
             }}
-            style={{ width: '120px' }}
           />
         </div>
 
         <div className="panel">
-          <div className="controls-row" style={{ justifyContent: 'space-between' }}>
+          <div className="controls-row controls-between">
             <button
               className="btn btn-secondary"
               onClick={() => navigate('/settings', { state: { context: 'new-game-setup' } })}
             >
               Edit Game Settings
             </button>
-            <div className="controls-row" style={{ justifyContent: 'flex-end' }}>
+            <div className="controls-row controls-end">
               <button className="btn btn-secondary" onClick={() => navigate('/')}>
                 Cancel
               </button>
@@ -187,7 +186,7 @@ export const ModeSelection: React.FC = () => {
               </button>
             </div>
           </div>
-          {message ? <p style={{ opacity: 0.8, marginTop: '10px' }}>{message}</p> : null}
+          {message ? <p className="text-muted mt-10">{message}</p> : null}
         </div>
 
         <ConfirmDialog

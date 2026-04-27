@@ -30,28 +30,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label={title}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.55)',
-        zIndex: 1000,
-        padding: '16px',
-      }}
+      className="modal-overlay"
     >
-      <div
-        className="card"
-        style={{
-          width: '100%',
-          maxWidth: '520px',
-          margin: 0,
-        }}
-      >
-        <h2 style={{ marginTop: 0 }}>{title}</h2>
-        <p style={{ whiteSpace: 'pre-wrap', opacity: 0.9 }}>{message}</p>
-        <div className="controls-row" style={{ justifyContent: 'flex-end', marginTop: '16px' }}>
+      <div className="card modal-card">
+        <h2 className="mt-0">{title}</h2>
+        <p className="modal-message">{message}</p>
+        <div className="controls-row modal-actions">
           <button className="btn btn-secondary" onClick={onCancel}>
             {cancelLabel}
           </button>

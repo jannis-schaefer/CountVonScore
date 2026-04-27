@@ -16,26 +16,25 @@ export const HomeMenu: React.FC = () => {
 
   return (
     <div className="page-center">
-      <div className="page-wrap stack" style={{ maxWidth: '760px' }}>
-        <div className="stack" style={{ textAlign: 'center', gap: '8px' }}>
-          <h1 className="header-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+      <div className="page-wrap stack max-w-760">
+        <div className="stack stack-tight text-center">
+          <h1 className="header-title hero-title">
             Card Game Counter
           </h1>
-          <p style={{ opacity: 0.85, maxWidth: '620px', margin: '0 auto' }}>
+          <p className="text-muted max-w-620 mx-auto">
             Choose whether this device tracks the full table or just one player.
           </p>
         </div>
 
         <div className="mode-grid">
           <div className="card mode-card">
-            <h2 style={{ marginBottom: '10px' }}>Resume Saved Game</h2>
-            <p style={{ marginBottom: '16px', opacity: 0.85 }}>
+            <h2 className="mb-10">Resume Saved Game</h2>
+            <p className="mb-16 text-muted">
               Continue where you left off.
             </p>
             <button
-              className="btn"
+              className="btn w-full"
               onClick={handleResume}
-              style={{ width: '100%' }}
               disabled={!hasSavedGame}
             >
               Resume
@@ -43,18 +42,18 @@ export const HomeMenu: React.FC = () => {
           </div>
 
           <div className="card mode-card">
-            <h2 style={{ marginBottom: '10px' }}>Start New Game</h2>
-            <p style={{ marginBottom: '16px', opacity: 0.85 }}>
+            <h2 className="mb-10">Start New Game</h2>
+            <p className="mb-16 text-muted">
               Pick mode, player count, and optional preset before confirming.
             </p>
-            <button className="btn" onClick={() => navigate('/new-game')} style={{ width: '100%' }}>
+            <button className="btn w-full" onClick={() => navigate('/new-game')}>
               New Game
             </button>
           </div>
         </div>
 
         <div className="panel">
-          <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+          <div className="controls-row controls-start">
             <button className="btn btn-secondary" onClick={() => navigate('/settings')}>
               Edit Game Settings
             </button>
