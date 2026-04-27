@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
+import { usePlayerCardLayout } from '../context/PlayerCardLayoutContext';
 import { useSettingsDraft } from '../hooks/useSettingsDraft';
 import { CounterDefinitionsSection } from '../components/settings/CounterDefinitionsSection';
 import { EliminationSection } from '../components/settings/EliminationSection';
@@ -16,6 +17,7 @@ export const Settings: React.FC = () => {
   const location = useLocation();
   const { players, addPlayer, removePlayer, updatePlayerName } = useGameStore();
   const { theme, selectTheme, availableThemes } = useTheme();
+  const { layoutId, selectLayout, availableLayouts } = usePlayerCardLayout();
   const draft = useSettingsDraft();
   const [showRecalculateDialog, setShowRecalculateDialog] = React.useState(false);
 
@@ -68,6 +70,24 @@ export const Settings: React.FC = () => {
                 <option key={themeOption.id} value={themeOption.id}>
                   {themeOption.label}
                   {themeOption.description ? ` – ${themeOption.description}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2 className="mt-0">Player Card Layout</h2>
+          <div className="controls-row controls-start">
+            <select
+              className="input"
+              value={layoutId}
+              onChange={(e) => selectLayout(e.target.value)}
+            >
+              {availableLayouts.map((layout) => (
+                <option key={layout.id} value={layout.id}>
+                  {layout.label}
+                  {layout.description ? ` – ${layout.description}` : ''}
                 </option>
               ))}
             </select>

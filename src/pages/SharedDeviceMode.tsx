@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { evaluatePlayerEliminationStatus } from '../store/engine/elimination';
 import { PlayerCard } from '../components/PlayerCard';
+import { PlayerCardsLayout } from '../components/PlayerCardsLayout';
 import { TurnNavigation } from '../components/TurnNavigation';
 import { GameControls } from '../components/GameControls';
+import { usePlayerCardLayout } from '../context/PlayerCardLayoutContext';
 
 export const SharedDeviceMode: React.FC = () => {
   const navigate = useNavigate();
+  const { layoutId } = usePlayerCardLayout();
   const {
     players,
     viewedPlayers,
@@ -201,8 +204,9 @@ export const SharedDeviceMode: React.FC = () => {
             </div>
           )}
 
-          <div className="tabletop-grid">
-            {displayedPlayers.map((player, index) => {
+          <PlayerCardsLayout
+            layoutId={layoutId}
+            items={displayedPlayers.map((player, index) => {
               const isActive = index === displayedPlayerIndex;
               const status = evaluatePlayerEliminationStatus(player, displayedPlayers, {
                 enabled: eliminationEnabled,
@@ -211,11 +215,10 @@ export const SharedDeviceMode: React.FC = () => {
                 outcome: eliminationOutcome,
                 rule: eliminationRule,
               });
-              return (
-                <div
-                  key={player.id}
-                  className="card-button"
-                >
+
+              return {
+                id: player.id,
+                node: (
                   <PlayerCard
                     player={player}
                     isActive={isActive}
@@ -227,10 +230,10 @@ export const SharedDeviceMode: React.FC = () => {
                     counterDefinitions={counterDefinitions}
                     compact={!isActive}
                   />
-                </div>
-              );
+                ),
+              };
             })}
-          </div>
+          />
 
           <div className="panel">
             <GameControls

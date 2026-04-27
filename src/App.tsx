@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useGameStore } from './store/gameStore';
 import { ThemeProvider } from './context/ThemeContext';
+import { PlayerCardLayoutProvider } from './context/PlayerCardLayoutContext';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import './App.css';
 import './styles/layout.css';
@@ -41,9 +42,11 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <PlayerCardLayoutProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </PlayerCardLayoutProvider>
     </ThemeProvider>
   );
 }
