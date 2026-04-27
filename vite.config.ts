@@ -5,4 +5,17 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: './',
   plugins: [react()],
+  server: {
+    // Serve SW and manifest without transformation
+    middlewareMode: false,
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: '/index.html',
+      },
+    },
+    // Copy service worker and manifest to dist
+    copyPublicDir: true,
+  },
 })
