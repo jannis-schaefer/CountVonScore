@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { evaluatePlayerEliminationStatus, useGameStore } from '../store/gameStore';
+import { useGameStore } from '../store/gameStore';
+import { evaluatePlayerEliminationStatus } from '../store/engine/elimination';
 import { PlayerCard } from '../components/PlayerCard';
 import { GameControls } from '../components/GameControls';
 

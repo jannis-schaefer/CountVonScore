@@ -3,10 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
 import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigYaml } from '../utils/gameConfig';
+import type { EliminationOutcome, EliminationRule } from '../store/engine/elimination';
 import type {
   CounterDefinition,
-  EliminationOutcome,
-  EliminationRule,
   GameConfig,
   PlayerOverride,
 } from '../store/gameStore';
