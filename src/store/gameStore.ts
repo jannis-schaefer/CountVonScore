@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import localforage from 'localforage';
 import {
   ensureCurrentPlayerIndex,
   type EliminationConfig,
@@ -10,8 +9,12 @@ import {
   applyHistoricalChangesState,
   continueFromHistoricalTurnState,
   finalizeTurnState,
-  getLatestKeyTurnNumber,
 } from './engine/turns';
+import {
+  loadPersistedGameState,
+  savePersistedGameState,
+  type PersistedGameState,
+} from './persistence/gameStateRepository';
 
 export type CounterValues = Record<string, number>;
 
@@ -258,15 +261,6 @@ const normalizeDefinitions = (
 
 const initialCounterDefinitions = createDefaultCounterDefinitions();
 
-const computeCurrentPlayerIndex = (
-  startingPlayerIndex: number,
-  turnNumber: number,
-  playerCount: number
-): number => {
-  if (playerCount === 0) return 0;
-  return (startingPlayerIndex + (turnNumber - 1)) % playerCount;
-};
-
 const resolveEliminationCounterId = (
   counterDefinitions: CounterDefinition[],
   candidate?: string
@@ -351,42 +345,6 @@ const syncTurnRecordNames = (turnRecords: TurnRecord[], id: string, name: string
     startPlayers: syncPlayerNames(record.startPlayers, id, name),
     endPlayers: syncPlayerNames(record.endPlayers, id, name),
   }));
-};
-
-const normalizeTurnRecords = (records: unknown): TurnRecord[] => {
-  if (!Array.isArray(records)) {
-    return [];
-  }
-
-  return records.flatMap((record, index) => {
-    if (!record || typeof record !== 'object') {
-      return [];
-    }
-
-    const candidate = record as Partial<TurnRecord>;
-    if (
-      !Array.isArray(candidate.startPlayers) ||
-      !Array.isArray(candidate.endPlayers)
-    ) {
-      return [];
-    }
-
-    const normalizedStart = clonePlayers(candidate.startPlayers as Player[]);
-    const normalizedEnd = clonePlayers(candidate.endPlayers as Player[]);
-
-    return [{
-      actingPlayerId:
-        typeof candidate.actingPlayerId === 'string'
-          ? candidate.actingPlayerId
-          : normalizedStart[0]?.id ?? normalizedEnd[0]?.id ?? '',
-      startPlayers: normalizedStart,
-      endPlayers: normalizedEnd,
-      latestKeyTurnNumber:
-        typeof candidate.latestKeyTurnNumber === 'number' && candidate.latestKeyTurnNumber > 0
-          ? candidate.latestKeyTurnNumber
-          : getLatestKeyTurnNumber(index + 1),
-    }];
-  });
 };
 
 const buildReopenUndoEntries = (
@@ -1167,100 +1125,59 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   loadGame: async () => {
     try {
-      const savedGame = await localforage.getItem<Partial<GameState> & Record<string, unknown>>('gameState');
-      if (savedGame) {
-        const mergedDefinitions =
-          savedGame.counterDefinitions && savedGame.counterDefinitions.length > 0
-            ? savedGame.counterDefinitions
-            : initialGameState.counterDefinitions;
-
-        const players =
-          savedGame.players && savedGame.players.length > 0
-            ? clonePlayers(savedGame.players)
-            : buildPlayers(
-                initialGameState.defaultPlayerCount,
-                mergedDefinitions,
-                initialGameState.playerOverrides
-              );
-
-        const startingPlayerIndex =
-          typeof savedGame.startingPlayerIndex === 'number'
-            ? Math.max(0, Math.min(savedGame.startingPlayerIndex, players.length - 1))
-            : initialGameState.startingPlayerIndex;
-
-        const turnNumber =
-          typeof savedGame.turnNumber === 'number' && savedGame.turnNumber > 0
-            ? savedGame.turnNumber
-            : initialGameState.turnNumber;
-
-        const turnRecords = normalizeTurnRecords(savedGame.turnRecords);
-        const turnStartPlayers =
-          Array.isArray(savedGame.turnStartPlayers) && savedGame.turnStartPlayers.length > 0
-            ? clonePlayers(savedGame.turnStartPlayers as Player[])
-            : clonePlayers(players);
-
-        const eliminationEnabled = savedGame.eliminationEnabled === true;
-        const eliminationCounterId = resolveEliminationCounterId(
-          mergedDefinitions,
-          typeof savedGame.eliminationCounterId === 'string' ? savedGame.eliminationCounterId : undefined
-        );
-        const eliminationThreshold =
-          typeof savedGame.eliminationThreshold === 'number' ? savedGame.eliminationThreshold : 0;
-        const eliminationOutcome =
-          savedGame.eliminationOutcome === 'win' ? 'win' : 'loss';
-        const eliminationRule =
-          savedGame.eliminationRule === 'reachMinimum' ? 'reachMinimum' : 'stayAboveMinimum';
-        const currentPlayerIndex =
-          typeof savedGame.currentPlayerIndex === 'number'
-            ? savedGame.currentPlayerIndex
-            : computeCurrentPlayerIndex(startingPlayerIndex, turnNumber, players.length);
-
-        const mergedState: GameState = {
-          ...initialGameState,
-          ...savedGame,
-          players,
-          turnStartPlayers,
-          currentTurnActions: [],
-          turnRecords,
-          viewedTurnNumber: null,
-          viewedPlayers: null,
-          isHistoricalTurnDirty: false,
-          startingPlayerIndex,
-          turnNumber,
-          currentPlayerIndex: ensureCurrentPlayerIndex(
-            players,
-            currentPlayerIndex,
-            getEliminationConfigFromState(initialGameState, {
-              enabled: eliminationEnabled,
-              counterId: eliminationCounterId,
-              threshold: eliminationThreshold,
-              outcome: eliminationOutcome,
-              rule: eliminationRule,
-            })
-          ),
-          history: [],
-          hasSavedGame: true,
-          counterDefinitions: mergedDefinitions,
-          defaultPlayerCount:
-            savedGame.defaultPlayerCount && savedGame.defaultPlayerCount > 0
-              ? savedGame.defaultPlayerCount
-              : initialGameState.defaultPlayerCount,
-          playerOverrides:
-            (savedGame.playerOverrides as PlayerOverride[] | undefined) ?? initialGameState.playerOverrides,
-          eliminationEnabled,
-          eliminationCounterId,
-          eliminationThreshold,
-          eliminationOutcome,
-          eliminationRule,
-          currentGameConfigName:
-            savedGame.currentGameConfigName ?? initialGameState.currentGameConfigName,
-          theme: savedGame.theme === 'generic' ? 'generic' : 'starRealms',
-        };
-
-        set(mergedState);
-      } else {
+      const savedGame = await loadPersistedGameState();
+      if (!savedGame) {
         set({ hasSavedGame: false });
+        return;
       }
+
+      const counterDefinitions = savedGame.counterDefinitions;
+      const players = clonePlayers(savedGame.players as Player[]);
+      const turnStartPlayers = clonePlayers(savedGame.turnStartPlayers as Player[]);
+      const turnRecords = savedGame.turnRecords.map((record) => ({
+        ...record,
+        startPlayers: clonePlayers(record.startPlayers as Player[]),
+        endPlayers: clonePlayers(record.endPlayers as Player[]),
+      }));
+      const eliminationCounterId = resolveEliminationCounterId(
+        counterDefinitions,
+        savedGame.eliminationCounterId
+      );
+
+      const hydratedState: GameState = {
+        ...initialGameState,
+        players,
+        turnStartPlayers,
+        currentTurnActions: [],
+        turnRecords,
+        viewedTurnNumber: null,
+        viewedPlayers: null,
+        isHistoricalTurnDirty: false,
+        startingPlayerIndex: Math.max(0, Math.min(savedGame.startingPlayerIndex, players.length - 1)),
+        turnNumber: Math.max(1, savedGame.turnNumber),
+        currentPlayerIndex: ensureCurrentPlayerIndex(
+          players,
+          savedGame.currentPlayerIndex,
+          getEliminationConfigFromState(savedGame, {
+            counterId: eliminationCounterId,
+          })
+        ),
+        history: [],
+        gameMode: savedGame.gameMode,
+        hasSavedGame: true,
+        counterDefinitions,
+        defaultPlayerCount: Math.max(1, savedGame.defaultPlayerCount),
+        playerOverrides: savedGame.playerOverrides as PlayerOverride[],
+        eliminationEnabled: savedGame.eliminationEnabled,
+        eliminationCounterId,
+        eliminationThreshold: savedGame.eliminationThreshold,
+        eliminationOutcome: savedGame.eliminationOutcome,
+        eliminationRule: savedGame.eliminationRule,
+        currentGameConfigName: savedGame.currentGameConfigName,
+        theme: savedGame.theme,
+      };
+
+      set(hydratedState);
     } catch (error) {
       console.error('Failed to load game:', error);
     }
@@ -1269,16 +1186,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   saveGame: async () => {
     try {
       const state = get();
-      const gameState: Partial<GameState> = {
+      const gameState: PersistedGameState = {
         players: state.players,
         turnStartPlayers: state.turnStartPlayers,
         turnRecords: state.turnRecords,
         startingPlayerIndex: state.startingPlayerIndex,
         turnNumber: state.turnNumber,
         currentPlayerIndex: state.currentPlayerIndex,
-        history: [],
         gameMode: state.gameMode,
-        hasSavedGame: true,
         counterDefinitions: state.counterDefinitions,
         defaultPlayerCount: state.defaultPlayerCount,
         playerOverrides: state.playerOverrides,
@@ -1290,7 +1205,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         currentGameConfigName: state.currentGameConfigName,
         theme: state.theme,
       };
-      await localforage.setItem('gameState', gameState);
+      await savePersistedGameState(gameState);
     } catch (error) {
       console.error('Failed to save game:', error);
     }
