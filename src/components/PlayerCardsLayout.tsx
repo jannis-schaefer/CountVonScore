@@ -13,26 +13,18 @@ interface PlayerCardsLayoutProps {
 const EDGE_ORDER = ['bottom', 'right', 'top', 'left'] as const;
 type Edge = (typeof EDGE_ORDER)[number];
 
-const getEdgeForIndex = (index: number, total: number): Edge => {
-  if (total <= EDGE_ORDER.length) {
-    return EDGE_ORDER[index % EDGE_ORDER.length];
-  }
+const getEdgeForIndex = (index: number): Edge => {
   return EDGE_ORDER[index % EDGE_ORDER.length];
-};
-
-const getRotationForPosition = (position: number): number => {
-  const rotations = [0, 90, 180, 270];
-  return rotations[position % 4];
 };
 
 export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, items }) => {
   if (layoutId === 'minimalist') {
     return (
-      <div className="player-layout-minimalist">
+      <div className="player-layout-scroll" aria-label="Player cards">
         {items.map((item) => (
-          <div key={item.id} className="player-layout-minimalist-card card-button">
+          <section key={item.id} className="player-layout-scroll-item card-button">
             {item.node}
-          </div>
+          </section>
         ))}
       </div>
     );
@@ -50,7 +42,7 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, 
     );
   }
 
-  const buckets: Record<Edge, Array<PlayerCardsLayoutItem & { position: number }>> = {
+  const buckets: Record<Edge, PlayerCardsLayoutItem[]> = {
     top: [],
     right: [],
     bottom: [],
@@ -58,22 +50,29 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, 
   };
 
   items.forEach((item, index) => {
-    const edge = getEdgeForIndex(index, items.length);
-    buckets[edge].push({ ...item, position: index });
+    buckets[getEdgeForIndex(index)].push(item);
   });
 
-  const renderSide = (side: Edge, sideItems: Array<PlayerCardsLayoutItem & { position: number }>) => {
+  const isRotated = layoutId === 'tabletopRotated';
+
+  const renderSide = (side: Edge, sideItems: PlayerCardsLayoutItem[]) => {
     return (
-      <div className="player-layout-side player-layout-side-top" key={`side-${side}`} data-side={side}>
+      <div className={`player-layout-side player-layout-side-${side}`} key={`side-${side}`}>
         {sideItems.map((item) => {
-          const rotation = layoutId === 'tabletopRotated' ? getRotationForPosition(item.position) : 0;
+          const rotateClass = isRotated ? `player-layout-rotate player-layout-rotate-${side}` : '';
+          const rotatedSideClass = isRotated && (side === 'left' || side === 'right')
+            ? 'player-layout-card-wrap-rotated-side'
+            : '';
+
           return (
-            <div
-              key={item.id}
-              className="player-layout-card-wrap card-button"
-              style={rotation > 0 ? { transform: `rotate(${rotation}deg)` } : undefined}
-            >
-              {item.node}
+            <div key={item.id} className={`player-layout-card-wrap ${rotatedSideClass}`.trim()}>
+              {isRotated ? (
+                <div className={rotateClass}>
+                  {item.node}
+                </div>
+              ) : (
+                item.node
+              )}
             </div>
           );
         })}
@@ -85,9 +84,6 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, 
     <div className="player-layout-table">
       {renderSide('top', buckets.top)}
       {renderSide('left', buckets.left)}
-      <div className="player-layout-center" aria-hidden>
-        <div className="player-layout-center-mark">TABLE</div>
-      </div>
       {renderSide('right', buckets.right)}
       {renderSide('bottom', buckets.bottom)}
     </div>
