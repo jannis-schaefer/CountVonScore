@@ -58,100 +58,114 @@ export const Settings: React.FC = () => {
           </button>
         </div>
 
-        <div className="card">
-          <h2 className="mt-0">Theme</h2>
-          <div className="controls-row controls-start">
-            <select
-              className="input"
-              value={theme}
-              onChange={(e) => selectTheme(e.target.value)}
-            >
-              {availableThemes.map((themeOption) => (
-                <option key={themeOption.id} value={themeOption.id}>
-                  {themeOption.label}
-                  {themeOption.description ? ` – ${themeOption.description}` : ''}
-                </option>
-              ))}
-            </select>
+        {/* Display Options */}
+        <div className="settings-section">
+          <h2 style={{ marginTop: 0, marginBottom: 16, fontSize: '1.125rem', opacity: 0.9 }}>
+            Display Options
+          </h2>
+
+          <div className="card">
+            <h3 className="mt-0">Theme</h3>
+            <div className="controls-row controls-start">
+              <select
+                className="input"
+                value={theme}
+                onChange={(e) => selectTheme(e.target.value)}
+              >
+                {availableThemes.map((themeOption) => (
+                  <option key={themeOption.id} value={themeOption.id}>
+                    {themeOption.label}
+                    {themeOption.description ? ` – ${themeOption.description}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 className="mt-0">Player Card Layout</h3>
+            <div className="controls-row controls-start">
+              <select
+                className="input"
+                value={layoutId}
+                onChange={(e) => selectLayout(e.target.value)}
+              >
+                {availableLayouts.map((layout) => (
+                  <option key={layout.id} value={layout.id}>
+                    {layout.label}
+                    {layout.description ? ` – ${layout.description}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="card">
-          <h2 className="mt-0">Player Card Layout</h2>
-          <div className="controls-row controls-start">
-            <select
-              className="input"
-              value={layoutId}
-              onChange={(e) => selectLayout(e.target.value)}
-            >
-              {availableLayouts.map((layout) => (
-                <option key={layout.id} value={layout.id}>
-                  {layout.label}
-                  {layout.description ? ` – ${layout.description}` : ''}
-                </option>
-              ))}
-            </select>
+        {/* Game Options */}
+        <div className="settings-section">
+          <h2 style={{ marginTop: 0, marginBottom: 16, fontSize: '1.125rem', opacity: 0.9 }}>
+            Game Options
+          </h2>
+
+          <div className="card">
+            <h3 className="mt-0">Game Config Name</h3>
+            <div className="controls-row controls-start">
+              <input
+                type="text"
+                className="input w-fit-360"
+                value={draft.configName}
+                onChange={(event) => draft.setConfigName(event.target.value)}
+                placeholder="Config name"
+              />
+            </div>
           </div>
+
+          <CounterDefinitionsSection
+            editableCounters={draft.editableCounters}
+            setEditableCounters={draft.setEditableCounters}
+            setConfigMessage={draft.setConfigMessage}
+          />
+
+          <PlayerDefaultsSection
+            editableDefaultPlayerCount={draft.editableDefaultPlayerCount}
+            setEditableDefaultPlayerCount={draft.setEditableDefaultPlayerCount}
+            overridesText={draft.overridesText}
+            setOverridesText={draft.setOverridesText}
+          />
+
+          <EliminationSection
+            editableEliminationEnabled={draft.editableEliminationEnabled}
+            setEditableEliminationEnabled={draft.setEditableEliminationEnabled}
+            editableEliminationCounterId={draft.editableEliminationCounterId}
+            setEditableEliminationCounterId={draft.setEditableEliminationCounterId}
+            editableEliminationThreshold={draft.editableEliminationThreshold}
+            setEditableEliminationThreshold={draft.setEditableEliminationThreshold}
+            editableEliminationOutcome={draft.editableEliminationOutcome}
+            setEditableEliminationOutcome={draft.setEditableEliminationOutcome}
+            editableEliminationRule={draft.editableEliminationRule}
+            setEditableEliminationRule={draft.setEditableEliminationRule}
+            editableCounters={draft.editableCounters}
+          />
+
+          <PlayersLiveSection
+            players={players}
+            addPlayer={addPlayer}
+            removePlayer={removePlayer}
+            updatePlayerName={updatePlayerName}
+          />
+
+          <BundledPresetsSection
+            bundledConfigs={draft.bundledConfigs}
+            onSelectConfig={draft.applyConfigToDraft}
+            setConfigMessage={draft.setConfigMessage}
+          />
+
+          <ImportExportSection
+            onImport={draft.handleImportConfig}
+            onExport={draft.handleExportConfig}
+            configMessage={draft.configMessage}
+          />
         </div>
-
-        <div className="card">
-          <h2 className="mt-0">Game Config Name</h2>
-          <div className="controls-row controls-start">
-            <input
-              type="text"
-              className="input w-fit-360"
-              value={draft.configName}
-              onChange={(event) => draft.setConfigName(event.target.value)}
-              placeholder="Config name"
-            />
-          </div>
-        </div>
-
-        <CounterDefinitionsSection
-          editableCounters={draft.editableCounters}
-          setEditableCounters={draft.setEditableCounters}
-          setConfigMessage={draft.setConfigMessage}
-        />
-
-        <PlayerDefaultsSection
-          editableDefaultPlayerCount={draft.editableDefaultPlayerCount}
-          setEditableDefaultPlayerCount={draft.setEditableDefaultPlayerCount}
-          overridesText={draft.overridesText}
-          setOverridesText={draft.setOverridesText}
-        />
-
-        <EliminationSection
-          editableEliminationEnabled={draft.editableEliminationEnabled}
-          setEditableEliminationEnabled={draft.setEditableEliminationEnabled}
-          editableEliminationCounterId={draft.editableEliminationCounterId}
-          setEditableEliminationCounterId={draft.setEditableEliminationCounterId}
-          editableEliminationThreshold={draft.editableEliminationThreshold}
-          setEditableEliminationThreshold={draft.setEditableEliminationThreshold}
-          editableEliminationOutcome={draft.editableEliminationOutcome}
-          setEditableEliminationOutcome={draft.setEditableEliminationOutcome}
-          editableEliminationRule={draft.editableEliminationRule}
-          setEditableEliminationRule={draft.setEditableEliminationRule}
-          editableCounters={draft.editableCounters}
-        />
-
-        <PlayersLiveSection
-          players={players}
-          addPlayer={addPlayer}
-          removePlayer={removePlayer}
-          updatePlayerName={updatePlayerName}
-        />
-
-        <BundledPresetsSection
-          bundledConfigs={draft.bundledConfigs}
-          onSelectConfig={draft.applyConfigToDraft}
-          setConfigMessage={draft.setConfigMessage}
-        />
-
-        <ImportExportSection
-          onImport={draft.handleImportConfig}
-          onExport={draft.handleExportConfig}
-          configMessage={draft.configMessage}
-        />
 
         <ConfirmDialog
           open={showRecalculateDialog}

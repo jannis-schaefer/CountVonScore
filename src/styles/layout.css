@@ -394,6 +394,68 @@
   width: 100%;
 }
 
+/* Rotated tabletop layout: preserve aspect and allow rotation transforms */
+.player-layout-table .player-layout-card-wrap[style*="transform"] {
+  transform-origin: center;
+  display: grid;
+  place-items: center;
+}
+
+/* Minimalist layout: maximize counter visibility, hide non-essential UI */
+.player-layout-minimalist {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+}
+
+.player-layout-minimalist-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25vh;
+  padding: 12px;
+}
+
+.player-layout-minimalist-card .player-card {
+  width: 100%;
+  padding: 20px 12px;
+}
+
+.player-layout-minimalist-card .player-name {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.player-layout-minimalist-card .counter-label {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.player-layout-minimalist-card .counter-display {
+  font-size: clamp(2.5rem, 12vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  margin: 8px 0;
+}
+
+.player-layout-minimalist-card .counter-controls {
+  gap: 8px;
+}
+
+.player-layout-minimalist-card .counter-btn {
+  font-size: clamp(1.25rem, 4vw, 2.5rem);
+  padding: 6px 14px;
+}
+
+/* Hide non-always-displayed counters in minimalist for non-active players */
+.player-layout-minimalist-card:not(.active) .stack:not(:first-child) {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .player-layout-table {
     min-height: 0;
@@ -416,9 +478,24 @@
   }
 }
 
+@media (max-width: 768px) {
+  .player-layout-minimalist {
+    grid-template-columns: 1fr;
+  }
+
+  .player-layout-minimalist-card {
+    min-height: 50vh;
+  }
+}
+
 .settings-grid {
   display: grid;
   gap: 16px;
+}
+
+.settings-section {
+  display: grid;
+  gap: 12px;
 }
 
 .settings-row {

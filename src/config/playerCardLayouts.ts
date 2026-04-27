@@ -15,6 +15,16 @@ export const PLAYER_CARD_LAYOUTS: Record<string, PlayerCardLayoutDefinition> = {
     label: 'Tabletop',
     description: 'Seat cards around the edges for a phone/table lying flat.',
   },
+  tabletopRotated: {
+    id: 'tabletopRotated',
+    label: 'Tabletop (Rotated)',
+    description: 'Cards rotated so text faces each player sitting around the device.',
+  },
+  minimalist: {
+    id: 'minimalist',
+    label: 'Minimalist',
+    description: 'Large counters, minimal text—maximizes display space for active player.',
+  },
 };
 
 export const DEFAULT_PLAYER_CARD_LAYOUT_ID = 'grid';
