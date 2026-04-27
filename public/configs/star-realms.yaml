@@ -30,3 +30,5 @@ elimination:
   enabled: yes
   counterId: authority
   threshold: 0
+  outcome: loss
+  rule: stayAboveMinimum

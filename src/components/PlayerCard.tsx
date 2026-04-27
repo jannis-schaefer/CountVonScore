@@ -7,6 +7,8 @@ interface PlayerCardProps {
   counterDefinitions: CounterDefinition[];
   onCounterChange: (counterId: string, value: number) => void;
   compact?: boolean;
+  statusLabel?: string | null;
+  isOutOfTurnRotation?: boolean;
 }
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -15,6 +17,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   counterDefinitions,
   onCounterChange,
   compact = false,
+  statusLabel,
+  isOutOfTurnRotation = false,
 }) => {
   const [editingCounter, setEditingCounter] = useState<string | null>(null);
 
@@ -74,8 +78,25 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   );
 
   return (
-    <div className={`player-card ${isActive ? 'active' : ''}`}>
-      <div className="player-name">{player.name}</div>
+    <div className={`player-card ${isActive ? 'active' : ''}`} style={{ opacity: isOutOfTurnRotation ? 0.8 : 1 }}>
+      <div className="player-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <span>{player.name}</span>
+        {statusLabel ? (
+          <span
+            style={{
+              fontSize: '0.72rem',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              padding: '2px 8px',
+              borderRadius: '999px',
+              border: '1px solid rgba(255,255,255,0.25)',
+              opacity: 0.9,
+            }}
+          >
+            {statusLabel}
+          </span>
+        ) : null}
+      </div>
       {counterDefinitions
         .filter((counter) => isActive || counter.alwaysDisplayed)
         .map((counter) => renderCounter(counter))}

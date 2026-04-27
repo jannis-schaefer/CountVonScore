@@ -105,6 +105,38 @@ export const parseGameConfig = (raw: string, fileName?: string): GameConfig => {
         threshold: Number.isFinite(Number(config.elimination.threshold ?? 0))
           ? Number(config.elimination.threshold ?? 0)
           : 0,
+        outcome: (() => {
+          const value = config.elimination?.outcome as unknown;
+          if (value === 'loss' || value === 'win') {
+            return value;
+          }
+          if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (['lose', 'loss', 'eliminate'].includes(normalized)) {
+              return 'loss' as const;
+            }
+            if (['win', 'winner', 'winning', 'placement'].includes(normalized)) {
+              return 'win' as const;
+            }
+          }
+          return 'loss' as const;
+        })(),
+        rule: (() => {
+          const value = config.elimination?.rule as unknown;
+          if (value === 'stayAboveMinimum' || value === 'reachMinimum') {
+            return value;
+          }
+          if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (['stayaboveminimum', 'minimumtostayabove', 'stay-above'].includes(normalized)) {
+              return 'stayAboveMinimum' as const;
+            }
+            if (['reachminimum', 'minimumtoreach', 'reach-minimum'].includes(normalized)) {
+              return 'reachMinimum' as const;
+            }
+          }
+          return 'stayAboveMinimum' as const;
+        })(),
       }
     : undefined;
 

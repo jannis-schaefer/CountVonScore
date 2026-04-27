@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGameStore } from '../store/gameStore';
+import { evaluatePlayerEliminationStatus, useGameStore } from '../store/gameStore';
 import { PlayerCard } from '../components/PlayerCard';
 import { TurnNavigation } from '../components/TurnNavigation';
 import { GameControls } from '../components/GameControls';
@@ -17,6 +17,11 @@ export const SharedDeviceMode: React.FC = () => {
     turnNumber,
     history,
     counterDefinitions,
+    eliminationEnabled,
+    eliminationCounterId,
+    eliminationThreshold,
+    eliminationOutcome,
+    eliminationRule,
     setCounter,
     setStartingPlayer,
     nextTurn,
@@ -198,6 +203,13 @@ export const SharedDeviceMode: React.FC = () => {
           <div className="tabletop-grid">
             {displayedPlayers.map((player, index) => {
               const isActive = index === displayedPlayerIndex;
+              const status = evaluatePlayerEliminationStatus(player, displayedPlayers, {
+                enabled: eliminationEnabled,
+                counterId: eliminationCounterId,
+                threshold: eliminationThreshold,
+                outcome: eliminationOutcome,
+                rule: eliminationRule,
+              });
               return (
                 <div
                   key={player.id}
@@ -206,6 +218,8 @@ export const SharedDeviceMode: React.FC = () => {
                   <PlayerCard
                     player={player}
                     isActive={isActive}
+                    statusLabel={status.label}
+                    isOutOfTurnRotation={status.isOutOfTurnRotation}
                     onCounterChange={(counterId, value) =>
                       handleCounterChange(player.id, counterId, value)
                     }

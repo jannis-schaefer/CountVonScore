@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGameStore } from '../store/gameStore';
+import { evaluatePlayerEliminationStatus, useGameStore } from '../store/gameStore';
 import { PlayerCard } from '../components/PlayerCard';
 import { GameControls } from '../components/GameControls';
 
@@ -11,6 +11,11 @@ export const MultiplayerMode: React.FC = () => {
     history,
     counterDefinitions,
     currentPlayerIndex,
+    eliminationEnabled,
+    eliminationCounterId,
+    eliminationThreshold,
+    eliminationOutcome,
+    eliminationRule,
     setCounter,
     resetGame,
     undo,
@@ -41,6 +46,15 @@ export const MultiplayerMode: React.FC = () => {
   };
 
   const trackedPlayer = players[trackedPlayerIndex];
+  const trackedPlayerStatus = trackedPlayer
+    ? evaluatePlayerEliminationStatus(trackedPlayer, players, {
+        enabled: eliminationEnabled,
+        counterId: eliminationCounterId,
+        threshold: eliminationThreshold,
+        outcome: eliminationOutcome,
+        rule: eliminationRule,
+      })
+    : null;
 
   return (
     <div className="page-shell">
@@ -84,6 +98,8 @@ export const MultiplayerMode: React.FC = () => {
               <PlayerCard
                 player={trackedPlayer}
                 isActive={true}
+                statusLabel={trackedPlayerStatus?.label}
+                isOutOfTurnRotation={trackedPlayerStatus?.isOutOfTurnRotation}
                 onCounterChange={(counterId, value) =>
                   handleCounterChange(trackedPlayer.id, counterId, value)
                 }

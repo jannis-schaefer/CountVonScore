@@ -3,7 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { useTheme } from '../context/ThemeContext';
 import { loadBundledGameConfigs, parseGameConfig, stringifyGameConfigYaml } from '../utils/gameConfig';
-import type { CounterDefinition, GameConfig, PlayerOverride } from '../store/gameStore';
+import type {
+  CounterDefinition,
+  EliminationOutcome,
+  EliminationRule,
+  GameConfig,
+  PlayerOverride,
+} from '../store/gameStore';
 
 const createNewCounter = (index: number): CounterDefinition => ({
   id: `counter-${Date.now()}-${index}`,
@@ -24,6 +30,8 @@ export const Settings: React.FC = () => {
     eliminationEnabled,
     eliminationCounterId,
     eliminationThreshold,
+    eliminationOutcome,
+    eliminationRule,
     currentGameConfigName,
     setCounterDefinitions,
     setDefaultPlayerCount,
@@ -44,6 +52,10 @@ export const Settings: React.FC = () => {
     useState<string>(eliminationCounterId);
   const [editableEliminationThreshold, setEditableEliminationThreshold] =
     useState<number>(eliminationThreshold);
+  const [editableEliminationOutcome, setEditableEliminationOutcome] =
+    useState<EliminationOutcome>(eliminationOutcome);
+  const [editableEliminationRule, setEditableEliminationRule] =
+    useState<EliminationRule>(eliminationRule);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [editingPlayerIds, setEditingPlayerIds] = useState<Set<string>>(new Set());
   const [editingPlayerNames, setEditingPlayerNames] = useState<Record<string, string>>({});
@@ -74,6 +86,14 @@ export const Settings: React.FC = () => {
   useEffect(() => {
     setEditableEliminationThreshold(eliminationThreshold);
   }, [eliminationThreshold]);
+
+  useEffect(() => {
+    setEditableEliminationOutcome(eliminationOutcome);
+  }, [eliminationOutcome]);
+
+  useEffect(() => {
+    setEditableEliminationRule(eliminationRule);
+  }, [eliminationRule]);
 
   useEffect(() => {
     setConfigName(currentGameConfigName);
@@ -152,6 +172,8 @@ export const Settings: React.FC = () => {
       config.elimination?.counterId ?? nextCounters[0]?.id ?? counterDefinitions[0]?.id ?? ''
     );
     setEditableEliminationThreshold(config.elimination?.threshold ?? eliminationThreshold);
+    setEditableEliminationOutcome(config.elimination?.outcome ?? eliminationOutcome);
+    setEditableEliminationRule(config.elimination?.rule ?? eliminationRule);
   };
 
   const handleApplySettings = () => {
@@ -192,6 +214,8 @@ export const Settings: React.FC = () => {
       enabled: editableEliminationEnabled,
       counterId: editableEliminationCounterId,
       threshold: Number(editableEliminationThreshold || 0),
+      outcome: editableEliminationOutcome,
+      rule: editableEliminationRule,
     });
     navigate(-1);
   };
@@ -239,6 +263,8 @@ export const Settings: React.FC = () => {
         enabled: editableEliminationEnabled,
         counterId: editableEliminationCounterId,
         threshold: editableEliminationThreshold,
+        outcome: editableEliminationOutcome,
+        rule: editableEliminationRule,
       },
     };
 
@@ -443,7 +469,7 @@ export const Settings: React.FC = () => {
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Elimination / Win Condition</h2>
           <p style={{ opacity: 0.75, marginBottom: '12px' }}>
-            When enabled, players with monitored counter value below threshold are skipped in turn order.
+            Configure whether players are removed from turn rotation by losing or by finishing in placement order.
           </p>
           <div className="settings-grid">
             <div className="toggle-row">
@@ -454,6 +480,30 @@ export const Settings: React.FC = () => {
                 checked={editableEliminationEnabled}
                 onChange={(event) => setEditableEliminationEnabled(event.target.checked)}
               />
+            </div>
+
+            <div className="settings-row">
+              <label>Outcome Type</label>
+              <select
+                className="input"
+                value={editableEliminationOutcome}
+                onChange={(event) => setEditableEliminationOutcome(event.target.value as EliminationOutcome)}
+              >
+                <option value="loss">Loss Elimination</option>
+                <option value="win">Winning Placement</option>
+              </select>
+            </div>
+
+            <div className="settings-row">
+              <label>Trigger Rule</label>
+              <select
+                className="input"
+                value={editableEliminationRule}
+                onChange={(event) => setEditableEliminationRule(event.target.value as EliminationRule)}
+              >
+                <option value="stayAboveMinimum">Minimum counter to stay above</option>
+                <option value="reachMinimum">Minimum counter to reach</option>
+              </select>
             </div>
 
             <div className="settings-row">
@@ -472,7 +522,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className="settings-row">
-              <label>Minimum Value (alive if &gt;= threshold)</label>
+              <label>Threshold</label>
               <input
                 type="number"
                 className="input"
