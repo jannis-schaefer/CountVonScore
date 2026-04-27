@@ -31,7 +31,10 @@ export interface SettingsDraft {
   canSaveCounters: boolean;
   // Actions
   applyConfigToDraft: (config: GameConfig) => void;
-  commitDraft: (isNewGameSetup: boolean) => boolean;
+  commitDraft: (
+    isNewGameSetup: boolean,
+    recalculateFromInitialValues?: boolean
+  ) => 'applied' | 'invalid' | 'needs-recalculate-confirm';
   handleImportConfig: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleExportConfig: () => void;
 }
@@ -120,10 +123,13 @@ export function useSettingsDraft(): SettingsDraft {
     setEditableEliminationRule(config.elimination?.rule ?? eliminationRule);
   };
 
-  const commitDraft = (isNewGameSetup: boolean): boolean => {
+  const commitDraft = (
+    isNewGameSetup: boolean,
+    recalculateFromInitialValues?: boolean
+  ): 'applied' | 'invalid' | 'needs-recalculate-confirm' => {
     if (!canSaveCounters) {
       setConfigMessage('Every counter requires both an id and a name.');
-      return false;
+      return 'invalid';
     }
 
     let parsedOverrides: PlayerOverride[];
@@ -134,19 +140,19 @@ export function useSettingsDraft(): SettingsDraft {
     } catch (error) {
       console.error(error);
       setConfigMessage('Invalid overrides JSON. Expected an array of player override objects.');
-      return false;
+      return 'invalid';
     }
 
     const countersChanged = JSON.stringify(editableCounters) !== JSON.stringify(counterDefinitions);
-    const recalculateFromInitialValues =
-      countersChanged && !isNewGameSetup
-        ? window.confirm(
-            'Recalculate current and historical totals based on changes to counter starting values?\n\n' +
-              'OK: Recalculate totals\nCancel: Keep existing totals as-is'
-          )
-        : false;
+    const requiresRecalculationDecision = countersChanged && !isNewGameSetup;
 
-    setCounterDefinitions(editableCounters, { recalculateFromInitialValues });
+    if (requiresRecalculationDecision && recalculateFromInitialValues === undefined) {
+      return 'needs-recalculate-confirm';
+    }
+
+    setCounterDefinitions(editableCounters, {
+      recalculateFromInitialValues: Boolean(recalculateFromInitialValues),
+    });
     setCurrentGameConfigName(configName);
     setDefaultPlayerCount(Math.max(1, Number(editableDefaultPlayerCount || 1)));
     setPlayerOverrides(parsedOverrides);
@@ -158,7 +164,7 @@ export function useSettingsDraft(): SettingsDraft {
       rule: editableEliminationRule,
     });
 
-    return true;
+    return 'applied';
   };
 
   const handleImportConfig = async (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -9,6 +9,7 @@ import { PlayerDefaultsSection } from '../components/settings/PlayerDefaultsSect
 import { PlayersLiveSection } from '../components/settings/PlayersLiveSection';
 import { BundledPresetsSection } from '../components/settings/BundledPresetsSection';
 import { ImportExportSection } from '../components/settings/ImportExportSection';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
@@ -16,13 +17,28 @@ export const Settings: React.FC = () => {
   const { players, addPlayer, removePlayer, updatePlayerName } = useGameStore();
   const { theme, toggleTheme } = useTheme();
   const draft = useSettingsDraft();
+  const [showRecalculateDialog, setShowRecalculateDialog] = React.useState(false);
 
   const isNewGameSetup =
     typeof (location.state as { context?: unknown } | null)?.context === 'string' &&
     (location.state as { context?: string }).context === 'new-game-setup';
 
   const handleApplySettings = () => {
-    if (draft.commitDraft(isNewGameSetup)) {
+    const result = draft.commitDraft(isNewGameSetup);
+    if (result === 'applied') {
+      navigate(-1);
+      return;
+    }
+
+    if (result === 'needs-recalculate-confirm') {
+      setShowRecalculateDialog(true);
+    }
+  };
+
+  const handleRecalculateChoice = (recalculateFromInitialValues: boolean) => {
+    const result = draft.commitDraft(isNewGameSetup, recalculateFromInitialValues);
+    setShowRecalculateDialog(false);
+    if (result === 'applied') {
       navigate(-1);
     }
   };
@@ -108,6 +124,19 @@ export const Settings: React.FC = () => {
           onImport={draft.handleImportConfig}
           onExport={draft.handleExportConfig}
           configMessage={draft.configMessage}
+        />
+
+        <ConfirmDialog
+          open={showRecalculateDialog}
+          title="Recalculate Totals?"
+          message={
+            'Counter starting values changed.\n\n' +
+            'Recalculate current and historical totals from those starting values, or keep existing totals as they are?'
+          }
+          confirmLabel="Recalculate Totals"
+          cancelLabel="Keep Existing Totals"
+          onConfirm={() => handleRecalculateChoice(true)}
+          onCancel={() => handleRecalculateChoice(false)}
         />
       </div>
     </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { loadBundledGameConfigs } from '../utils/gameConfig';
 import type { GameConfig } from '../store/gameStore';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const defaultConfig: GameConfig = {
   name: 'Default',
@@ -44,6 +45,7 @@ export const ModeSelection: React.FC = () => {
   const [selectedConfigName, setSelectedConfigName] = React.useState('');
   const [isDirty, setIsDirty] = React.useState(false);
   const [message, setMessage] = React.useState('');
+  const [pendingPreset, setPendingPreset] = React.useState<GameConfig | null>(null);
 
   React.useEffect(() => {
     const run = async () => {
@@ -64,21 +66,21 @@ export const ModeSelection: React.FC = () => {
     navigate(mode === 'shared' ? '/shared' : '/multiplayer');
   };
 
-  const handleApplyPreset = (config: GameConfig) => {
-    if (isDirty) {
-      const shouldReplace = window.confirm(
-        'You have unsaved setup changes. Replace setup with the selected preset?'
-      );
-      if (!shouldReplace) {
-        return;
-      }
-    }
-
+  const applyPreset = (config: GameConfig) => {
     applyGameConfig(config);
     setSelectedConfigName(config.name ?? 'Preset');
     setPlayerCount(Math.max(1, config.players?.defaultPlayerCount ?? defaultPlayerCount));
     setIsDirty(false);
     setMessage(`Loaded preset: ${config.name ?? 'Preset'}. You can edit settings before starting.`);
+  };
+
+  const handleApplyPreset = (config: GameConfig) => {
+    if (isDirty) {
+      setPendingPreset(config);
+      return;
+    }
+
+    applyPreset(config);
   };
 
   return (
@@ -187,6 +189,21 @@ export const ModeSelection: React.FC = () => {
           </div>
           {message ? <p style={{ opacity: 0.8, marginTop: '10px' }}>{message}</p> : null}
         </div>
+
+        <ConfirmDialog
+          open={pendingPreset !== null}
+          title="Replace Unsaved Setup Changes?"
+          message="You have unsaved setup changes. Replace setup with the selected preset?"
+          confirmLabel="Replace With Preset"
+          cancelLabel="Keep Current Setup"
+          onConfirm={() => {
+            if (pendingPreset) {
+              applyPreset(pendingPreset);
+            }
+            setPendingPreset(null);
+          }}
+          onCancel={() => setPendingPreset(null)}
+        />
       </div>
     </div>
   );
