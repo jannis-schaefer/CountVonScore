@@ -10,7 +10,7 @@ import { usePlayerCardLayout } from '../context/PlayerCardLayoutContext';
 
 export const SharedDeviceMode: React.FC = () => {
   const navigate = useNavigate();
-  const { layoutId } = usePlayerCardLayout();
+  const { layoutId, autoFocusEnabled } = usePlayerCardLayout();
   const {
     players,
     viewedPlayers,
@@ -209,7 +209,7 @@ export const SharedDeviceMode: React.FC = () => {
             layoutId={layoutId}
             activePlayerId={currentPlayer?.id}
             focusKey={focusKey}
-            enableAutoFocus={startingPlayerChosen}
+            enableAutoFocus={startingPlayerChosen && autoFocusEnabled}
             items={displayedPlayers.map((player, index) => {
               const isActive = index === displayedPlayerIndex;
               const status = evaluatePlayerEliminationStatus(player, displayedPlayers, {

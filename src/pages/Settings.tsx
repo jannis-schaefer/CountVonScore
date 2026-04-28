@@ -17,7 +17,7 @@ export const Settings: React.FC = () => {
   const location = useLocation();
   const { players, addPlayer, removePlayer, updatePlayerName } = useGameStore();
   const { theme, selectTheme, availableThemes } = useTheme();
-  const { layoutId, selectLayout, availableLayouts } = usePlayerCardLayout();
+  const { layoutId, selectLayout, availableLayouts, autoFocusEnabled, setAutoFocusEnabled } = usePlayerCardLayout();
   const draft = useSettingsDraft();
   const [showRecalculateDialog, setShowRecalculateDialog] = React.useState(false);
 
@@ -97,6 +97,16 @@ export const Settings: React.FC = () => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="controls-row controls-start" style={{ marginTop: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={autoFocusEnabled}
+                  onChange={(e) => setAutoFocusEnabled(e.target.checked)}
+                />
+                Auto-scroll to current player on turn change
+              </label>
             </div>
           </div>
         </div>
