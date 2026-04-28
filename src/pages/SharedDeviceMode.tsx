@@ -73,6 +73,7 @@ export const SharedDeviceMode: React.FC = () => {
       : 'Next Turn'
     : 'End Turn';
   const hasUndoAvailable = history.length > 0 || (!isViewingHistoricalTurn && turnNumber > 1);
+  const focusKey = `${viewedTurnNumber ?? turnNumber}:${displayedPlayerIndex}`;
 
   const handleCounterChange = (
     playerId: string,
@@ -206,6 +207,9 @@ export const SharedDeviceMode: React.FC = () => {
 
           <PlayerCardsLayout
             layoutId={layoutId}
+            activePlayerId={currentPlayer?.id}
+            focusKey={focusKey}
+            enableAutoFocus={startingPlayerChosen}
             items={displayedPlayers.map((player, index) => {
               const isActive = index === displayedPlayerIndex;
               const status = evaluatePlayerEliminationStatus(player, displayedPlayers, {

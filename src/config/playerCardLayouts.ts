@@ -25,6 +25,11 @@ export const PLAYER_CARD_LAYOUTS: Record<string, PlayerCardLayoutDefinition> = {
     label: 'Minimalist',
     description: 'Large counters, minimal text—maximizes display space for active player.',
   },
+  seatRail: {
+    id: 'seatRail',
+    label: 'Seat Rail',
+    description: 'Horizontal seat cards with snap scrolling and no overlap',
+  },
 };
 
 export const DEFAULT_PLAYER_CARD_LAYOUT_ID = 'grid';

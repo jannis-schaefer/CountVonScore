@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface PlayerCardsLayoutItem {
   id: string;
@@ -8,6 +8,9 @@ interface PlayerCardsLayoutItem {
 interface PlayerCardsLayoutProps {
   layoutId: string;
   items: PlayerCardsLayoutItem[];
+  activePlayerId?: string;
+  focusKey?: string | number;
+  enableAutoFocus?: boolean;
 }
 
 const EDGE_ORDER = ['bottom', 'right', 'top', 'left'] as const;
@@ -17,14 +20,73 @@ const getEdgeForIndex = (index: number): Edge => {
   return EDGE_ORDER[index % EDGE_ORDER.length];
 };
 
-export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, items }) => {
+export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({
+  layoutId,
+  items,
+  activePlayerId,
+  focusKey,
+  enableAutoFocus = true,
+}) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!enableAutoFocus || !activePlayerId) {
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const activeElement = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-player-card-id]')
+    ).find((element) => element.dataset.playerCardId === activePlayerId);
+
+    if (!activeElement) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      activeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+
+      activeElement.focus({ preventScroll: true });
+    });
+  }, [activePlayerId, focusKey, enableAutoFocus, layoutId]);
+
+  const renderCardTarget = (item: PlayerCardsLayoutItem, className: string) => {
+    const isActive = item.id === activePlayerId;
+    return (
+      <div
+        key={item.id}
+        className={`${className} ${isActive ? 'player-layout-active-target' : ''}`.trim()}
+        data-player-card-id={item.id}
+        tabIndex={-1}
+      >
+        {item.node}
+      </div>
+    );
+  };
+
+  if (layoutId === 'seatRail') {
+    return (
+        <div className="player-layout-seat-rail" ref={containerRef}>
+          {items.map((item) => (
+            renderCardTarget(item, 'player-layout-seat-rail-item card-button')
+          ))}
+        </div>
+      );
+  }
+
   if (layoutId === 'minimalist') {
     return (
-      <div className="player-layout-scroll" aria-label="Player cards">
+      <div className="player-layout-scroll" aria-label="Player cards" ref={containerRef}>
         {items.map((item) => (
-          <section key={item.id} className="player-layout-scroll-item card-button">
-            {item.node}
-          </section>
+          renderCardTarget(item, 'player-layout-scroll-item card-button')
         ))}
       </div>
     );
@@ -32,11 +94,9 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, 
 
   if (layoutId !== 'tabletop' && layoutId !== 'tabletopRotated') {
     return (
-      <div className="tabletop-grid">
+      <div className="tabletop-grid" ref={containerRef}>
         {items.map((item) => (
-          <div key={item.id} className="card-button">
-            {item.node}
-          </div>
+          renderCardTarget(item, 'card-button')
         ))}
       </div>
     );
@@ -65,7 +125,12 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, 
             : '';
 
           return (
-            <div key={item.id} className={`player-layout-card-wrap ${rotatedSideClass}`.trim()}>
+            <div
+              key={item.id}
+              className={`player-layout-card-wrap ${rotatedSideClass} ${item.id === activePlayerId ? 'player-layout-active-target' : ''}`.trim()}
+              data-player-card-id={item.id}
+              tabIndex={-1}
+            >
               {isRotated ? (
                 <div className={rotateClass}>
                   {item.node}
@@ -81,7 +146,7 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({ layoutId, 
   };
 
   return (
-    <div className="player-layout-table">
+    <div className="player-layout-table" ref={containerRef}>
       {renderSide('top', buckets.top)}
       {renderSide('left', buckets.left)}
       {renderSide('right', buckets.right)}

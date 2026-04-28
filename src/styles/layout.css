@@ -240,6 +240,24 @@
   letter-spacing: 0.06em;
 }
 
+.player-layout-seat-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  padding-bottom: 8px;
+}
+
+.player-layout-seat-rail-item {
+  flex: 0 0 min(420px, calc(100vw - 40px));
+  scroll-snap-align: start;
+}
+
+.player-layout-seat-rail-item .player-card {
+  width: 100%;
+}
+
 .player-mini-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -323,6 +341,12 @@
   background: transparent;
   padding: 0;
   text-align: left;
+}
+
+.player-layout-active-target:focus-visible {
+  outline: 2px solid var(--accent-color, #4da3ff);
+  outline-offset: 4px;
+  border-radius: 12px;
 }
 
 .tabletop-grid {
