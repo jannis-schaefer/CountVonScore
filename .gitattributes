@@ -1,0 +1,8 @@
+# Merge strategy for session file:
+# When merging a feature branch into main, always keep main's version.
+# This prevents per-session working notes from polluting the main branch.
+# The handoff agent archives it to a dated file before merging as well.
+#
+# One-time setup required per clone (run once after cloning):
+#   git config merge.ours.driver true
+docs/ai/sessions/current-session.md merge=ours

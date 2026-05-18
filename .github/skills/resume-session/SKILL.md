@@ -6,7 +6,7 @@ user-invocable: true
 
 # Resume Session
 
-Rehydrate your context from committed project memory.
+Rehydrate context and set up the working branch at the start of a session.
 
 ## When to Use
 
@@ -16,45 +16,48 @@ Rehydrate your context from committed project memory.
 
 ## Procedure
 
-1. **Load project memory** — Run this skill to fetch `docs/ai/project-memory.md`, `docs/ai/current-plan.md`, and the latest session note
-2. **Review summary** — Skill outputs a concise overview of:
-   - Project basics (tech stack, structure)
-   - Build commands and verification checklist
-   - Current plan scope and next steps
-   - Latest session progress and blockers
-3. **Ask for direction** — Skill asks: "What's the goal for this session? Continue the current plan, start new work, or investigate a bug?"
-4. **Proceed** — You're now ready to start work with full context
+1. **Read project memory** — Load `docs/ai/project-memory.md`, `docs/ai/current-plan.md`, and `docs/ai/sessions/current-session.md`
+2. **Check for interrupted session** — If `current-session.md` has content (not the empty template), an earlier session was interrupted. Read the checkpoint log and intent before proceeding.
+3. **Summarize context** — Output a concise overview of:
+   - Active plan scope and current step
+   - What was last completed (from checkpoint log or latest dated session note)
+   - Any known blockers
+4. **Checkout or create a feature branch** — All work happens on branches, not main:
+   ```bash
+   git checkout main && git pull
+   git checkout -b feat/<slug>   # e.g. feat/compact-table-layout
+   ```
+   If resuming an existing branch: `git checkout feat/<slug> && git pull`
+5. **Initialize `current-session.md`** — Fill in the session intent, active step, and branch name, then commit and push immediately:
+   ```bash
+   git add docs/ai/sessions/current-session.md
+   git commit -m "chore: start session - <brief intent>"
+   git push
+   ```
+6. **Start work** — First checkpoint commit happens as soon as meaningful progress is made.
 
 ## What You'll See
 
-The skill outputs something like:
-
 ```
-## Project Context Loaded
+## Context Loaded
 
-### Project Basics
-- Star Realms Counter: PWA for multiplayer card game tracking
-- Tech: React 19, TypeScript, Vite, Zustand, CSS themes
-- Build: npm run dev, npm run build, npx tsc --noEmit
+### Active Plan
+Title: Add Compact Table Layout
+Scope: 4-player layout around device edges
+Status: Not started
+Next Step: Step 1 — Register layout in src/config/playerCardLayouts.ts
 
-### Current Plan Status
-**Title**: Add Compact Table Layout
-**Scope**: 4-player layout positioned around device edges
-**Status**: Not started
-**Next Step**: Register layout in src/config/playerCardLayouts.ts
+### Last Session
+- Completed: Layout refactor (CSS consolidation)
+- Remaining: None; ready for new work
 
-### Latest Session (2026-05-18 16:30)
-- Completed: Layout refactor for code clarity
-- Remaining: None (prior session done)
-- Recommended: Start new compact-table layout work
+### Current Session File
+- Status: Empty template (no interrupted session)
+- Branch to create: feat/compact-table-layout
 
-### Next Action for You
-What's your goal?
-1. Continue the current plan
-2. Start new work (describe it)
-3. Review or fix something specific
+### Ready to start. Branch created and session file initialized.
 ```
 
 ## How to Use
 
-Type `/resume-session` in chat to invoke, or ask a human agent to use this skill when onboarding to a new task.
+Type `/resume-session` in chat to invoke, or ask Copilot to use this skill at the start of any new task.

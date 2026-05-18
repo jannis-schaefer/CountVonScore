@@ -2,17 +2,76 @@
 
 Guidelines for all AI agents working on this repository.
 
+## Critical: This Workspace Is Transient
+
+> **Anything not pushed to the remote repository WILL be lost if the session ends unexpectedly.**
+>
+> Commit and push after every meaningful unit of work. Do not batch all commits to the end of a session.
+
+## One-Time Setup (Run After Cloning)
+
+```bash
+git config merge.ours.driver true
+```
+
+This enables the `.gitattributes` merge rule that prevents session working notes from overwriting the clean template on main when feature branches are merged.
+
+## Git Workflow
+
+All work happens on feature branches, not directly on main:
+
+```bash
+git checkout main && git pull
+git checkout -b feat/<slug>
+# ... work, commit, push frequently ...
+# When production-ready: merge to main, delete branch
+```
+
+**After every meaningful checkpoint:**
+```bash
+git add -A && git commit -m "<type>: <description>" && git push
+```
+
+**Before any push involving code changes:**
+```bash
+npx tsc --noEmit    # Must be clean
+npm run build       # Must succeed
+```
+
+See `.github/skills/git-workflow/SKILL.md` for full commit message conventions and branch workflow.
+
+## Session Workflow
+
+**At session start:**
+1. Checkout or create a feature branch
+2. Update `docs/ai/sessions/current-session.md` with intent and active step
+3. Commit and push the session file immediately
+4. Read `docs/ai/project-memory.md` and `docs/ai/current-plan.md`
+
+**During work:**
+- Update `docs/ai/sessions/current-session.md` checkpoint log after each commit
+- Push every meaningful change; do not wait until session end
+
+**At session end (or when production-ready):**
+- Archive `docs/ai/sessions/current-session.md` → `docs/ai/sessions/YYYY-MM-DD-hhmm.md`
+- Update `docs/ai/current-plan.md` with progress
+- Add decisions to `docs/ai/decision-log.md` if any were made
+- Commit all changes and push
+- Merge feature branch to main when ready to deploy
+
 ## Memory & Context Workflow
 
 All durable project memory lives in `docs/ai/`:
 - **Read first**: `docs/ai/project-memory.md` for build commands, conventions, file structure
 - **Then read**: `docs/ai/current-plan.md` for the active scope and next steps
-- **Optional**: Latest file in `docs/ai/sessions/` if resuming after a break
+- **Check**: `docs/ai/sessions/current-session.md` if a session was interrupted
+- **Optional**: Latest dated file in `docs/ai/sessions/` for prior session context
 
 When your session ends:
+- Archive `docs/ai/sessions/current-session.md` to a dated file
 - Update `docs/ai/current-plan.md` with progress and any scope changes
 - Add important decisions to `docs/ai/decision-log.md` (append-only)
-- Create a dated note in `docs/ai/sessions/YYYY-MM-DD-hhmm.md` with completed work and next steps
+- Commit and push all changes
 
 ## Codebase Essentials
 

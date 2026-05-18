@@ -7,7 +7,7 @@ argument-hint: "Briefly describe what was completed in this session."
 
 # Capture Handoff
 
-Write session summary and update project memory at session closeout.
+Write session summary and update project memory at session closeout. When ready to merge to main, just merge — `current-session.md` is protected by `.gitattributes` and main's template wins automatically.
 
 ## When to Use
 
@@ -29,9 +29,19 @@ Write session summary and update project memory at session closeout.
    - **Updated plan** in `docs/ai/current-plan.md` (status, progress)
    - **New decision entries** in `docs/ai/decision-log.md` (if decisions were made)
 
-3. **Review** — Skill shows you the proposed updates and asks to confirm
+3. **Commit and push** all memory updates:
+   ```bash
+   git add docs/ai/
+   git commit -m "chore: session handoff - <brief summary>"
+   git push
+   ```
 
-4. **Commit** — Skill writes the final updates to git-tracked files
+4. **Merge when production-ready** — When the branch is ready to deploy:
+   ```bash
+   git checkout main && git merge feat/<slug> && git push
+   git branch -d feat/<slug>
+   ```
+   `current-session.md` on main stays as the empty template automatically (`.gitattributes` handles this).
 
 ## Session Note Template
 
