@@ -240,21 +240,30 @@
   letter-spacing: 0.06em;
 }
 
-.player-layout-seat-rail {
+.player-layout-seat-rail,
+.player-layout-scroll {
   display: flex;
   gap: 12px;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-snap-type: x proximity;
   padding-bottom: 8px;
+}
+
+.player-layout-seat-rail {
+  scroll-snap-type: x proximity;
+}
+
+.player-layout-seat-rail-item,
+.player-layout-scroll-item {
+  scroll-snap-align: start;
 }
 
 .player-layout-seat-rail-item {
   flex: 0 0 min(420px, calc(100vw - 40px));
-  scroll-snap-align: start;
 }
 
-.player-layout-seat-rail-item .player-card {
+.player-layout-seat-rail-item .player-card,
+.player-layout-scroll-item .player-card {
   width: 100%;
 }
 
@@ -355,10 +364,6 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.tabletop-grid-landscape {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
 .player-layout-table {
   display: grid;
   gap: 12px;
@@ -376,42 +381,39 @@
   min-height: 0;
 }
 
-.player-layout-side-top {
-  grid-area: top;
+.player-layout-side-top,
+.player-layout-side-bottom {
   display: flex;
   gap: 12px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x proximity;
   padding-bottom: 4px;
+}
+
+.player-layout-side-top {
+  grid-area: top;
 }
 
 .player-layout-side-bottom {
   grid-area: bottom;
-  display: flex;
+}
+
+.player-layout-side-left,
+.player-layout-side-right {
+  display: grid;
   gap: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;
-  padding-bottom: 4px;
+  align-content: start;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .player-layout-side-left {
   grid-area: left;
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .player-layout-side-right {
   grid-area: right;
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .player-layout-card-wrap {
@@ -450,21 +452,11 @@
 }
 
 .player-layout-scroll {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
 }
 
 .player-layout-scroll-item {
   flex: 0 0 min(460px, calc(100vw - 48px));
-  scroll-snap-align: start;
-}
-
-.player-layout-scroll-item .player-card {
-  width: 100%;
 }
 
 .player-layout-scroll-item .counter-display {
@@ -557,7 +549,7 @@
 }
 
 @media (orientation: landscape) and (max-width: 980px) {
-  .tabletop-grid-landscape {
+  .tabletop-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

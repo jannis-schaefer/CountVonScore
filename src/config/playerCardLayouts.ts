@@ -28,7 +28,7 @@ export const PLAYER_CARD_LAYOUTS: Record<string, PlayerCardLayoutDefinition> = {
   seatRail: {
     id: 'seatRail',
     label: 'Seat Rail',
-    description: 'Horizontal seat cards with snap scrolling and no overlap',
+    description: 'Cards arranged in a rail for easy viewing by seated players.',
   },
 };
 

@@ -13,8 +13,24 @@ interface PlayerCardsLayoutProps {
   enableAutoFocus?: boolean;
 }
 
+interface LinearLayoutDefinition {
+  containerClassName: string;
+  itemClassName: string;
+}
+
 const EDGE_ORDER = ['bottom', 'right', 'top', 'left'] as const;
 type Edge = (typeof EDGE_ORDER)[number];
+
+const LINEAR_LAYOUTS: Record<string, LinearLayoutDefinition> = {
+  seatRail: {
+    containerClassName: 'player-layout-seat-rail',
+    itemClassName: 'player-layout-seat-rail-item card-button',
+  },
+  minimalist: {
+    containerClassName: 'player-layout-scroll',
+    itemClassName: 'player-layout-scroll-item card-button',
+  },
+};
 
 const getEdgeForIndex = (index: number): Edge => {
   return EDGE_ORDER[index % EDGE_ORDER.length];
@@ -28,6 +44,8 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({
   enableAutoFocus = true,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const isTableLayout = layoutId === 'tabletop' || layoutId === 'tabletopRotated';
+  const linearLayout = LINEAR_LAYOUTS[layoutId];
 
   useEffect(() => {
     if (!enableAutoFocus || !activePlayerId) {
@@ -72,27 +90,17 @@ export const PlayerCardsLayout: React.FC<PlayerCardsLayoutProps> = ({
     );
   };
 
-  if (layoutId === 'seatRail') {
+  if (linearLayout) {
     return (
-        <div className="player-layout-seat-rail" ref={containerRef}>
-          {items.map((item) => (
-            renderCardTarget(item, 'player-layout-seat-rail-item card-button')
-          ))}
-        </div>
-      );
-  }
-
-  if (layoutId === 'minimalist') {
-    return (
-      <div className="player-layout-scroll" aria-label="Player cards" ref={containerRef}>
+      <div className={linearLayout.containerClassName} aria-label="Player cards" ref={containerRef}>
         {items.map((item) => (
-          renderCardTarget(item, 'player-layout-scroll-item card-button')
+          renderCardTarget(item, linearLayout.itemClassName)
         ))}
       </div>
     );
   }
 
-  if (layoutId !== 'tabletop' && layoutId !== 'tabletopRotated') {
+  if (!isTableLayout) {
     return (
       <div className="tabletop-grid" ref={containerRef}>
         {items.map((item) => (
