@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 // Draft edge cases for future implementation. These are intentionally skipped
 // until expected behavior and UX details are confirmed.
@@ -21,10 +21,30 @@ test.describe('turn navigation edge case drafts', () => {
     // 4. Assert later turns were dropped and new timeline starts from edited state.
   });
 
-  test.skip('previous/next navigation disabled while historical turn is dirty until user resolves decision', async () => {
-    // Draft flow:
-    // 1. Enter historical view and edit counter.
-    // 2. Assert next/previous controls are disabled as expected.
-    // 3. Resolve with apply/continue and assert navigation re-enables.
+  test('previous/next navigation disabled while historical turn is dirty until user resolves decision', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'New Game' }).click();
+    await page.getByRole('button', { name: 'Confirm And Start' }).click();
+    await page.getByRole('button', { name: 'Player 1' }).click();
+
+    await page.getByRole('button', { name: 'End Turn' }).click();
+    await page.getByRole('button', { name: 'Previous Turn' }).click();
+    await expect(page.getByText(/Saved turn result/i)).toBeVisible();
+
+    const activeCard = page.locator('.player-card.active').first();
+    await activeCard.getByRole('button', { name: '+' }).first().click();
+
+    const previousTurnButton = page.getByRole('button', { name: 'Previous Turn' });
+    const returnToCurrentButton = page.getByRole('button', { name: 'Return to Current' });
+
+    await expect(page.getByRole('heading', { name: 'Past Turn Changed' })).toBeVisible();
+    await expect(previousTurnButton).toBeDisabled();
+    await expect(returnToCurrentButton).toBeDisabled();
+
+    await page.getByRole('button', { name: 'Apply Changes and Return' }).click();
+
+    await expect(page.getByText("Player 2's Turn")).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Previous Turn' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'End Turn' })).toBeEnabled();
   });
 });

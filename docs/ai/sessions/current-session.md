@@ -17,12 +17,15 @@ Execute Session 1 from current-plan:
 
 ## Active Step
 
-Step 1 — Create/check out session branch and capture lint baseline
+Step 3 — Quality gate execution and checkpointing (lint/typecheck/build/integration/required E2E pending command run capability)
 
 ## Checkpoint Log
 
 2026-05-19 17:05 — Session prepared in planning docs and logs; ready to begin implementation
+2026-05-19 17:40 — Context loaded and blockers confirmed (remote upstream not configured; command execution unavailable in this environment)
+2026-05-19 17:55 — Implemented first drafted regression case in turn-navigation edge drafts: historical dirty state disables previous/next navigation until resolved via apply path
 
 ## Blockers / Notes
 
 - Remote upstream not configured yet; continue local commits and push once remote exists.
+- Unable to execute npm scripts from this tool environment, so lint/typecheck/build/integration/required E2E and git checkpoint commands are documented but not command-verified in-session.

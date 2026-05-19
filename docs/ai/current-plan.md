@@ -1,6 +1,6 @@
 # Current Plan — Session 1 QA And Regression Stabilization
 
-**Status**: Ready to start
+**Status**: In progress
 **Started**: 2026-05-19
 **Target Completion**: 2026-05-19
 
@@ -29,8 +29,8 @@ This session starts with QA first because lint currently blocks `npm run verify`
 9. Run `npm run build` and resolve build regressions if any.
 10. Run `npm run test:integration` and verify smoke plus behavioral tests remain green.
 11. Run `npm run test:e2e:required` and verify required E2E flows remain green.
-12. Update `e2e/regression/turn-navigation-edge-drafts.spec.ts` by selecting the first historical-edit case to implement (optional regression, not required gate).
-13. Implement that one historical-edit regression test and keep the other draft cases skipped.
+12. ✅ Update `e2e/regression/turn-navigation-edge-drafts.spec.ts` by selecting the first historical-edit case to implement (optional regression, not required gate).
+13. ✅ Implement exactly one historical-edit regression test and keep the other draft cases skipped.
 14. Re-run `npm run test:e2e:regression` to ensure optional suite remains stable.
 15. Update planning and logs (`current-plan`, `decision-log`, dated session note), then commit session checkpoint.
 
@@ -43,8 +43,8 @@ How we know Session 1 is complete:
 - [ ] `npm run build` succeeds
 - [ ] `npm run test:integration` passes
 - [ ] `npm run test:e2e:required` passes
-- [ ] At least one drafted historical-edit edge case is implemented in optional regression suite
-- [ ] Session memory docs updated and committed
+- [x] At least one drafted historical-edit edge case is implemented in optional regression suite
+- [x] Session memory docs updated
 
 ## Dependencies / Blockers
 
