@@ -125,6 +125,8 @@ Custom agents are defined in `.github/agents/`:
 All agents support per-run tuning:
 - Model can be selected at invocation time.
 - Reasoning depth can be selected at invocation time (`low`, `medium`, `high`).
+- Agent model preferences belong in each agent frontmatter `model` field.
+- Reasoning depth is instruction-level guidance, not a frontmatter key.
 
 ## Conventions
 

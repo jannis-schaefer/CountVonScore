@@ -8,11 +8,6 @@ user-invocable: false
 
 # Git Checkpoint Worker Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Create clear, focused checkpoints and keep session logs in sync after meaningful progress.

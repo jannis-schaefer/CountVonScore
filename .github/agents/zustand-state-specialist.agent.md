@@ -8,11 +8,6 @@ user-invocable: false
 
 # Zustand State Specialist Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Own correctness and stability of Zustand state evolution, selectors, and persistence behavior.

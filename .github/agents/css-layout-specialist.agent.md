@@ -8,11 +8,6 @@ user-invocable: false
 
 # CSS Layout Specialist Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Own layout/style safety across breakpoints and themes without changing unrelated app logic.

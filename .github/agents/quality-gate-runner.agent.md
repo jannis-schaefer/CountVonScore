@@ -8,11 +8,6 @@ user-invocable: false
 
 # Quality Gate Runner Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Evaluate readiness by running or interpreting gate outputs for:
@@ -22,7 +17,7 @@ Evaluate readiness by running or interpreting gate outputs for:
 - `npm run test:integration`
 - `npm run test:e2e:required` (when behavior/UI changed)
 
-## Output Format
+## Output Contract
 
 - Gate matrix (`pass`/`fail`)
 - Blocking failures first

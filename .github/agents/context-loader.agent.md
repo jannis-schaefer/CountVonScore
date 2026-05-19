@@ -8,11 +8,6 @@ user-invocable: false
 
 # Context Loader Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Read durable memory and current workspace status, then output a compact session brief for the coordinator.
@@ -27,7 +22,7 @@ Read durable memory and current workspace status, then output a compact session 
 2. Confirm branch intent and checkpoint readiness.
 3. Identify blockers and required first command.
 
-## Output Format
+## Output Contract
 
 - Active scope summary
 - Current step and next step

@@ -8,11 +8,6 @@ user-invocable: false
 
 # E2E Flake Triage Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Diagnose flaky Playwright behavior and deliver deterministic stabilization actions with validation guidance.

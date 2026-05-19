@@ -8,11 +8,6 @@ user-invocable: false
 
 # CI Workflow Specialist Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Own CI gate policy integrity and workflow safety for release quality and runtime cost control.

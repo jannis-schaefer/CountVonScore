@@ -8,11 +8,6 @@ user-invocable: false
 
 # TypeScript Implementer Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Implement app logic and component changes in TypeScript/React files.

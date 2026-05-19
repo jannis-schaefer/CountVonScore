@@ -8,11 +8,6 @@ user-invocable: false
 
 # E2E Implementer Agent
 
-## Runtime Tuning
-
-- Model preference is configured in frontmatter `model`.
-- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
-
 ## Mission
 
 Implement Playwright tests with stable selectors, deterministic assertions, and clear suite placement (required vs optional regression).
