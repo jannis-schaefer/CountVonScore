@@ -1,6 +1,7 @@
 ---
 description: "User-facing orchestration agent. Delegates work to specialist agents, compares outputs, and decides next actions through the full session lifecycle."
 name: "SessionCoordinator"
+argument-hint: "Describe session goal, constraints, and desired checkpoint cadence."
 tools: [agent, read, search, edit]
 agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, QualityGateRunner, GitCheckpointWorker, Handoff]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
@@ -124,3 +125,21 @@ Every delegated worker must return:
 - Recommended next owner
 
 If contract is incomplete, request a revision from that worker before proceeding.
+
+## Smoke Prompt
+
+Use this prompt to test end-to-end coordination in one session:
+
+```text
+Run an implementation session for Session 1 QA and regression stabilization.
+
+Constraints:
+- Use ContextLoader first and summarize blockers.
+- Prioritize lint cleanup before any feature work.
+- If lint passes, run typecheck, build, integration tests, and required E2E.
+- Implement exactly one drafted regression case in e2e/regression/turn-navigation-edge-drafts.spec.ts.
+- After each meaningful milestone, create a focused git checkpoint.
+- End by updating handoff docs and summarizing remaining risks.
+
+Use worker delegation and provide evidence from each worker before continuing.
+```
