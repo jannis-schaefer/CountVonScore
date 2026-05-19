@@ -11,52 +11,42 @@ handoffs:
     agent: ContextLoader
     prompt: Build a concise session brief from docs and current state, then recommend the first execution step. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Implement TypeScript Changes
     agent: TypeScriptImplementer
     prompt: Implement the scoped TypeScript/React task with minimal diffs and report risks. Do not edit e2e/** or Playwright config. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Implement E2E Scenario
     agent: E2EImplementer
     prompt: Implement or promote one Playwright scenario with stable selectors and deterministic assertions. Own all edits in e2e/** and playwright config. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Run Quality Gates
     agent: QualityGateRunner
     prompt: Run and summarize lint, typecheck, build, integration, and required E2E gate outcomes. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Create Git Checkpoint
     agent: GitCheckpointWorker
     prompt: Stage relevant files, create a focused checkpoint commit, and record push status. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Capture Session Handoff
     agent: Handoff
     prompt: Update plan, decisions, and session handoff docs for current progress. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Triage E2E Flakes
     agent: E2EFlakeTriage
     prompt: Diagnose flaky E2E failures and return deterministic stabilization actions. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Review CSS Layout Risk
     agent: CSSLayoutSpecialist
     prompt: Evaluate layout/CSS changes for responsive regressions and visual risks. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Review Zustand State Semantics
     agent: ZustandStateSpecialist
     prompt: Review store actions/selectors/persistence semantics and identify state risks. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
   - label: Review CI Workflow Policy
     agent: CIWorkflowSpecialist
     prompt: Evaluate CI gating policy, required checks, and workflow quality risks. Return decision, evidence, files or commands, risks, and next owner.
     send: false
-    model: GPT-5.3-Codex (copilot)
 ---
 
 # Session Coordinator Agent
@@ -91,6 +81,14 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 3. Reject gate summaries without command evidence when runnable.
 4. If gates are not runnable, list unverified gates as blockers.
 5. Never mark complete without verification + checkpoint evidence (or explicit blocker log).
+
+## Reasoning Effort Policy
+
+1. Default delegated reasoning depth: `medium`.
+2. Use `high` for ambiguous failures, flaky behavior triage, or multi-gate blocker analysis.
+3. On first failed attempt from a worker, retry once with explicit `high` reasoning depth guidance.
+4. On second failed attempt, switch owner per routing guardrails and keep `high` reasoning depth guidance.
+5. Drop back to `medium` after a successful step to control latency/cost.
 
 ## Skill Callouts
 
