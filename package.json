@@ -8,7 +8,14 @@
     "dev": "vite",
     "build": "npm run generate-themes && tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:integration:smoke": "node scripts/integration-smoke.mjs",
+    "test:integration:behavior": "tsx scripts/integration-behavior.ts",
+    "test:integration": "npm run test:integration:smoke && npm run test:integration:behavior",
+    "test:e2e:required": "playwright test e2e/required --project=chromium",
+    "test:e2e:regression": "playwright test e2e/regression --project=chromium",
+    "test:e2e": "npm run test:e2e:required && npm run test:e2e:regression",
+    "verify": "npm run lint && npx tsc --noEmit && npm run build && npm run test:integration"
   },
   "dependencies": {
     "localforage": "^1.10.0",
@@ -20,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.60.0",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -28,6 +36,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "tsx": "^4.22.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.9"

@@ -1,0 +1,77 @@
+name: E2E Release Checks
+
+on:
+  pull_request:
+    branches:
+      - 'release/**'
+  workflow_dispatch:
+    inputs:
+      runOptionalRegressionC:
+        description: 'Run optional regression flow C (settings roundtrip with default theme)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  required-flows:
+    name: Required E2E flows (A + B)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run required E2E suite
+        run: npm run test:e2e:required
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-required
+          path: playwright-report/
+          retention-days: 14
+
+  optional-regression-c:
+    name: Optional regression flow C
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.runOptionalRegressionC }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run optional regression flow C
+        run: npm run test:e2e:regression
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-optional-c
+          path: playwright-report/
+          retention-days: 14

@@ -34,12 +34,18 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   };
 
   const renderCounter = (counter: CounterDefinition) => (
-    <div key={counter.id} className="stack" style={{ marginBottom: '15px' }}>
+    <div
+      key={counter.id}
+      className="stack"
+      style={{ marginBottom: '15px' }}
+      data-testid={`counter-${player.id}-${counter.id}`}
+    >
       <div className="counter-label">{counter.name}</div>
       <div
         className="counter-display"
         onClick={() => handleCounterClick(counter.id)}
         style={{ cursor: 'pointer', userSelect: 'none' }}
+        data-testid={`counter-display-${player.id}-${counter.id}`}
       >
         {editingCounter === counter.id ? (
           <input
@@ -64,12 +70,14 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <button
           className="counter-btn"
           onClick={() => onCounterChange(counter.id, (player.counters[counter.id] ?? 0) - 1)}
+          data-testid={`counter-dec-${player.id}-${counter.id}`}
         >
           −
         </button>
         <button
           className="counter-btn"
           onClick={() => onCounterChange(counter.id, (player.counters[counter.id] ?? 0) + 1)}
+          data-testid={`counter-inc-${player.id}-${counter.id}`}
         >
           +
         </button>
@@ -78,7 +86,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   );
 
   return (
-    <div className={`player-card ${isActive ? 'active' : ''}`} style={{ opacity: isOutOfTurnRotation ? 0.8 : 1 }}>
+    <div
+      className={`player-card ${isActive ? 'active' : ''}`}
+      style={{ opacity: isOutOfTurnRotation ? 0.8 : 1 }}
+      data-testid={`player-card-${player.id}`}
+    >
       <div className="player-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
         <span>{player.name}</span>
         {statusLabel ? (
