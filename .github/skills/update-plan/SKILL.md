@@ -98,4 +98,4 @@ How do we know this is done?
 
 ## How to Use
 
-Type `/update-plan [brief description]` in chat, or ask the Planner agent to use this skill when refining scope.
+Type `/update-plan [brief description]` in chat, or ask the SessionCoordinator agent to use this skill when refining scope.

@@ -110,8 +110,17 @@ npm run generate-themes  # Regenerate theme registry
 
 Custom agents are defined in `.github/agents/`:
 
-- **Planner** (`planner.agent.md`): Read memory, decompose features into steps, draft plans
-- **Handoff** (`handoff.agent.md`): Update memory files at session closeout, capture decisions
+- **SessionCoordinator** (`session-coordinator.agent.md`): User-facing orchestrator; delegates to specialist workers and decides next actions from returned evidence.
+- **ContextLoader** (`context-loader.agent.md`): Loads project memory, interrupted state, and active branch context at session start.
+- **TypeScriptImplementer** (`typescript-implementer.agent.md`): Implements app logic and component changes in TypeScript/React scope.
+- **E2EImplementer** (`e2e-implementer.agent.md`): Implements and promotes Playwright E2E scenarios.
+- **QualityGateRunner** (`quality-gate-runner.agent.md`): Runs lint/typecheck/build/integration/E2E verification gates and reports blockers.
+- **GitCheckpointWorker** (`git-checkpoint-worker.agent.md`): Creates focused git checkpoints and records session log updates.
+- **Handoff** (`handoff.agent.md`): Updates memory files at session closeout and captures decisions.
+
+All agents support per-run tuning:
+- Model can be selected at invocation time.
+- Reasoning depth can be selected at invocation time (`low`, `medium`, `high`).
 
 ## Conventions
 
