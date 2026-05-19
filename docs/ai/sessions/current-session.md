@@ -1,7 +1,8 @@
 # Current Session
 
-> This file is reset at the start of each session branch and archived at session end.
+> This file is reset at the start of each session branch.
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
+
 
 **Branch**: <!-- e.g. feat/compact-table-layout -->
 **Started**: <!-- YYYY-MM-DD HH:MM -->

@@ -47,6 +47,11 @@ git commit -m "chore: update session checkpoint"
 git push
 ```
 
+If `git push` fails because upstream/remote is not configured yet:
+- Warn that remote backup is unavailable
+- Continue with local commits (do not block session work)
+- Retry push after upstream is configured
+
 ### Commit Message Format
 
 Use a short type prefix followed by a clear description:
@@ -112,8 +117,10 @@ This enables the `.gitattributes` merge strategy that protects `docs/ai/sessions
 Before pushing code changes (not session notes), always verify:
 
 ```bash
-npx tsc --noEmit    # TypeScript must be clean
-npm run build       # Build must succeed
+npm run lint              # Lint must be clean
+npx tsc --noEmit          # TypeScript must be clean
+npm run build             # Build must succeed
+npm run test:integration  # Integration smoke checks must pass
 ```
 
 Do not push if either check fails.
@@ -124,6 +131,6 @@ Do not push if either check fails.
 # Checkpoint push (during work)
 git add -A && git commit -m "wip: <description>" && git push
 
-# Feature push (after verifying build)
-npx tsc --noEmit && npm run build && git add -A && git commit -m "feat: <description>" && git push
+# Feature push (after full verification)
+npm run verify && git add -A && git commit -m "feat: <description>" && git push
 ```

@@ -32,10 +32,14 @@ git checkout -b feat/<slug>
 git add -A && git commit -m "<type>: <description>" && git push
 ```
 
+If `git push` fails because no upstream/remote exists yet, warn and continue local commits for now. Retry push once upstream is configured.
+
 **Before any push involving code changes:**
 ```bash
-npx tsc --noEmit    # Must be clean
-npm run build       # Must succeed
+npm run lint              # Must be clean
+npx tsc --noEmit          # Must be clean
+npm run build             # Must succeed
+npm run test:integration  # Must pass
 ```
 
 See `.github/skills/git-workflow/SKILL.md` for full commit message conventions and branch workflow.
@@ -53,7 +57,7 @@ See `.github/skills/git-workflow/SKILL.md` for full commit message conventions a
 - Push every meaningful change; do not wait until session end
 
 **At session end (or when production-ready):**
-- Archive `docs/ai/sessions/current-session.md` → `docs/ai/sessions/YYYY-MM-DD-hhmm.md`
+- Create a dated handoff note in `docs/ai/sessions/YYYY-MM-DD-hhmm.md`
 - Update `docs/ai/current-plan.md` with progress
 - Add decisions to `docs/ai/decision-log.md` if any were made
 - Commit all changes and push
@@ -68,7 +72,7 @@ All durable project memory lives in `docs/ai/`:
 - **Optional**: Latest dated file in `docs/ai/sessions/` for prior session context
 
 When your session ends:
-- Archive `docs/ai/sessions/current-session.md` to a dated file
+- Write a dated handoff note in `docs/ai/sessions/YYYY-MM-DD-hhmm.md`
 - Update `docs/ai/current-plan.md` with progress and any scope changes
 - Add important decisions to `docs/ai/decision-log.md` (append-only)
 - Commit and push all changes
@@ -79,6 +83,9 @@ When your session ends:
 ```bash
 npm run dev              # Start dev server
 npm run build            # Production build
+npm run lint             # Lint checks
+npm run test:integration # Smoke integration checks
+npm run verify           # Full quality gate (lint + tsc + build + integration)
 npx tsc --noEmit        # Check TypeScript
 npm run generate-themes  # Regenerate theme registry
 ```
@@ -88,7 +95,7 @@ npm run generate-themes  # Regenerate theme registry
 - Themes are CSS-based with auto-discovery; no manual registry updates
 - Layouts are configured in `src/config/playerCardLayouts.ts`, rendered in `src/components/PlayerCardsLayout.tsx`, styled in `src/styles/layout.css`
 - State lives in Zustand (`src/store/gameStore.ts`); display settings in React Context
-- Always run `npx tsc --noEmit` and `npm run build` before committing
+- Always run lint + TypeScript + build + integration checks before merging
 
 **File structure** (full details in `docs/ai/project-memory.md`):
 - `src/store/gameStore.ts` — Game state
