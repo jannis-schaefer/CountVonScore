@@ -84,11 +84,21 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 
 ## Reasoning Effort Policy
 
-1. Default delegated reasoning depth: `medium`.
-2. Use `high` for ambiguous failures, flaky behavior triage, or multi-gate blocker analysis.
+1. Default reasoning depth by worker:
+  - `ContextLoader`: `medium`
+  - `TypeScriptImplementer`: `medium`
+  - `E2EImplementer`: `high`
+  - `E2EFlakeTriage`: `high`
+  - `CSSLayoutSpecialist`: `medium`
+  - `ZustandStateSpecialist`: `high`
+  - `CIWorkflowSpecialist`: `high`
+  - `QualityGateRunner`: `high`
+  - `GitCheckpointWorker`: `low`
+  - `Handoff`: `low`
+2. When delegating, include explicit reasoning depth guidance in the worker prompt.
 3. On first failed attempt from a worker, retry once with explicit `high` reasoning depth guidance.
 4. On second failed attempt, switch owner per routing guardrails and keep `high` reasoning depth guidance.
-5. Drop back to `medium` after a successful step to control latency/cost.
+5. Drop back to worker default depth after a successful step to control latency/cost.
 
 ## Skill Callouts
 
