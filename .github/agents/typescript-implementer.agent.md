@@ -36,3 +36,11 @@ Implement app logic and component changes in TypeScript/React files.
 - Files changed
 - Risks
 - Recommended next owner
+
+## Skill Callouts
+
+Use these skills in order:
+
+1. `ts-impact-scan`
+2. `ts-implement-scoped-change`
+3. `ts-safe-refactor-checklist`

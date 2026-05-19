@@ -149,3 +149,11 @@ If the current plan has progress but isn't done:
 
 - Manually at session end (ask for a summary, then update memory)
 - As a subagent when Copilot detects session closeout phrases like "Done for now," "Wrap up," "Handoff"
+
+## Skill Callouts
+
+Use these skills in order:
+
+1. `capture-session-handoff-pack`
+2. `residual-risk-summary`
+3. `completion-state-classifier`

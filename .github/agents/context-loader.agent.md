@@ -34,3 +34,10 @@ Read durable memory and current workspace status, then output a compact session 
 - Known blockers
 - Verification gates expected this session
 - Suggested first delegated worker
+
+## Skill Callouts
+
+Use these skills in order:
+
+1. `load-session-brief`
+2. `detect-session-drift`

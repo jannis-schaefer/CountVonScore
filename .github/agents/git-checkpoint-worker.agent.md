@@ -31,3 +31,11 @@ Create clear, focused checkpoints and keep session logs in sync after meaningful
 - Commit message
 - Push result or blocker
 - Next checkpoint suggestion
+
+## Skill Callouts
+
+Use these skills in order:
+
+1. `focused-checkpoint-commit`
+2. `checkpoint-log-sync`
+3. `push-readiness-report`

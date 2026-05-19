@@ -28,3 +28,11 @@ Evaluate readiness by running or interpreting gate outputs for:
 - Blocking failures first
 - Suspected owner by domain (TS, E2E, config)
 - Minimal next action sequence
+
+## Skill Callouts
+
+Use these skills in order:
+
+1. `run-required-quality-gates`
+2. `classify-gate-failures`
+3. `gate-blocker-policy`

@@ -36,3 +36,12 @@ Implement Playwright tests with stable selectors, deterministic assertions, and 
 - Files changed
 - Risks (flake vectors)
 - Recommended next owner
+
+## Skill Callouts
+
+Use these skills in order:
+
+1. `e2e-suite-placement`
+2. `promote-draft-regression-case`
+3. `e2e-selector-hardening`
+4. `e2e-flake-prevention-check`

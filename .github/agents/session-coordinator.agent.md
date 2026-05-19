@@ -99,6 +99,16 @@ Be the only user-facing agent during implementation sessions. Translate user goa
 4. If command execution is unavailable, report the exact unverified gates as blockers and hand off to `QualityGateRunner`/`GitCheckpointWorker` for the next runnable environment.
 5. Do not mark a session complete until verification and checkpointing are either executed or explicitly logged as blocked.
 
+## Skill Callouts (Explicit Order)
+
+Use these skills in order during session orchestration:
+
+1. `load-session-brief`
+2. `detect-session-drift`
+3. `milestone-delegation-sequencer`
+4. `enforce-routing-guardrails` (before any implementation delegation)
+5. `accept-or-reject-worker-output` (after every worker run)
+
 ## Planner Replacement Policy
 
 Planner responsibilities are absorbed here:
