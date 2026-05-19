@@ -2,6 +2,7 @@
 description: "TEMPLATE (Phase 2): Diagnose flaky E2E behavior and propose deterministic stabilization actions."
 name: "E2EFlakeTriage"
 tools: [read, search]
+model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
 ---
 
@@ -9,8 +10,8 @@ user-invocable: true
 
 ## Runtime Tuning
 
-- Model: user-selectable per run (`model`). Default: `GPT-5.3-Codex (copilot)`.
-- Reasoning depth: user-selectable per run (`reasoningDepth`: `low | medium | high`). Default: `high`.
+- Model preference is configured in frontmatter `model`.
+- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
 
 ## Status
 

@@ -2,6 +2,7 @@
 description: "Capture session summary and update durable memory files at session end. Use for closing out work, recording decisions, and writing handoff notes for future sessions."
 name: "Handoff"
 tools: [read, edit]
+model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
 ---
 
@@ -9,8 +10,8 @@ user-invocable: true
 
 ## Runtime Tuning
 
-- Model: user-selectable per run (`model`). Default: `GPT-5.3-Codex (copilot)`.
-- Reasoning depth: user-selectable per run (`reasoningDepth`: `low | medium | high`). Default: `medium`.
+- Model preference is configured in frontmatter `model`.
+- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
 - If not specified, use defaults and continue.
 
 You are a specialist at summarizing work, capturing decisions, and updating shared project memory.

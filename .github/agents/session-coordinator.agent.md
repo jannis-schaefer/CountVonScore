@@ -1,7 +1,9 @@
 ---
 description: "User-facing orchestration agent. Delegates work to specialist agents, compares outputs, and decides next actions through the full session lifecycle."
 name: "SessionCoordinator"
-tools: [read, search, edit]
+tools: [agent, read, search, edit]
+agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, QualityGateRunner, GitCheckpointWorker, Handoff]
+model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
 ---
 
@@ -9,9 +11,10 @@ user-invocable: true
 
 ## Runtime Tuning
 
-- Model: user-selectable per run (`model`). Default: `GPT-5.3-Codex (copilot)`.
-- Reasoning depth: user-selectable per run (`reasoningDepth`: `low | medium | high`). Default: `high`.
-- Pass through model and reasoning depth to delegated workers unless explicitly overridden.
+- Model selection is configured in frontmatter `model` (preferred model + fallback).
+- Users can still override model per run in the model picker.
+- Reasoning depth is not a documented `.agent.md` frontmatter field. Treat it as an instruction-level preference (`low | medium | high`) in prompts.
+- Pass through model preferences and reasoning-depth intent to delegated workers unless explicitly overridden.
 
 ## Mission
 

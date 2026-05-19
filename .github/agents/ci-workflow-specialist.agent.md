@@ -2,6 +2,7 @@
 description: "TEMPLATE (Phase 2): Own CI workflow design, required/optional gates, and release pipeline quality policy."
 name: "CIWorkflowSpecialist"
 tools: [read, search, edit]
+model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
 ---
 
@@ -9,8 +10,8 @@ user-invocable: true
 
 ## Runtime Tuning
 
-- Model: user-selectable per run (`model`). Default: `GPT-5.3-Codex (copilot)`.
-- Reasoning depth: user-selectable per run (`reasoningDepth`: `low | medium | high`). Default: `medium`.
+- Model preference is configured in frontmatter `model`.
+- Reasoning depth is instruction-level guidance (`low | medium | high`), not a frontmatter key.
 
 ## Status
 
