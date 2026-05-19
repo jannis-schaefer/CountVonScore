@@ -3,7 +3,8 @@ description: "TEMPLATE (Phase 2): Diagnose flaky E2E behavior and propose determ
 name: "E2EFlakeTriage"
 tools: [read, search]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
+disable-model-invocation: true
 ---
 
 # E2E Flake Triage Agent (Template)

@@ -3,7 +3,7 @@ description: "Load current project/session context and produce a concise impleme
 name: "ContextLoader"
 tools: [read, search]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
 ---
 
 # Context Loader Agent

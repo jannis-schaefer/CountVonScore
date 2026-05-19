@@ -3,7 +3,7 @@ description: "Create focused git checkpoints, maintain checkpoint cadence, and r
 name: "GitCheckpointWorker"
 tools: [read, search, edit]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
 ---
 
 # Git Checkpoint Worker Agent

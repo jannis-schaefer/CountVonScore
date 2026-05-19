@@ -3,7 +3,7 @@ description: "Capture session summary and update durable memory files at session
 name: "Handoff"
 tools: [read, edit]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
 ---
 
 # Handoff Agent

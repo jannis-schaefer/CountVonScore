@@ -3,7 +3,8 @@ description: "TEMPLATE (Phase 2): Own CI workflow design, required/optional gate
 name: "CIWorkflowSpecialist"
 tools: [read, search, edit]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
+disable-model-invocation: true
 ---
 
 # CI Workflow Specialist Agent (Template)

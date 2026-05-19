@@ -3,7 +3,7 @@ description: "Implement TypeScript/React changes with focused diffs and no cross
 name: "TypeScriptImplementer"
 tools: [read, search, edit]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
 ---
 
 # TypeScript Implementer Agent

@@ -3,7 +3,7 @@ description: "Implement and stabilize Playwright E2E tests, including promoting 
 name: "E2EImplementer"
 tools: [read, search, edit]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
 ---
 
 # E2E Implementer Agent

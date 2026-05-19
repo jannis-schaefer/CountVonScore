@@ -5,6 +5,58 @@ tools: [agent, read, search, edit]
 agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, QualityGateRunner, GitCheckpointWorker, Handoff]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
+handoffs:
+	- label: Load Session Context
+		agent: ContextLoader
+		prompt: Build a concise session brief from docs and current state, then recommend the first execution step.
+		send: false
+		model: GPT-5.3-Codex (copilot)
+	- label: Implement TypeScript Changes
+		agent: TypeScriptImplementer
+		prompt: Implement the scoped TypeScript/React task with minimal diffs and report risks.
+		send: false
+		model: GPT-5.3-Codex (copilot)
+	- label: Implement E2E Scenario
+		agent: E2EImplementer
+		prompt: Implement or promote one Playwright scenario with stable selectors and deterministic assertions.
+		send: false
+		model: GPT-5.3-Codex (copilot)
+	- label: Run Quality Gates
+		agent: QualityGateRunner
+		prompt: Run and summarize lint, typecheck, build, integration, and required E2E gate outcomes.
+		send: false
+		model: GPT-5.3-Codex (copilot)
+	- label: Create Git Checkpoint
+		agent: GitCheckpointWorker
+		prompt: Stage relevant files, create a focused checkpoint commit, and record push status.
+		send: false
+		model: GPT-5.3-Codex (copilot)
+	- label: Capture Session Handoff
+		agent: Handoff
+		prompt: Update plan, decisions, and session handoff docs for current progress.
+		send: false
+		model: GPT-5.3-Codex (copilot)
+	# Phase 2 templates (future work):
+	# - label: Triage E2E Flakes
+	#   agent: E2EFlakeTriage
+	#   prompt: Diagnose flaky E2E failures and return deterministic stabilization actions.
+	#   send: false
+	#   model: GPT-5.3-Codex (copilot)
+	# - label: Review CSS Layout Risk
+	#   agent: CSSLayoutSpecialist
+	#   prompt: Evaluate layout/CSS changes for responsive regressions and visual risks.
+	#   send: false
+	#   model: GPT-5.3-Codex (copilot)
+	# - label: Review Zustand State Semantics
+	#   agent: ZustandStateSpecialist
+	#   prompt: Review store actions/selectors/persistence semantics and identify state risks.
+	#   send: false
+	#   model: GPT-5.3-Codex (copilot)
+	# - label: Review CI Workflow Policy
+	#   agent: CIWorkflowSpecialist
+	#   prompt: Evaluate CI gating policy, required checks, and workflow quality risks.
+	#   send: false
+	#   model: GPT-5.3-Codex (copilot)
 ---
 
 # Session Coordinator Agent

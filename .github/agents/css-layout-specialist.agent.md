@@ -3,7 +3,8 @@ description: "TEMPLATE (Phase 2): Own CSS/layout behavior, responsive breakpoint
 name: "CSSLayoutSpecialist"
 tools: [read, search, edit]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
+disable-model-invocation: true
 ---
 
 # CSS Layout Specialist Agent (Template)

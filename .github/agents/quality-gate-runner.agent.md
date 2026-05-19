@@ -3,7 +3,7 @@ description: "Run and evaluate quality gates, then report pass/fail matrix with 
 name: "QualityGateRunner"
 tools: [read, search]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
-user-invocable: true
+user-invocable: false
 ---
 
 # Quality Gate Runner Agent
