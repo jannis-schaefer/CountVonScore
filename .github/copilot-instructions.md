@@ -128,6 +128,11 @@ All agents support per-run tuning:
 - Agent model preferences belong in each agent frontmatter `model` field.
 - Reasoning depth is instruction-level guidance, not a frontmatter key.
 
+Reasoning policy ownership split:
+- `SessionCoordinator` owns runtime reasoning defaults by worker, escalation rules, and retry/reroute policy.
+- Worker agents own domain-specific guidance on what higher reasoning should focus on in that domain.
+- Coordinator policy is the canonical source when coordinator and worker guidance differ.
+
 ## Conventions
 
 - **TypeScript**: Strict mode, interfaces for props, React.FC<Props> pattern
