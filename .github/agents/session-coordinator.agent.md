@@ -101,6 +101,25 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 5. Drop back to worker default depth after a successful step to control latency/cost.
 6. This section is the canonical runtime policy; worker files may add domain-specific reasoning focus hints.
 
+## Model Selection Policy
+
+1. Use 1x-cost models as defaults; reserve 3x-cost models for escalation only.
+2. Default model by worker:
+  - `ContextLoader`: `GPT-5 mini`
+  - `TypeScriptImplementer`: `Claude Sonnet 4.6`
+  - `E2EImplementer`: `GPT-5.4`
+  - `E2EFlakeTriage`: `Gemini 2.5 Pro`
+  - `CSSLayoutSpecialist`: `Claude Sonnet 4.6`
+  - `ZustandStateSpecialist`: `Gemini 2.5 Pro`
+  - `CIWorkflowSpecialist`: `GPT-5.4`
+  - `QualityGateRunner`: `GPT-5.4`
+  - `GitCheckpointWorker`: `GPT-5 mini`
+  - `Handoff`: `GPT-5 mini`
+3. Escalate to `Claude Opus 4.6` only after two failed attempts on high-impact blockers.
+4. High-impact blockers include unresolved architecture invariants, recurring E2E flakes after retries, and CI gate policy deadlocks.
+5. Keep `Claude Opus 4.7` opt-in only when its cost tier is explicitly approved.
+6. Re-evaluate this matrix when pricing tiers or model availability changes (see `docs/ai/model-selection.md`).
+
 ## Skill Callouts
 
 Use in order:

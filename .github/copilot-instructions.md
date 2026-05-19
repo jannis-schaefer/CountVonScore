@@ -133,6 +133,10 @@ Reasoning policy ownership split:
 - Worker agents own domain-specific guidance on what higher reasoning should focus on in that domain.
 - Coordinator policy is the canonical source when coordinator and worker guidance differ.
 
+Model selection policy:
+- Cost-aware model assignment and escalation triggers are documented in `docs/ai/model-selection.md`.
+- Re-evaluate defaults when pricing tiers or available models materially change.
+
 ## Conventions
 
 - **TypeScript**: Strict mode, interfaces for props, React.FC<Props> pattern

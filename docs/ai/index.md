@@ -7,6 +7,7 @@ This folder contains shared Copilot instructions, durable project memory, and se
 - **[Project Memory](./project-memory.md)** — Stable conventions, architecture, build commands, key file locations
 - **[Current Plan](./current-plan.md)** — Active project plan with scope, steps, and verification
 - **[Decision Log](./decision-log.md)** — Durable decisions and design rationale (append-only)
+- **[Model Selection](./model-selection.md)** — Cost-aware model defaults, escalation rules, and re-evaluation triggers
 - **[Sessions](./sessions/)** — Dated handoff notes from previous work sessions
 
 ## For New Sessions
