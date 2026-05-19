@@ -114,6 +114,10 @@ Custom agents are defined in `.github/agents/`:
 - **ContextLoader** (`context-loader.agent.md`): Loads project memory, interrupted state, and active branch context at session start.
 - **TypeScriptImplementer** (`typescript-implementer.agent.md`): Implements app logic and component changes in TypeScript/React scope.
 - **E2EImplementer** (`e2e-implementer.agent.md`): Implements and promotes Playwright E2E scenarios.
+- **E2EFlakeTriage** (`e2e-flake-triage.agent.md`): Diagnoses flaky Playwright behavior and proposes deterministic stabilization actions.
+- **CSSLayoutSpecialist** (`css-layout-specialist.agent.md`): Evaluates responsive/layout and theme-compatibility risks for style changes.
+- **ZustandStateSpecialist** (`zustand-state-specialist.agent.md`): Reviews state semantics, selector stability, and persistence-contract safety.
+- **CIWorkflowSpecialist** (`ci-workflow-specialist.agent.md`): Reviews workflow gate policy and CI risk/alignment before acceptance.
 - **QualityGateRunner** (`quality-gate-runner.agent.md`): Runs lint/typecheck/build/integration/E2E verification gates and reports blockers.
 - **GitCheckpointWorker** (`git-checkpoint-worker.agent.md`): Creates focused git checkpoints and records session log updates.
 - **Handoff** (`handoff.agent.md`): Updates memory files at session closeout and captures decisions.

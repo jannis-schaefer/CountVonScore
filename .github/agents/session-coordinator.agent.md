@@ -3,7 +3,7 @@ description: "User-facing orchestration agent. Delegates work to specialist agen
 name: "SessionCoordinator"
 argument-hint: "Describe session goal, constraints, and desired checkpoint cadence."
 tools: [agent, read, search, edit]
-agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, QualityGateRunner, GitCheckpointWorker, Handoff]
+agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, E2EFlakeTriage, CSSLayoutSpecialist, ZustandStateSpecialist, CIWorkflowSpecialist, QualityGateRunner, GitCheckpointWorker, Handoff]
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
 handoffs:
@@ -37,27 +37,26 @@ handoffs:
     prompt: Update plan, decisions, and session handoff docs for current progress.
     send: false
     model: GPT-5.3-Codex (copilot)
-  # Phase 2 templates (future work):
-  # - label: Triage E2E Flakes
-  #   agent: E2EFlakeTriage
-  #   prompt: Diagnose flaky E2E failures and return deterministic stabilization actions.
-  #   send: false
-  #   model: GPT-5.3-Codex (copilot)
-  # - label: Review CSS Layout Risk
-  #   agent: CSSLayoutSpecialist
-  #   prompt: Evaluate layout/CSS changes for responsive regressions and visual risks.
-  #   send: false
-  #   model: GPT-5.3-Codex (copilot)
-  # - label: Review Zustand State Semantics
-  #   agent: ZustandStateSpecialist
-  #   prompt: Review store actions/selectors/persistence semantics and identify state risks.
-  #   send: false
-  #   model: GPT-5.3-Codex (copilot)
-  # - label: Review CI Workflow Policy
-  #   agent: CIWorkflowSpecialist
-  #   prompt: Evaluate CI gating policy, required checks, and workflow quality risks.
-  #   send: false
-  #   model: GPT-5.3-Codex (copilot)
+  - label: Triage E2E Flakes
+    agent: E2EFlakeTriage
+    prompt: Diagnose flaky E2E failures and return deterministic stabilization actions.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Review CSS Layout Risk
+    agent: CSSLayoutSpecialist
+    prompt: Evaluate layout/CSS changes for responsive regressions and visual risks.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Review Zustand State Semantics
+    agent: ZustandStateSpecialist
+    prompt: Review store actions/selectors/persistence semantics and identify state risks.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Review CI Workflow Policy
+    agent: CIWorkflowSpecialist
+    prompt: Evaluate CI gating policy, required checks, and workflow quality risks.
+    send: false
+    model: GPT-5.3-Codex (copilot)
 ---
 
 # Session Coordinator Agent
@@ -87,6 +86,10 @@ Be the only user-facing agent during implementation sessions. Translate user goa
 1. File-path ownership is strict:
 - `e2e/**` and `playwright.config.ts` changes must be delegated to `E2EImplementer`.
 - `src/**/*.ts` and `src/**/*.tsx` changes must be delegated to `TypeScriptImplementer` unless they are test-only helpers.
+- Flake triage and stability diagnosis for E2E belongs to `E2EFlakeTriage`.
+- Layout/style safety across breakpoints/themes belongs to `CSSLayoutSpecialist`.
+- Store semantics/selectors/persistence correctness belongs to `ZustandStateSpecialist`.
+- CI workflow and gate policy alignment belongs to `CIWorkflowSpecialist`.
 2. If a worker proposes edits outside its domain, reject the result and re-delegate.
 3. Do not let `TypeScriptImplementer` modify E2E files.
 4. Do not let `E2EImplementer` modify app feature logic unless explicitly approved as a testability fix.
@@ -108,6 +111,7 @@ Use these skills in order during session orchestration:
 3. `milestone-delegation-sequencer`
 4. `enforce-routing-guardrails` (before any implementation delegation)
 5. `accept-or-reject-worker-output` (after every worker run)
+6. `milestone-delegation-sequencer` (re-run whenever new blocker appears)
 
 ## Planner Replacement Policy
 
@@ -128,6 +132,13 @@ Use `ContextLoader` for baseline context and update `docs/ai/current-plan.md` di
 - `GitCheckpointWorker` (`git-checkpoint-worker.agent.md`)
 - `Handoff` (`handoff.agent.md`)
 
+## Worker Roster (Phase 2 Active)
+
+- `E2EFlakeTriage` (`e2e-flake-triage.agent.md`)
+- `CSSLayoutSpecialist` (`css-layout-specialist.agent.md`)
+- `ZustandStateSpecialist` (`zustand-state-specialist.agent.md`)
+- `CIWorkflowSpecialist` (`ci-workflow-specialist.agent.md`)
+
 ## Handoff Routing List
 
 Use this order for closeout:
@@ -135,12 +146,10 @@ Use this order for closeout:
 2. `GitCheckpointWorker` checkpoint
 3. `Handoff` memory updates
 
-<!-- Phase 2 future workers (templates only, not active):
-4. E2EFlakeTriage (`e2e-flake-triage.agent.md`)
-5. CSSLayoutSpecialist (`css-layout-specialist.agent.md`)
-6. ZustandStateSpecialist (`zustand-state-specialist.agent.md`)
-7. CIWorkflowSpecialist (`ci-workflow-specialist.agent.md`)
--->
+4. `E2EFlakeTriage` flake stabilization summary (optional when flaky behavior observed)
+5. `CSSLayoutSpecialist` responsive/layout risk summary (optional for layout/style changes)
+6. `ZustandStateSpecialist` state semantics summary (optional for store/state changes)
+7. `CIWorkflowSpecialist` workflow risk summary (optional for CI policy/workflow changes)
 
 ## Worker Output Contract
 
