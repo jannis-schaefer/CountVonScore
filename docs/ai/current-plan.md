@@ -1,58 +1,50 @@
-# Current Plan — Session 1 QA And Regression Stabilization
+# Current Plan - Agentic Workflow Governance And Validation
 
 **Status**: In progress
 **Started**: 2026-05-19
-**Target Completion**: 2026-05-19
+**Target Completion**: 2026-05-20
 
 ## Scope
 
-Run the first official implementation session using the new agent workflow and memory structure.
+Finalize the agent platform governance baseline so future implementation sessions run predictably.
 
 Primary objective:
-- Clear lint debt so the full quality gate can be used consistently.
+- Enforce deterministic coordinator policy for routing, acceptance, reasoning effort, and cost-aware model selection.
 
 Secondary objective:
-- Prepare turn-navigation historical-edit regression coverage from drafted test cases.
-
-This session starts with QA first because lint currently blocks `npm run verify` and can block unrelated feature work.
+- Capture durable memory updates so future sessions can resume without context loss.
 
 ## Steps
 
-1. Start a feature branch for Session 1 work.
-2. Initialize `docs/ai/sessions/current-session.md` with intent and active step, then commit checkpoint.
-3. Run `npm run lint` and capture the full error baseline.
-4. Group lint failures by file and rule family.
-5. Fix `react-hooks/set-state-in-effect` issues in context and page files.
-6. Fix `react-refresh/only-export-components` issues by separating shared exports from component files where needed.
-7. Re-run lint and iterate until clean.
-8. Run `npx tsc --noEmit` and fix any TypeScript regressions introduced during lint cleanup.
-9. Run `npm run build` and resolve build regressions if any.
-10. Run `npm run test:integration` and verify smoke plus behavioral tests remain green.
-11. Run `npm run test:e2e:required` and verify required E2E flows remain green.
-12. ✅ Update `e2e/regression/turn-navigation-edge-drafts.spec.ts` by selecting the first historical-edit case to implement (optional regression, not required gate).
-13. ✅ Implement exactly one historical-edit regression test and keep the other draft cases skipped.
-14. Re-run `npm run test:e2e:regression` to ensure optional suite remains stable.
-15. Update planning and logs (`current-plan`, `decision-log`, dated session note), then commit session checkpoint.
+1. Define and tighten coordinator routing and acceptance guardrails.
+2. Normalize worker output contracts and reduce instruction drift.
+3. Centralize runtime reasoning ownership in coordinator policy.
+4. Define per-worker reasoning defaults and escalation rules.
+5. Define cost-aware model selection defaults and high-cost escalation triggers.
+6. Document coordinator-vs-worker policy ownership split in repo instructions.
+7. Capture model-selection rationale and re-evaluation procedure in AI memory docs.
+8. Run smoke validation of delegation behavior and verify expected worker routing.
+9. Execute required quality gates for any code-changing sessions that follow.
+10. Commit and push focused checkpoints after each meaningful milestone.
 
 ## Verification
 
-How we know Session 1 is complete:
-
-- [ ] `npm run lint` passes clean
-- [ ] `npx tsc --noEmit` passes
-- [ ] `npm run build` succeeds
-- [ ] `npm run test:integration` passes
-- [ ] `npm run test:e2e:required` passes
-- [x] At least one drafted historical-edit edge case is implemented in optional regression suite
-- [x] Session memory docs updated
+- [x] Coordinator routing and acceptance guardrails are explicit.
+- [x] Worker output contract expectations are explicit.
+- [x] Reasoning ownership split is documented in central instructions.
+- [x] Per-worker reasoning effort defaults are documented in coordinator.
+- [x] Cost-aware model matrix and escalation triggers are documented.
+- [x] Model policy is documented in `docs/ai/model-selection.md` with re-evaluation triggers.
+- [ ] Delegation smoke run executed against the updated policy baseline.
+- [ ] Push status confirmed once remote upstream is available.
 
 ## Dependencies / Blockers
 
-- Remote upstream is not configured yet, so pushes currently fail. Continue local checkpoint commits and push once remote is available.
-- Optional regression flow C remains manual (by design), and release gate uses required flows A and B only.
+- Remote upstream may not be configured in this environment.
+- Smoke validation depends on user-driven prompt execution in chat/runtime.
 
 ## Decision Rationale
 
-- Lint QA is first because lint failure blocks the agreed quality gate and may slow unrelated feature development.
-- Historical-edit turn-navigation cases are kept optional/regression-first until expected behavior details are fully agreed.
-- Required E2E gate remains minimal to control CI runtime and complexity.
+- Runtime policy belongs in coordinator because it owns retries, reroutes, and escalation.
+- Worker files should stay domain-focused and not duplicate orchestration policy.
+- High-cost models are escalation-only unless pricing or quality constraints change materially.

@@ -4,28 +4,30 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: feat/session-1-lint-qa
-**Started**: 2026-05-19 17:05
+**Branch**: master
+**Started**: 2026-05-19 16:00
 **Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-Execute Session 1 from current-plan:
-- Clear lint baseline debt so verify gate is usable
-- Re-run full quality checks
-- Implement first historical-turn regression draft case in optional E2E suite
+Harden and simplify the custom agent workflow so orchestration behavior is deterministic, cost-aware, and easier to maintain.
 
 ## Active Step
 
-Step 3 — Quality gate execution and checkpointing (lint/typecheck/build/integration/required E2E pending command run capability)
+Closeout - handoff and durable memory updates.
 
 ## Checkpoint Log
 
-2026-05-19 17:05 — Session prepared in planning docs and logs; ready to begin implementation
-2026-05-19 17:40 — Context loaded and blockers confirmed (remote upstream not configured; command execution unavailable in this environment)
-2026-05-19 17:55 — Implemented first drafted regression case in turn-navigation edge drafts: historical dirty state disables previous/next navigation until resolved via apply path
+2026-05-19 16:00 - Session resumed and coordinator/worker architecture review initiated
+2026-05-19 16:10 - Coordinator wording cleaned to remove rollout-era and phase-era artifacts
+2026-05-19 16:18 - Runtime guidance centralized and worker output contract naming normalized
+2026-05-19 16:24 - Model defaults moved to agent frontmatter ownership and coordinator effort escalation policy added
+2026-05-19 16:28 - Coordinator vs worker policy ownership split documented
+2026-05-19 16:31 - Cost-aware model selection policy documented and linked into AI memory docs
+2026-05-19 16:33 - Session handoff pack started (plan, decisions, session note, memory updates)
+2026-05-19 16:36 - Session handoff pack completed and ready for next-session smoke validation
 
 ## Blockers / Notes
 
-- Remote upstream not configured yet; continue local commits and push once remote exists.
-- Unable to execute npm scripts from this tool environment, so lint/typecheck/build/integration/required E2E and git checkpoint commands are documented but not command-verified in-session.
+- Remote upstream status must be confirmed before relying on push durability.
+- Updated policy baseline should be smoke-tested in a fresh coordinator run.

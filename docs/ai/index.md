@@ -29,8 +29,8 @@ This folder contains shared Copilot instructions, durable project memory, and se
 
 ## Agent Roles
 
-- **Planner** (`.github/agents/planner.agent.md`) — Reads this memory and drafts/revises plans
+- **SessionCoordinator** (`.github/agents/session-coordinator.agent.md`) — User-facing orchestrator that delegates to specialists and enforces runtime policy
 - **Handoff** (`.github/agents/handoff.agent.md`) — Updates memory files at session closeout
-- **Resume Session** skill — Rehydrates context from these files at session start
+- **ContextLoader** (`.github/agents/context-loader.agent.md`) — Reads memory artifacts to build session brief context
 
 See `.github/copilot-instructions.md` for the full agent guidance and memory workflow.

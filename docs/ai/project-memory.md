@@ -110,6 +110,13 @@ public/
 - **localStorage** via localforage for persistence
 - No Redux or complex async middleware
 
+### Agent Workflow Baseline
+- `SessionCoordinator` is the single orchestration control plane for delegation, retries, reroutes, and completion decisions
+- Runtime policy (reasoning depth defaults, escalation behavior, model selection by worker) is coordinator-owned
+- Worker agents are domain specialists and should avoid duplicating orchestration policy
+- Cost-aware model defaults and escalation triggers are documented in `docs/ai/model-selection.md`
+- High-cost models are escalation-only unless explicitly approved for a run
+
 ## Conventions
 
 ### TypeScript
@@ -132,6 +139,7 @@ public/
 - Clear, concise commit messages (e.g., "Refactor layout component and CSS")
 - Incremental refactors to keep diffs reviewable
 - Build must pass before committing
+- Commit and push after each meaningful checkpoint; do not wait until session end
 
 ## Known Patterns
 

@@ -161,6 +161,45 @@ Durable decisions and design rationale. Append-only; never remove entries.
 - New themes just need a CSS file with metadata comments
 - Type-safe theme registry still generated correctly
 
+### 2026-05-19: Coordinator Owns Runtime Policy (Reasoning + Escalation)
+
+**Context**: Worker instructions were accumulating orchestration-style runtime rules, causing duplicated guidance and drift across files.
+
+**Decision**:
+- Keep runtime reasoning defaults, retries, reroutes, and escalation policy in `SessionCoordinator`
+- Keep worker files focused on domain execution guidance
+- Treat coordinator runtime policy as canonical when worker guidance conflicts
+
+**Rationale**:
+- Centralizing runtime policy improves consistency and observability during smoke tests
+- Workers remain simpler and easier to maintain when they only describe domain behavior
+- Retry/escalation logic belongs to the orchestrator that owns delegation outcomes
+
+**Impact**:
+- Coordinator now defines per-worker reasoning defaults and escalation rules
+- Central instructions document policy ownership split
+- Worker runtime duplication was removed in favor of a single control plane
+
+### 2026-05-19: Cost-Aware Model Matrix With Escalation-Only High-Cost Models
+
+**Context**: Available models differ substantially in token cost tiers, so unconstrained model selection risks unnecessary spend.
+
+**Decision**:
+- Use 1x-tier models as defaults for high-value workers
+- Use free-tier model for deterministic procedural workers
+- Reserve `Claude Opus 4.6` (3x) for escalation after repeated failures on high-impact blockers
+- Keep `Claude Opus 4.7` opt-in only at current pricing
+
+**Rationale**:
+- Quality gains from highest-cost models are typically sublinear for routine tasks
+- Escalation-only usage preserves quality headroom without paying premium cost by default
+- A fixed matrix improves reproducibility and makes future re-evaluation explicit
+
+**Impact**:
+- Added `docs/ai/model-selection.md` with defaults, escalation rules, and re-evaluation triggers
+- Coordinator references the model matrix as runtime policy
+- Session closeout now includes model-policy maintenance as durable memory
+
 ---
 
 **Next Entry**: Add below when a significant decision is made.
