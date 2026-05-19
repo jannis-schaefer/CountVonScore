@@ -19,6 +19,14 @@
 }
 
 .theme-starRealms {
+  --primary-bg: var(--star-realms-primary);
+  --primary-fg: var(--star-realms-text);
+  --secondary-bg: var(--star-realms-secondary);
+  --secondary-fg: var(--star-realms-text-dim);
+  --accent-color: var(--star-realms-accent);
+  --accent-hover: var(--star-realms-accent-light);
+  --border-color: var(--star-realms-border);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   background-color: var(--star-realms-primary);
   color: var(--star-realms-text);
 }

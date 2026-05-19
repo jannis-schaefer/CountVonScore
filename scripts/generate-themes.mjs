@@ -14,6 +14,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const themesDir = path.join(__dirname, '../src/styles/themes');
 const outputFile = path.join(__dirname, '../src/config/themes.ts');
 
+const REQUIRED_THEME_TOKENS = [
+  '--primary-bg',
+  '--primary-fg',
+  '--secondary-bg',
+  '--secondary-fg',
+  '--accent-color',
+  '--accent-hover',
+  '--border-color',
+  '--shadow',
+];
+
 function parseThemeMetadata(cssContent) {
   const idMatch = cssContent.match(/@theme-id:\s*(\S+)/);
   const labelMatch = cssContent.match(/@theme-label:\s*([^\n]+)/);
@@ -28,6 +39,50 @@ function parseThemeMetadata(cssContent) {
     label: labelMatch[1].trim(),
     description: descriptionMatch ? descriptionMatch[1].trim() : undefined,
   };
+}
+
+function getDefinedCustomProperties(cssContent) {
+  const matches = cssContent.matchAll(/--[a-zA-Z0-9-_]+\s*:/g);
+  const tokens = new Set();
+
+  for (const match of matches) {
+    const token = match[0].replace(/\s*:\s*$/, '').trim();
+    if (token.startsWith('--')) {
+      tokens.add(token);
+    }
+  }
+
+  return tokens;
+}
+
+function validateTheme(cssContent, metadata, fileName, existingIds) {
+  if (!metadata?.id || !metadata?.label) {
+    return {
+      valid: false,
+      reason:
+        `${fileName}: missing required metadata @theme-id or @theme-label; theme ignored.`,
+    };
+  }
+
+  if (existingIds.has(metadata.id)) {
+    return {
+      valid: false,
+      reason: `${fileName}: duplicate @theme-id "${metadata.id}"; theme ignored.`,
+    };
+  }
+
+  const definedTokens = getDefinedCustomProperties(cssContent);
+  const missingTokens = REQUIRED_THEME_TOKENS.filter((token) => !definedTokens.has(token));
+
+  if (missingTokens.length > 0) {
+    return {
+      valid: false,
+      reason:
+        `${fileName}: missing required theme tokens ${missingTokens.join(', ')}; theme ignored.`,
+    };
+  }
+
+  return { valid: true };
 }
 
 function generateThemeRegistry(themes) {
@@ -106,25 +161,30 @@ function main() {
     }
 
     const themes = [];
+    const invalidThemes = [];
+    const themeIds = new Set();
 
     cssFiles.forEach((file) => {
       const filePath = path.join(themesDir, file);
       const content = fs.readFileSync(filePath, 'utf-8');
       const metadata = parseThemeMetadata(content);
 
-      if (metadata) {
-        themes.push(metadata);
-        console.log(`✓ Found theme: ${metadata.id} (${file})`);
-      } else {
-        // Fallback to filename if metadata is missing
-        const id = file.replace('.css', '');
-        const label = id.charAt(0).toUpperCase() + id.slice(1);
-        themes.push({ id, label });
-        console.log(
-          `⚠️  No metadata in ${file}, using filename as fallback: ${id}`
-        );
+      const validation = validateTheme(content, metadata, file, themeIds);
+      if (!validation.valid) {
+        invalidThemes.push(validation.reason);
+        console.warn(`⚠️  ${validation.reason}`);
+        return;
       }
+
+      themes.push(metadata);
+      themeIds.add(metadata.id);
+      console.log(`✓ Found valid theme: ${metadata.id} (${file})`);
     });
+
+    if (themes.length === 0) {
+      console.error('❌ No valid themes found. At least one valid theme is required.');
+      process.exit(1);
+    }
 
     const registryContent = generateThemeRegistry(themes);
     fs.writeFileSync(outputFile, registryContent);
@@ -132,7 +192,10 @@ function main() {
     console.log(
       `\n✅ Generated theme registry: ${outputFile}`
     );
-    console.log(`   Found ${themes.length} theme(s)`);
+    console.log(`   Found ${themes.length} valid theme(s)`);
+    if (invalidThemes.length > 0) {
+      console.log(`   Ignored ${invalidThemes.length} invalid theme(s)`);
+    }
   } catch (error) {
     console.error('❌ Error generating themes:', error);
     process.exit(1);

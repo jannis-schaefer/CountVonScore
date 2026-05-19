@@ -6,11 +6,9 @@ import { PlayerCardLayoutProvider } from './context/PlayerCardLayoutContext';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import './App.css';
 import './styles/layout.css';
-// Theme CSS files - automatically discovered from src/styles/themes/
-// Add new themes by creating .css files in that folder with @theme-id, @theme-label, @theme-description metadata
-// Then run: npm run generate-themes
-import './styles/themes/generic.css';
-import './styles/themes/starRealms.css';
+// Theme CSS files - auto-loaded from src/styles/themes/
+// Add new themes by creating a .css file with required metadata and tokens.
+import.meta.glob('./styles/themes/*.css', { eager: true });
 
 // Pages
 import { HomeMenu } from './pages/HomeMenu';

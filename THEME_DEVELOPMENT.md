@@ -62,6 +62,21 @@ Each theme CSS file **must** have these metadata comments at the very top to be 
 - `@theme-label`: Human-readable name (required, shown in Settings)
 - `@theme-description`: Short description (optional, shown in dropdown)
 
+### Required Theme Token Contract
+
+Every theme must define these shared CSS variables somewhere in the file:
+
+- `--primary-bg`
+- `--primary-fg`
+- `--secondary-bg`
+- `--secondary-fg`
+- `--accent-color`
+- `--accent-hover`
+- `--border-color`
+- `--shadow`
+
+If one or more are missing, the theme is ignored by the generator and not included in the app.
+
 ### Step 3: Generate and Done!
 
 Run the theme generation script:
@@ -139,6 +154,11 @@ Theme generation runs automatically before every build:
 npm run build  # Runs generate-themes → tsc → vite build
 ```
 
+Validation behavior:
+- Invalid theme files are skipped with warnings
+- Build continues as long as at least one valid theme exists
+- Build fails only if zero valid themes are found
+
 To manually generate without building:
 
 ```bash
@@ -150,11 +170,14 @@ npm run generate-themes
 - **generic**: Clean, minimal dark/light theme with blue accents
 - **starRealms**: Space-themed with purple/orange colors and sci-fi aesthetic
 
-## Fallback Behavior
+## Invalid Theme Behavior
 
-If a CSS file lacks proper metadata comments, the filename becomes the theme ID:
-- File: `mystyle.css` → Theme ID: `mystyle`, Label: `Mystyle`
-- This works but lacks a description in the dropdown
+Theme files are ignored if they:
+- Miss required metadata (`@theme-id`, `@theme-label`)
+- Reuse a duplicate `@theme-id`
+- Miss one or more required shared tokens from the contract above
+
+Ignored themes do not appear in Settings and are excluded from generated registry output.
 
 ## Troubleshooting
 
@@ -166,7 +189,7 @@ If a CSS file lacks proper metadata comments, the filename becomes the theme ID:
 
 **Theme styles not applying?**
 1. Verify `.theme-{id}` class selector matches theme ID exactly (case-sensitive)
-2. Check CSS file is imported in `src/App.tsx`
+2. Confirm file is under `src/styles/themes/` (App auto-loads `*.css` from this folder)
 3. Verify metadata is correctly formatted
 4. Use browser DevTools to confirm class is applied to `<html>` element
 
@@ -177,145 +200,8 @@ If a CSS file lacks proper metadata comments, the filename becomes the theme ID:
 4. Run `npm run build` to rebuild
 
 
-```css
-/* Neon Theme */
-:root {
-  --neon-primary: #0a0e27;
-  --neon-accent: #00ff88;
-  --neon-accent-light: #00ffaa;
-  --neon-text: #e0e0e0;
-  --neon-border: #00ff88;
-}
+## Notes
 
-.theme-neon {
-  background-color: var(--neon-primary);
-  color: var(--neon-text);
-}
-
-.theme-neon .btn {
-  background-color: var(--neon-accent);
-  color: #000;
-  border: 2px solid var(--neon-accent);
-  font-weight: 600;
-}
-
-.theme-neon .btn:hover {
-  background-color: var(--neon-accent-light);
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-}
-
-.theme-neon .btn-secondary {
-  background-color: var(--neon-primary);
-  color: var(--neon-text);
-  border: 2px solid var(--neon-border);
-}
-
-.theme-neon .btn-secondary:hover {
-  background-color: var(--neon-border);
-  color: #000;
-}
-
-/* Add more theme-specific overrides as needed */
-```
-
-### Step 2: Register Theme in Theme Config
-
-Open `src/config/themes.ts` and add your theme:
-
-```typescript
-export const THEMES: Record<string, ThemeDefinition> = {
-  generic: {
-    id: 'generic',
-    label: 'Generic',
-    description: 'Clean, minimal dark/light theme',
-    className: 'theme-generic',
-    dataThemeValue: 'generic',
-  },
-  starRealms: {
-    id: 'starRealms',
-    label: 'Star Realms',
-    description: 'Space-themed dark theme with sci-fi aesthetic',
-    className: 'theme-starRealms',
-    dataThemeValue: 'starRealms',
-  },
-  // ADD YOUR THEME HERE:
-  neon: {
-    id: 'neon',
-    label: 'Neon',
-    description: 'Cyberpunk-inspired neon theme',
-    className: 'theme-neon',
-    dataThemeValue: 'neon',
-  },
-};
-```
-
-### Step 3: Import Theme CSS in App.tsx
-
-Open `src/App.tsx` and add your CSS import:
-
-```typescript
-import './styles/generic.css';
-import './styles/starRealms.css';
-import './styles/neon.css'; // Add your import here
-```
-
-## That's It!
-
-Your new theme will automatically:
-- Appear in the Theme dropdown in Settings
-- Be selectable by users
-- Be persisted when games are saved
-- Work seamlessly with the existing theme infrastructure
-
-## Theme File Structure
-
-Each theme CSS file should:
-
-1. **Define CSS Variables** at the top for colors and common properties
-2. **Use `.theme-{id}` selector** for overrides (e.g., `.theme-neon`)
-3. **Override essential elements**:
-   - `.btn` and `.btn:hover` (buttons are the most visible)
-   - `.card` background and borders
-   - `.input` styling
-   - Text colors via `color: var(--theme-text)`
-   - Any other elements specific to your theme
-
-## Example Theme Structure
-
-```css
-/* Define variables for your theme */
-:root {
-  --my-theme-primary: #1a1a1a;
-  --my-theme-accent: #ff6b35;
-  --my-theme-text: #ffffff;
-}
-
-/* Apply theme-specific styles */
-.theme-mytheme {
-  background-color: var(--my-theme-primary);
-  color: var(--my-theme-text);
-}
-
-.theme-mytheme .btn {
-  background-color: var(--my-theme-accent);
-}
-
-.theme-mytheme .card {
-  background-color: var(--my-theme-primary);
-  border: 1px solid var(--my-theme-accent);
-}
-```
-
-## Best Practices
-
-1. **Maintain Consistency**: Ensure your theme works well across all components and pages
-2. **Accessibility**: Use sufficient color contrast for text
-3. **Hover States**: Include hover effects for interactive elements
-4. **Test Before Publishing**: Test your theme with various game configs
-5. **CSS Variables**: Use variables for easy color updates and consistency
-6. **Document Colors**: Add comments explaining your color choices
-
-## Current Themes
-
-- **Generic**: Clean, minimal dark/light theme with blue accents
-- **Star Realms**: Space-themed with purple/orange colors and sci-fi typography
+- Do not edit `src/config/themes.ts` manually. It is generated.
+- Do not manually register themes in TypeScript. Add a CSS file with metadata and run `npm run generate-themes`.
+- Keep theme IDs stable once published to avoid breaking persisted settings.
