@@ -20,6 +20,62 @@ Durable decisions and design rationale. Append-only; never remove entries.
 
 ## Entries
 
+### 2026-05-19: Theme Contract Enforcement With Skip-Invalid Build Behavior
+
+**Context**: Theme contributions could break runtime styling due to missing shared tokens or malformed metadata. Manual review alone was not enough to prevent bad themes from entering generated registry output.
+
+**Decision**:
+- Enforce a required token contract in theme generation (`--primary-bg`, `--primary-fg`, `--secondary-bg`, `--secondary-fg`, `--accent-color`, `--accent-hover`, `--border-color`, `--shadow`)
+- Require metadata (`@theme-id`, `@theme-label`) and reject duplicates
+- Ignore invalid themes with warnings instead of failing the whole build, unless zero valid themes remain
+
+**Rationale**:
+- Keeps frontend development stable by ensuring every loaded theme exposes expected shared variables
+- Prevents one bad theme contribution from breaking the full pipeline
+- Preserves contributor autonomy while protecting app runtime quality
+
+**Impact**:
+- Updated `scripts/generate-themes.mjs` with validation and skip logic
+- Updated theme docs in `THEME_DEVELOPMENT.md`
+- Updated `src/styles/themes/starRealms.css` to define required shared tokens
+
+### 2026-05-19: Release E2E Strategy (Required A/B, Optional C, No Schedule)
+
+**Context**: Need browser-level regression protection while controlling CI runtime costs on free GitHub Actions limits.
+
+**Decision**:
+- Required E2E release gate includes only flows A and B
+- Flow C (settings/default-theme roundtrip) is optional/manual regression
+- No scheduled E2E run
+- Optional regression remains manually invokable via workflow_dispatch
+
+**Rationale**:
+- Required suite stays fast and focused on highest-value gameplay paths
+- Optional regression enables deeper checks on demand without continuous cost
+- Avoids unnecessary CI complexity
+
+**Impact**:
+- Added Playwright config and required/optional test suites under `e2e/`
+- Added release workflow in `.github/workflows/e2e-release.yml`
+- Added npm scripts for required and optional E2E execution
+
+### 2026-05-19: Prioritize Lint QA As First Official Session
+
+**Context**: Current lint failures prevent the agreed quality gate (`npm run verify`) from being a reliable release criterion and can block feature delivery.
+
+**Decision**:
+- Make lint QA pass the first official implementation session
+- Keep current strict merge expectation (lint + typecheck + build + integration), but sequence work to clear lint debt first
+
+**Rationale**:
+- Restores trust in the verify pipeline
+- Prevents recurring context-switch cost where feature work is blocked by baseline lint debt
+- Aligns with user preference to prioritize lint QA if lint blocks progress
+
+**Impact**:
+- New 15-step Session 1 plan in `docs/ai/current-plan.md`
+- Session intent should start with lint baseline cleanup before additional regression expansion
+
 ### 2026-05-18: Establish Repo-Wide Agent & Memory Setup
 
 **Context**: Need a structured way for AI agents and future work sessions to read and update shared project context without cluttering the main codebase.

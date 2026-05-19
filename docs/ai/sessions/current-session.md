@@ -4,26 +4,25 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: <!-- e.g. feat/compact-table-layout -->
-**Started**: <!-- YYYY-MM-DD HH:MM -->
-**Agent/Contributor**: <!-- Who is working on this? -->
+**Branch**: feat/session-1-lint-qa
+**Started**: 2026-05-19 17:05
+**Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-<!-- What is this session trying to accomplish? Be specific.
-     Example: "Implement the compact-table layout for 4-player mode.
-     Steps 1-3 of current-plan.md." -->
+Execute Session 1 from current-plan:
+- Clear lint baseline debt so verify gate is usable
+- Re-run full quality checks
+- Implement first historical-turn regression draft case in optional E2E suite
 
 ## Active Step
 
-<!-- What step is currently in progress?
-     Example: "Step 2 — Add render branch in PlayerCardsLayout.tsx" -->
+Step 1 — Create/check out session branch and capture lint baseline
 
 ## Checkpoint Log
 
-<!-- Append a line each time meaningful work is committed and pushed.
-     Format: YYYY-MM-DD HH:MM — [what was completed] -->
+2026-05-19 17:05 — Session prepared in planning docs and logs; ready to begin implementation
 
 ## Blockers / Notes
 
-<!-- Any issues encountered, decisions made, or context future sessions need -->
+- Remote upstream not configured yet; continue local commits and push once remote exists.

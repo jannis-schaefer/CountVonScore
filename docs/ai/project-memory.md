@@ -36,6 +36,10 @@ npm run build            # Production build
 npm run preview          # Preview production build
 npm run lint             # Run ESLint
 npm run generate-themes  # Regenerate theme registry (auto-run on build)
+npm run test:integration # Store-level smoke + behavioral checks
+npm run test:e2e:required # Required browser flows (A + B)
+npm run test:e2e:regression # Optional browser regression flows
+npm run verify           # Full quality gate (lint + tsc + build + integration)
 ```
 
 On Windows, use helper scripts: `.\dev.ps1`, `.\build.ps1`
@@ -81,7 +85,16 @@ public/
 - CSS files in `src/styles/themes/` are auto-discovered via `scripts/generate-themes.mjs`
 - Metadata (@theme-id, @theme-label, @theme-description) in CSS comments
 - Registry auto-generated to `src/config/themes.ts` before build
+- Required shared token contract enforced by generator
+- Invalid themes are skipped with warnings; build fails only if zero valid themes remain
 - No manual registry updates needed
+
+### Automated Testing Strategy
+- Integration checks run at store/pipeline level via `npm run test:integration`
+- Browser E2E runs on Playwright with minimal required release gate:
+	- Required: flow A (core gameplay) and flow B (resume/reload)
+	- Optional/manual: flow C and drafted turn-navigation regressions
+- Release workflow uses required suite only; optional regressions are run on demand
 
 ### Layout System
 - **Layout registry** in `src/config/playerCardLayouts.ts` (5 presets: grid, tabletop, tabletopRotated, minimalist, seatRail)
@@ -147,7 +160,10 @@ public/
 ## Verification Checklist
 
 Before committing:
+- [ ] `npm run lint` passes (or QA baseline explicitly in progress)
 - [ ] `npx tsc --noEmit` passes (no TypeScript errors)
 - [ ] `npm run build` succeeds
+- [ ] `npm run test:integration` passes
+- [ ] `npm run test:e2e:required` passes when gameplay/UI behavior changed
 - [ ] Browser dev tools show no console errors
 - [ ] Feature works in target game mode (Shared Device or Multiplayer)

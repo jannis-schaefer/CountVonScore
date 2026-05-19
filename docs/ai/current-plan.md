@@ -1,66 +1,58 @@
-# Current Plan — Star Realms Counter
+# Current Plan — Session 1 QA And Regression Stabilization
 
-**Status**: Awaiting next feature or fix direction  
-**Last Updated**: 2026-05-18
-
-## Scope
-
-No active plan. Ready to accept new direction from:
-- Feature requests (new layouts, themes, game modes)
-- Bug reports (counter display, focus behavior, responsiveness)
-- Refactoring (code organization, performance, maintainability)
-- Documentation (dev guide updates, architecture docs)
-
-## Next Steps for Planners
-
-1. Read the latest entry in `docs/ai/sessions/` to understand the last work session
-2. Consult `docs/ai/decision-log.md` for recent design decisions
-3. Check `docs/ai/project-memory.md` for build commands and file locations
-4. If planning a new feature:
-   - Define scope: "For N players in mode M, implement X to achieve Y"
-   - Break into steps: data model changes, UI components, styling, testing
-   - Identify verification: what constitutes "done"
-5. Replace this entire file with the new plan when ready
-
-## Plan Template
-
-For future reference, a complete plan looks like:
-
-```markdown
-# Current Plan — [Title]
-
-**Status**: In progress / Blocked / Ready for review  
-**Started**: YYYY-MM-DD  
-**Target Completion**: YYYY-MM-DD
+**Status**: Ready to start
+**Started**: 2026-05-19
+**Target Completion**: 2026-05-19
 
 ## Scope
 
-[What are we building or fixing? Why?]
-[Who benefits? What problem does it solve?]
-[Are there related systems or constraints?]
+Run the first official implementation session using the new agent workflow and memory structure.
+
+Primary objective:
+- Clear lint debt so the full quality gate can be used consistently.
+
+Secondary objective:
+- Prepare turn-navigation historical-edit regression coverage from drafted test cases.
+
+This session starts with QA first because lint currently blocks `npm run verify` and can block unrelated feature work.
 
 ## Steps
 
-1. [Step name] — Brief description
-2. [Step name] — Brief description
-3. ...
+1. Start a feature branch for Session 1 work.
+2. Initialize `docs/ai/sessions/current-session.md` with intent and active step, then commit checkpoint.
+3. Run `npm run lint` and capture the full error baseline.
+4. Group lint failures by file and rule family.
+5. Fix `react-hooks/set-state-in-effect` issues in context and page files.
+6. Fix `react-refresh/only-export-components` issues by separating shared exports from component files where needed.
+7. Re-run lint and iterate until clean.
+8. Run `npx tsc --noEmit` and fix any TypeScript regressions introduced during lint cleanup.
+9. Run `npm run build` and resolve build regressions if any.
+10. Run `npm run test:integration` and verify smoke plus behavioral tests remain green.
+11. Run `npm run test:e2e:required` and verify required E2E flows remain green.
+12. Update `e2e/regression/turn-navigation-edge-drafts.spec.ts` by selecting the first historical-edit case to implement (optional regression, not required gate).
+13. Implement that one historical-edit regression test and keep the other draft cases skipped.
+14. Re-run `npm run test:e2e:regression` to ensure optional suite remains stable.
+15. Update planning and logs (`current-plan`, `decision-log`, dated session note), then commit session checkpoint.
 
 ## Verification
 
-How do we know this is done?
-- [ ] Verification point 1
-- [ ] Verification point 2
-- [ ] TypeScript check passes
-- [ ] Builds successfully
-- [ ] Feature works as expected
+How we know Session 1 is complete:
+
+- [ ] `npm run lint` passes clean
+- [ ] `npx tsc --noEmit` passes
+- [ ] `npm run build` succeeds
+- [ ] `npm run test:integration` passes
+- [ ] `npm run test:e2e:required` passes
+- [ ] At least one drafted historical-edit edge case is implemented in optional regression suite
+- [ ] Session memory docs updated and committed
 
 ## Dependencies / Blockers
 
-[Any other issues, PRs, or prerequisites that must be resolved first?]
+- Remote upstream is not configured yet, so pushes currently fail. Continue local checkpoint commits and push once remote is available.
+- Optional regression flow C remains manual (by design), and release gate uses required flows A and B only.
 
 ## Decision Rationale
 
-[Why this approach instead of alternatives? Key design decisions made during planning.]
-```
-
-Use this template when the Planner agent or a human updates this file.
+- Lint QA is first because lint failure blocks the agreed quality gate and may slow unrelated feature development.
+- Historical-edit turn-navigation cases are kept optional/regression-first until expected behavior details are fully agreed.
+- Required E2E gate remains minimal to control CI runtime and complexity.
