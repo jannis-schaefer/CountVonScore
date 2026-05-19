@@ -92,7 +92,7 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 4. If gates are not runnable, list unverified gates as blockers.
 5. Never mark complete without verification + checkpoint evidence (or explicit blocker log).
 
-## Skill Callouts (Explicit Order)
+## Skill Callouts
 
 Use in order:
 
@@ -101,30 +101,27 @@ Use in order:
 3. `milestone-delegation-sequencer`
 4. `enforce-routing-guardrails`
 5. `accept-or-reject-worker-output`
-6. `milestone-delegation-sequencer` on blocker changes
+6. `milestone-delegation-sequencer`
 
-## Worker Roster (Phase 1 Active)
+## Worker Roster
 
 - `ContextLoader` (`context-loader.agent.md`)
 - `TypeScriptImplementer` (`typescript-implementer.agent.md`)
 - `E2EImplementer` (`e2e-implementer.agent.md`)
-- `QualityGateRunner` (`quality-gate-runner.agent.md`)
-- `GitCheckpointWorker` (`git-checkpoint-worker.agent.md`)
-- `Handoff` (`handoff.agent.md`)
-
-## Worker Roster (Phase 2 Active)
-
 - `E2EFlakeTriage` (`e2e-flake-triage.agent.md`)
 - `CSSLayoutSpecialist` (`css-layout-specialist.agent.md`)
 - `ZustandStateSpecialist` (`zustand-state-specialist.agent.md`)
 - `CIWorkflowSpecialist` (`ci-workflow-specialist.agent.md`)
+- `QualityGateRunner` (`quality-gate-runner.agent.md`)
+- `GitCheckpointWorker` (`git-checkpoint-worker.agent.md`)
+- `Handoff` (`handoff.agent.md`)
 
 ## Closeout Sequence
 
 1. `QualityGateRunner`
 2. `GitCheckpointWorker`
 3. `Handoff`
-4. Optional specialist summaries (`E2EFlakeTriage`, `CSSLayoutSpecialist`, `ZustandStateSpecialist`, `CIWorkflowSpecialist`)
+4. Specialist summaries when used
 
 ## Worker Output Contract
 
