@@ -6,7 +6,7 @@ user-invocable: true
 
 # Run Required Quality Gates
 
-Execute required verification gates for this repository.
+Execute required verification gates.
 
 ## Required Commands
 
@@ -17,7 +17,7 @@ npm run build
 npm run test:integration
 ```
 
-Run this too when gameplay/UI behavior changed:
+Also run when gameplay/UI changed:
 
 ```bash
 npm run test:e2e:required
@@ -26,18 +26,13 @@ npm run test:e2e:required
 ## When to Use
 
 - Before milestone completion
-- Before feature checkpoint commits
-- Before handoff closeout
+- Before closeout
 
 ## Procedure
 
-1. Execute commands in required order.
-2. Capture pass/fail and key error lines.
-3. Classify failures by likely owner:
-- TypeScriptImplementer
-- E2EImplementer
-- QualityGateRunner
-- CI/config owner
+1. Execute commands in order.
+2. Capture pass/fail and key errors.
+3. Classify likely owner.
 4. Return blocker-first matrix.
 
 ## Output Format
@@ -61,8 +56,4 @@ Next Actions:
 2. <action>
 ```
 
-## Hard-Fail Conditions
-
-- Any required gate fails
-- Required gate not executed
-- Results reported without command evidence when command execution is available
+Hard fail on failed/missing required gates or missing command evidence.

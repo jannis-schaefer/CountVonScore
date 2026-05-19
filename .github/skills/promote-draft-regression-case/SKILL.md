@@ -7,12 +7,12 @@ argument-hint: "Specify draft case title and expected behavior."
 
 # Promote Draft Regression Case
 
-Convert one drafted regression test into an active Playwright test.
+Promote one drafted regression case to an active Playwright test.
 
 ## When to Use
 
-- Expanding optional regression coverage
-- Implementing one historical draft case at a time
+- Regression expansion
+- Draft-to-active promotion
 
 ## Scope
 
@@ -22,14 +22,13 @@ Convert one drafted regression test into an active Playwright test.
 ## Procedure
 
 1. Select exactly one draft case.
-2. Define expected behavior before coding assertions.
-3. Implement with resilient selectors (`getByRole`, `getByLabel`, stable locators).
-4. Avoid brittle timing assumptions.
-5. Re-run regression suite:
+2. Define expected behavior.
+3. Implement with resilient selectors.
+4. Re-run regression suite:
 ```bash
 npm run test:e2e:regression
 ```
-6. Report pass/fail and residual flake risks.
+5. Report validation result and residual flake risk.
 
 ## Output Format
 
@@ -50,8 +49,4 @@ Residual Risks:
 - <risk>
 ```
 
-## Hard-Fail Conditions
-
-- Promoting more than one draft case in a single run
-- Changing required-suite tests without explicit scope
-- Missing validation run when command execution is available
+Hard fail on multiple promotions, required-suite drift, or missing validation run.

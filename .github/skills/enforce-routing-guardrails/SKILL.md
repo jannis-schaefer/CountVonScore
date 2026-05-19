@@ -7,37 +7,26 @@ argument-hint: "Provide worker name and proposed file paths."
 
 # Enforce Routing Guardrails
 
-Validate worker-to-file ownership before implementation starts.
+Validate worker-to-file ownership.
 
 ## When to Use
 
-- Before delegating implementation tasks
-- When a worker proposes edits outside expected domain
-- During coordinator acceptance checks
+- Before delegation
+- During acceptance checks
 
 ## Ownership Rules
 
-1. `E2EImplementer` owns:
-- `e2e/**`
-- `playwright.config.ts`
-
-2. `TypeScriptImplementer` owns:
-- `src/**/*.ts`
-- `src/**/*.tsx`
-- related app config files
-
-3. `QualityGateRunner` owns verification outputs, not code edits.
-4. `GitCheckpointWorker` owns git checkpoint operations and session checkpoint log updates.
-5. `Handoff` owns memory docs under `docs/ai/**` and customization docs when explicitly requested.
+- `E2EImplementer`: `e2e/**`, `playwright.config.ts`
+- `TypeScriptImplementer`: `src/**/*.ts`, `src/**/*.tsx`, app config
+- `QualityGateRunner`: verification evidence
+- `GitCheckpointWorker`: git checkpoints + session checkpoint log
+- `Handoff`: `docs/ai/**` memory updates
 
 ## Procedure
 
-1. Receive proposed worker + file list.
-2. Compare each file path to ownership rules.
-3. Return one of:
-- `allow`
-- `reject-and-reroute`
-4. If rejecting, provide exact reroute target worker and reason.
+1. Compare proposed files to ownership rules.
+2. Return `allow` or `reject-and-reroute`.
+3. On reject, provide target worker.
 
 ## Output Format
 
@@ -56,8 +45,4 @@ Reason:
 - <short rationale>
 ```
 
-## Hard-Fail Conditions
-
-- Any `e2e/**` file assigned to `TypeScriptImplementer`
-- Any `src/**` app logic file assigned to `E2EImplementer` without explicit testability-fix approval
-- Mixed-domain edit sets assigned to a single worker without split delegation
+Hard fail on wrong-domain ownership.

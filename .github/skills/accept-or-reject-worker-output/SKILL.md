@@ -7,38 +7,25 @@ argument-hint: "Provide worker output summary, files changed, and verification e
 
 # Accept Or Reject Worker Output
 
-Apply hard acceptance checks for coordinator-controlled worker results.
+Apply acceptance policy after each worker run.
 
 ## When to Use
 
-- After every worker run
-- Before moving to next worker milestone
-- Before marking step complete
+- After each worker run
+- Before milestone completion
 
 ## Required Output Contract
 
-Worker output must include all fields:
-- Decision
-- Evidence
-- Files changed or commands run
-- Risks
-- Recommended next owner
-
-If any field is missing, reject.
+Required fields: Decision, Evidence, Files/Commands, Risks, Next Owner.
 
 ## Acceptance Procedure
 
-1. Validate output contract completeness.
-2. Validate routing ownership with `enforce-routing-guardrails`.
-3. Validate verification evidence for required gates.
-4. Decide:
-- `accept`
-- `reject-retry-same-worker`
-- `reject-reroute-worker`
+1. Validate contract completeness.
+2. Validate routing with `enforce-routing-guardrails`.
+3. Validate required verification evidence.
+4. Return `accept`, `reject-retry-same-worker`, or `reject-reroute-worker`.
 
-## Verification Rule
-
-When gates are required and command execution is available, diagnostics-only summaries are insufficient.
+Gate summaries without command evidence are insufficient when runnable.
 
 ## Output Format
 
@@ -58,9 +45,4 @@ Next Owner:
 - <worker>
 ```
 
-## Hard-Fail Conditions
-
-- Wrong worker owns changed files
-- Output contract incomplete
-- Required verification omitted while runnable
-- Attempt to mark task complete with unresolved blocker evidence
+Hard fail on wrong routing, missing contract fields, or missing required verification.

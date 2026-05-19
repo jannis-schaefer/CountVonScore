@@ -7,21 +7,20 @@ argument-hint: "Describe completed milestone and files to include."
 
 # Focused Checkpoint Commit
 
-Create a minimal, milestone-scoped git checkpoint.
+Create a minimal milestone-scoped git checkpoint.
 
 ## When to Use
 
-- After a meaningful completed step
-- After verification passes for that step
-- Before switching task scope
+- After meaningful progress
+- After verification passes
 
 ## Procedure
 
-1. Confirm intended files only:
+1. Confirm scope:
 ```bash
 git status --short
 ```
-2. Stage only milestone files:
+2. Stage milestone files only:
 ```bash
 git add <file...>
 ```
@@ -30,8 +29,7 @@ git add <file...>
 git commit -m "<type>: <short milestone summary>"
 ```
 4. Update `docs/ai/sessions/current-session.md` checkpoint log.
-5. Commit checkpoint log update if needed.
-6. Push; if no upstream, report blocker and continue local commits.
+5. Push; if no upstream, report blocker.
 
 ## Output Format
 
@@ -52,7 +50,4 @@ Checkpoint Log:
 - updated | not-updated (reason)
 ```
 
-## Hard-Fail Conditions
-
-- Staging unrelated files without explicit approval
-- Skipping checkpoint log update when milestone commit was created
+Hard fail on unrelated staged files or missing checkpoint log update.
