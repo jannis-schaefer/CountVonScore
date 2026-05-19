@@ -7,57 +7,57 @@ agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, QualityGateRunner
 model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
 user-invocable: true
 handoffs:
-	- label: Load Session Context
-		agent: ContextLoader
-		prompt: Build a concise session brief from docs and current state, then recommend the first execution step.
-		send: false
-		model: GPT-5.3-Codex (copilot)
-	- label: Implement TypeScript Changes
-		agent: TypeScriptImplementer
-		prompt: Implement the scoped TypeScript/React task with minimal diffs and report risks.
-		send: false
-		model: GPT-5.3-Codex (copilot)
-	- label: Implement E2E Scenario
-		agent: E2EImplementer
-		prompt: Implement or promote one Playwright scenario with stable selectors and deterministic assertions.
-		send: false
-		model: GPT-5.3-Codex (copilot)
-	- label: Run Quality Gates
-		agent: QualityGateRunner
-		prompt: Run and summarize lint, typecheck, build, integration, and required E2E gate outcomes.
-		send: false
-		model: GPT-5.3-Codex (copilot)
-	- label: Create Git Checkpoint
-		agent: GitCheckpointWorker
-		prompt: Stage relevant files, create a focused checkpoint commit, and record push status.
-		send: false
-		model: GPT-5.3-Codex (copilot)
-	- label: Capture Session Handoff
-		agent: Handoff
-		prompt: Update plan, decisions, and session handoff docs for current progress.
-		send: false
-		model: GPT-5.3-Codex (copilot)
-	# Phase 2 templates (future work):
-	# - label: Triage E2E Flakes
-	#   agent: E2EFlakeTriage
-	#   prompt: Diagnose flaky E2E failures and return deterministic stabilization actions.
-	#   send: false
-	#   model: GPT-5.3-Codex (copilot)
-	# - label: Review CSS Layout Risk
-	#   agent: CSSLayoutSpecialist
-	#   prompt: Evaluate layout/CSS changes for responsive regressions and visual risks.
-	#   send: false
-	#   model: GPT-5.3-Codex (copilot)
-	# - label: Review Zustand State Semantics
-	#   agent: ZustandStateSpecialist
-	#   prompt: Review store actions/selectors/persistence semantics and identify state risks.
-	#   send: false
-	#   model: GPT-5.3-Codex (copilot)
-	# - label: Review CI Workflow Policy
-	#   agent: CIWorkflowSpecialist
-	#   prompt: Evaluate CI gating policy, required checks, and workflow quality risks.
-	#   send: false
-	#   model: GPT-5.3-Codex (copilot)
+  - label: Load Session Context
+    agent: ContextLoader
+    prompt: Build a concise session brief from docs and current state, then recommend the first execution step.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Implement TypeScript Changes
+    agent: TypeScriptImplementer
+    prompt: Implement the scoped TypeScript/React task with minimal diffs and report risks. Do not edit e2e/** or Playwright config.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Implement E2E Scenario
+    agent: E2EImplementer
+    prompt: Implement or promote one Playwright scenario with stable selectors and deterministic assertions. Own all edits in e2e/** and playwright config.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Run Quality Gates
+    agent: QualityGateRunner
+    prompt: Run and summarize lint, typecheck, build, integration, and required E2E gate outcomes.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Create Git Checkpoint
+    agent: GitCheckpointWorker
+    prompt: Stage relevant files, create a focused checkpoint commit, and record push status.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  - label: Capture Session Handoff
+    agent: Handoff
+    prompt: Update plan, decisions, and session handoff docs for current progress.
+    send: false
+    model: GPT-5.3-Codex (copilot)
+  # Phase 2 templates (future work):
+  # - label: Triage E2E Flakes
+  #   agent: E2EFlakeTriage
+  #   prompt: Diagnose flaky E2E failures and return deterministic stabilization actions.
+  #   send: false
+  #   model: GPT-5.3-Codex (copilot)
+  # - label: Review CSS Layout Risk
+  #   agent: CSSLayoutSpecialist
+  #   prompt: Evaluate layout/CSS changes for responsive regressions and visual risks.
+  #   send: false
+  #   model: GPT-5.3-Codex (copilot)
+  # - label: Review Zustand State Semantics
+  #   agent: ZustandStateSpecialist
+  #   prompt: Review store actions/selectors/persistence semantics and identify state risks.
+  #   send: false
+  #   model: GPT-5.3-Codex (copilot)
+  # - label: Review CI Workflow Policy
+  #   agent: CIWorkflowSpecialist
+  #   prompt: Evaluate CI gating policy, required checks, and workflow quality risks.
+  #   send: false
+  #   model: GPT-5.3-Codex (copilot)
 ---
 
 # Session Coordinator Agent
@@ -81,6 +81,23 @@ Be the only user-facing agent during implementation sessions. Translate user goa
 4. Route verification to `QualityGateRunner` before completion.
 5. Route checkpointing to `GitCheckpointWorker` at each meaningful milestone.
 6. Route closeout documentation to `Handoff` at session end.
+
+## Routing Guardrails
+
+1. File-path ownership is strict:
+- `e2e/**` and `playwright.config.ts` changes must be delegated to `E2EImplementer`.
+- `src/**/*.ts` and `src/**/*.tsx` changes must be delegated to `TypeScriptImplementer` unless they are test-only helpers.
+2. If a worker proposes edits outside its domain, reject the result and re-delegate.
+3. Do not let `TypeScriptImplementer` modify E2E files.
+4. Do not let `E2EImplementer` modify app feature logic unless explicitly approved as a testability fix.
+
+## Acceptance Guardrails
+
+1. Worker results are rejected unless the output contract is complete.
+2. If required worker routing is bypassed, reject and re-run with the correct worker.
+3. If quality gates are required for the task, do not accept diagnostics-only summaries when command execution is available.
+4. If command execution is unavailable, report the exact unverified gates as blockers and hand off to `QualityGateRunner`/`GitCheckpointWorker` for the next runnable environment.
+5. Do not mark a session complete until verification and checkpointing are either executed or explicitly logged as blocked.
 
 ## Planner Replacement Policy
 
@@ -125,21 +142,3 @@ Every delegated worker must return:
 - Recommended next owner
 
 If contract is incomplete, request a revision from that worker before proceeding.
-
-## Smoke Prompt
-
-Use this prompt to test end-to-end coordination in one session:
-
-```text
-Run an implementation session for Session 1 QA and regression stabilization.
-
-Constraints:
-- Use ContextLoader first and summarize blockers.
-- Prioritize lint cleanup before any feature work.
-- If lint passes, run typecheck, build, integration tests, and required E2E.
-- Implement exactly one drafted regression case in e2e/regression/turn-navigation-edge-drafts.spec.ts.
-- After each meaningful milestone, create a focused git checkpoint.
-- End by updating handoff docs and summarizing remaining risks.
-
-Use worker delegation and provide evidence from each worker before continuing.
-```
