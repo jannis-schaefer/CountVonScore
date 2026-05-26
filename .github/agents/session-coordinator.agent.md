@@ -4,7 +4,10 @@ name: "SessionCoordinator"
 argument-hint: "Describe session goal, constraints, and desired checkpoint cadence."
 tools: [agent, read, search, edit]
 agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, E2EFlakeTriage, CSSLayoutSpecialist, ZustandStateSpecialist, CIWorkflowSpecialist, QualityGateRunner, GitCheckpointWorker, Handoff]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+models:
+  - "GPT-5.4"
+  - "Gemini 2.5 Pro"
+reasoning_depth: "high"
 user-invocable: true
 handoffs:
   - label: Load Session Context
@@ -119,6 +122,26 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 4. High-impact blockers include unresolved architecture invariants, recurring E2E flakes after retries, and CI gate policy deadlocks.
 5. Keep `Claude Opus 4.7` opt-in only when its cost tier is explicitly approved.
 6. Re-evaluate this matrix when pricing tiers or model availability changes (see `docs/ai/model-selection.md`).
+
+
+## Runtime Model Override
+
+1. The `SessionCoordinator` MUST treat `docs/ai/model-selection.md` as the canonical model matrix and load it at delegation time.
+2. When delegating work, the coordinator SHOULD pass an explicit `model` override to the worker invocation if the matrix specifies a different default than the worker frontmatter.
+3. The coordinator MUST synthesize reasoning guidance from the worker frontmatter `reasoning_depth` (and optional `reasoning_instructions`) and prepend it to the worker prompt. Use the canonical phrasing: `Reasoning depth: <LOW|MEDIUM|HIGH>.` For `HIGH`, request numbered steps then `Decision` and `Evidence` sections; for `MEDIUM`, request 1–3 bullets then `Decision`; for `LOW`, request decision + one-sentence justification.
+
+## Escalation Semantics
+
+1. The `SessionCoordinator` MUST parse the central YAML `docs/ai/model-selection.md` and honor the `workers.<Name>.escalate_to` ordered list for escalation.
+2. Worker frontmatter may include an ordered `models` array. The Coordinator MUST treat `models[0]` as the primary model and `models[1:]` as the worker-local fallbacks.
+3. On an escalation trigger (an event listed in `escalate_on`), the Coordinator MUST iterate `workers.<Name>.escalate_to` in order and invoke each entry as follows:
+  - If the entry has a `model` field: invoke that model and supply the entry's `reasoning_depth` (or worker default if omitted).
+  - If the entry omits `model`: re-invoke the current model with the entry's `reasoning_depth` (this allows escalating by increasing reasoning depth without switching vendors).
+  - If the entry's `model` equals `human`: route the task to a human reviewer/owner.
+4. The Coordinator MUST NOT append `escalate_to` entries to the worker's `fallbacks` list — escalation targets are invoked directly and only when an escalation event occurs.
+5. If an invocation fails or a requested `reasoning_depth` is unsupported by the chosen model, log the failure and proceed to the next `escalate_to` entry.
+6. Record an audit trail for each escalation step (timestamp, from-model, to-model or re-invoke, reasoning_depth, outcome) for observability and postmortem analysis.
+
 
 ## Skill Callouts
 

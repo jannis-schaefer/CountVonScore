@@ -1,61 +1,144 @@
 # Model Selection Policy
 
-## Purpose
+Canonical model matrix (machine-readable). Contains per-worker configuration used by the `SessionCoordinator`.
 
-Define cost-aware model defaults for agent workers and escalation triggers.
+```yaml
+global_defaults:
+	max_retries: 2
+	escalate_on:
+		- timeout
+		- low_confidence
+		- repeated_flake
+		- failed_assertion
 
-## Cost Assumptions (Current)
+workers:
+	SessionCoordinator:
+		models:
+			- GPT-5.4
+			- Gemini 2.5 Pro
+		max_retries: 1
+		escalate_on:
+			- timeout
+			- low_confidence
+			- repeated_flake
+		escalate_to:
+			- reasoning_depth: high
+			- model: Claude Opus 4.7
+				reasoning_depth: high
+			- model: human
 
-1. `Claude Opus 4.6`: 3x
-2. `Claude Sonnet 4.6`: 1x
-3. `GPT-5.4`: 1x
-4. `Gemini 2.5 Pro`: 1x
-5. `GPT-5 mini`: free tier (lower capability)
-6. `Claude Opus 4.7`: 15x (opt-in only)
+	ContextLoader:
+		models:
+			- GPT-5 mini
+			- GPT-5.4 mini
+			- Claude Sonnet 4.6
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: medium
+			- model: Claude Sonnet 4.6
+				reasoning_depth: medium
 
-## Key Decision
+	TypeScriptImplementer:
+		models:
+			- GPT-5.3-Codex
+			- GPT-5.4
+			- Claude Sonnet 4.6
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: high
+			- model: GPT-5.4
+				reasoning_depth: high
+			- model: Claude Opus 4.6
+				reasoning_depth: high
 
-1. Do not use `Claude Opus 4.7` as a default.
-2. Do not use `Claude Opus 4.6` as a default.
-3. Prefer 1x models for high-value default work.
-4. Use `GPT-5 mini` for deterministic procedural tasks.
+	E2EImplementer:
+		models:
+			- GPT-5.3-Codex
+			- GPT-5.4
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: high
+			- model: GPT-5.4
+				reasoning_depth: high
+			- model: human
 
-## Default Assignment Matrix
+	E2EFlakeTriage:
+		models:
+			- GPT-5.4
+			- Gemini 2.5 Pro
+			- GPT-5.3-Codex
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: high
+			- model: Claude Opus 4.6
+				reasoning_depth: high
+			- model: human
 
-1. `ContextLoader`: `GPT-5 mini`
-2. `TypeScriptImplementer`: `Claude Sonnet 4.6`
-3. `E2EImplementer`: `GPT-5.4`
-4. `E2EFlakeTriage`: `Gemini 2.5 Pro`
-5. `CSSLayoutSpecialist`: `Claude Sonnet 4.6`
-6. `ZustandStateSpecialist`: `Gemini 2.5 Pro`
-7. `CIWorkflowSpecialist`: `GPT-5.4`
-8. `QualityGateRunner`: `GPT-5.4`
-9. `GitCheckpointWorker`: `GPT-5 mini`
-10. `Handoff`: `GPT-5 mini`
+	CSSLayoutSpecialist:
+		models:
+			- Claude Sonnet 4.6
+			- GPT-5.4
+			- GPT-5.4 mini
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: high
+			- model: GPT-5.4
+				reasoning_depth: high
 
-## Escalation Policy
+	ZustandStateSpecialist:
+		models:
+			- GPT-5.3-Codex
+			- GPT-5.4
+			- Gemini 2.5 Pro
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: high
+			- model: GPT-5.4
+				reasoning_depth: high
+			- model: Claude Opus 4.6
+				reasoning_depth: high
 
-1. Escalate to `Claude Opus 4.6` only after two failed attempts at default models.
-2. Escalate only for high-impact blockers:
-3. Architecture invariants still unresolved after specialist retry.
-4. Recurring E2E flakes still unresolved after deterministic stabilization retry.
-5. CI policy deadlock that blocks required checks.
-6. De-escalate back to defaults after blocker resolution.
+	CIWorkflowSpecialist:
+		models:
+			- GPT-5.4
+			- GPT-5.3-Codex
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: high
+			- model: Claude Opus 4.6
+				reasoning_depth: high
+			- model: human
 
-## Re-Evaluation Triggers
+	QualityGateRunner:
+		models:
+			- GPT-5.4
+			- GPT-5 mini
+		max_retries: 2
+		escalate_to:
+			- reasoning_depth: medium
+			- model: human
 
-1. Any pricing tier shift greater than 30% for a default model.
-2. Any model deprecation or newly available model in the same tier.
-3. Repeated quality regressions for a worker over three sessions.
-4. Significant tool-support change for a model used by tool-heavy workers.
+	GitCheckpointWorker:
+		models:
+			- GPT-5 mini
+			- GPT-5.4 mini
+		max_retries: 1
+		escalate_to:
+			- reasoning_depth: medium
+			- model: GPT-5.4
+				reasoning_depth: medium
 
-## Re-Evaluation Procedure
-
-1. Re-run one smoke scenario per worker with current defaults.
-2. Compare pass rate, first-pass success, and reroute frequency.
-3. Update this document and coordinator policy together.
-4. Record rationale in `docs/ai/decision-log.md`.
+	Handoff:
+		models:
+			- GPT-5 mini
+			- GPT-5.4
+		max_retries: 1
+		escalate_to:
+			- reasoning_depth: medium
+			- model: GPT-5.4
+				reasoning_depth: medium
+```
 
 ## Last Updated
 
-2026-05-19
+2026-05-26

@@ -2,7 +2,11 @@
 description: "Own store-level design, action semantics, selectors, and persistence behavior in Zustand."
 name: "ZustandStateSpecialist"
 tools: [read, search, edit]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+models:
+	- "GPT-5.3-Codex"
+	- "GPT-5.4"
+	- "Gemini 2.5 Pro"
+reasoning_depth: "high"
 user-invocable: false
 ---
 
