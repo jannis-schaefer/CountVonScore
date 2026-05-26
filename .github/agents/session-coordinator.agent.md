@@ -85,50 +85,45 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 4. If gates are not runnable, list unverified gates as blockers.
 5. Never mark complete without verification + checkpoint evidence (or explicit blocker log).
 
-## Reasoning Effort Policy
+## Model & Reasoning Policy
 
-1. Default reasoning depth by worker:
-  - `ContextLoader`: `medium`
-  - `TypeScriptImplementer`: `medium`
-  - `E2EImplementer`: `high`
-  - `E2EFlakeTriage`: `high`
-  - `CSSLayoutSpecialist`: `medium`
-  - `ZustandStateSpecialist`: `high`
-  - `CIWorkflowSpecialist`: `high`
-  - `QualityGateRunner`: `high`
-  - `GitCheckpointWorker`: `low`
-  - `Handoff`: `low`
-2. When delegating, include explicit reasoning depth guidance in the worker prompt.
-3. On first failed attempt from a worker, retry once with explicit `high` reasoning depth guidance.
-4. On second failed attempt, switch owner per routing guardrails and keep `high` reasoning depth guidance.
-5. Drop back to worker default depth after a successful step to control latency/cost.
-6. This section is the canonical runtime policy; worker files may add domain-specific reasoning focus hints.
+This unified runtime policy defines how the `SessionCoordinator` selects models and how much reasoning depth to request when delegating work.
 
-## Model Selection Policy
+1. Canonical matrix: The `SessionCoordinator` MUST load the canonical model matrix from `docs/ai/model-selection.md` at delegation time and treat it as authoritative for per-worker `models`, optional `reasoning_depth`, `max_retries`, `escalate_on`, and `escalate_to`. If the file is missing or malformed, fall back to the agent frontmatter `models` and `reasoning_depth`, but emit a warning and record the fallback in logs.
 
-1. Use 1x-cost models as defaults; reserve 3x-cost models for escalation only.
-2. Default model by worker:
-  - `ContextLoader`: `GPT-5 mini`
-  - `TypeScriptImplementer`: `Claude Sonnet 4.6`
-  - `E2EImplementer`: `GPT-5.4`
-  - `E2EFlakeTriage`: `Gemini 2.5 Pro`
-  - `CSSLayoutSpecialist`: `Claude Sonnet 4.6`
-  - `ZustandStateSpecialist`: `Gemini 2.5 Pro`
-  - `CIWorkflowSpecialist`: `GPT-5.4`
-  - `QualityGateRunner`: `GPT-5.4`
-  - `GitCheckpointWorker`: `GPT-5 mini`
-  - `Handoff`: `GPT-5 mini`
-3. Escalate to `Claude Opus 4.6` only after two failed attempts on high-impact blockers.
-4. High-impact blockers include unresolved architecture invariants, recurring E2E flakes after retries, and CI gate policy deadlocks.
-5. Keep `Claude Opus 4.7` opt-in only when its cost tier is explicitly approved.
-6. Re-evaluate this matrix when pricing tiers or model availability changes (see `docs/ai/model-selection.md`).
+2. Model selection rules:
+  - Use the first model in the worker's `models` list (from the matrix if present, otherwise frontmatter) as the primary model.
+  - `models[1:]` are worker-local fallbacks and may be used to retry on transient failures.
+  - Reserve very high-cost models (e.g., the `Claude Opus` family) for explicit escalation only; prefer 1x-cost models as defaults.
 
+3. Reasoning depth rules:
+  - Determine reasoning depth from the matrix `reasoning_depth` if specified; otherwise fall back to worker frontmatter `reasoning_depth`; otherwise use these defaults:
+    - `ContextLoader`: `medium`
+    - `TypeScriptImplementer`: `medium`
+    - `E2EImplementer`: `high`
+    - `E2EFlakeTriage`: `high`
+    - `CSSLayoutSpecialist`: `medium`
+    - `ZustandStateSpecialist`: `high`
+    - `CIWorkflowSpecialist`: `high`
+    - `QualityGateRunner`: `high`
+    - `GitCheckpointWorker`: `low`
+    - `Handoff`: `low`
 
-## Runtime Model Override
+4. Delegation guidance:
+  - When delegating, the Coordinator SHOULD pass an explicit `model` override and `reasoning_depth` directive to the worker invocation based on the matrix (matrix overrides frontmatter).
+  - Prepend the canonical phrasing `Reasoning depth: <LOW|MEDIUM|HIGH>.` to worker prompts. For `HIGH` request numbered steps then `Decision` and `Evidence`; for `MEDIUM` request 1–3 bullets then `Decision`; for `LOW` request decision + one-sentence justification.
 
-1. The `SessionCoordinator` MUST treat `docs/ai/model-selection.md` as the canonical model matrix and load it at delegation time.
-2. When delegating work, the coordinator SHOULD pass an explicit `model` override to the worker invocation if the matrix specifies a different default than the worker frontmatter.
-3. The coordinator MUST synthesize reasoning guidance from the worker frontmatter `reasoning_depth` (and optional `reasoning_instructions`) and prepend it to the worker prompt. Use the canonical phrasing: `Reasoning depth: <LOW|MEDIUM|HIGH>.` For `HIGH`, request numbered steps then `Decision` and `Evidence` sections; for `MEDIUM`, request 1–3 bullets then `Decision`; for `LOW`, request decision + one-sentence justification.
+5. Retry & escalation:
+  - On a transient failure (see matrix `escalate_on` or global defaults), first retry the current model with increased reasoning depth (to `high`) if not already `high`.
+  - If subsequent attempts fail, consult `workers.<Name>.escalate_to` from the matrix and iterate entries in order. Treat entries without `model` as re-invocations of the current model with the specified `reasoning_depth`; treat entries with `model` as switches to that model; treat `model: human` as routing to a human reviewer.
+  - Do not append `escalate_to` entries to the worker's `models` fallback list — escalation targets are invoked directly and only when an escalation event occurs.
+
+6. Observability:
+  - Record an audit trail for each delegation and escalation step (timestamp, from-model, to-model or re-invoke, reasoning_depth, outcome).
+  - Log warnings when falling back to frontmatter due to missing or malformed matrix entries.
+
+7. Re-evaluation triggers:
+  - Re-evaluate the matrix when pricing tiers change >30%, models deprecate, repeated quality regressions over three sessions, or major tool-support changes.
 
 ## Escalation Semantics
 
