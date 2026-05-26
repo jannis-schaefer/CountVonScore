@@ -2,7 +2,8 @@
 description: "Implement and stabilize Playwright E2E tests, including promoting drafted cases into active regression coverage."
 name: "E2EImplementer"
 tools: [read, search, edit]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+model: ["GPT-5.3-Codex (copilot)", "GPT-5.4 (copilot)"]
+reasoning_depth: "medium"
 user-invocable: false
 ---
 

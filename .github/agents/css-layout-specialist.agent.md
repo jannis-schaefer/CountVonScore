@@ -2,7 +2,8 @@
 description: "Own CSS/layout behavior, responsive breakpoints, and visual regression risk assessments."
 name: "CSSLayoutSpecialist"
 tools: [read, search, edit]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+model: ["Claude Sonnet 4.6", "GPT-5.4 (copilot)"]
+reasoning_depth: "medium"
 user-invocable: false
 ---
 

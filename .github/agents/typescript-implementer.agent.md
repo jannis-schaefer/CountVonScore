@@ -2,7 +2,8 @@
 description: "Implement TypeScript/React changes with focused diffs and no cross-domain scope creep."
 name: "TypeScriptImplementer"
 tools: [read, search, edit]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+model: ["GPT-5.3-Codex (copilot)", "GPT-5.4 (copilot)"]
+reasoning_depth: "medium"
 user-invocable: false
 ---
 

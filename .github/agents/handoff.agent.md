@@ -2,7 +2,8 @@
 description: "Capture session summary and update durable memory files at session end. Use for closing out work, recording decisions, and writing handoff notes for future sessions."
 name: "Handoff"
 tools: [read, edit]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+model: ["GPT-5 mini (copilot)", "GPT-5.4 (copilot)"]
+reasoning_depth: "low"
 user-invocable: false
 ---
 

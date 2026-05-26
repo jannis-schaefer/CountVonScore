@@ -2,7 +2,8 @@
 description: "Create focused git checkpoints, maintain checkpoint cadence, and report remote push status clearly."
 name: "GitCheckpointWorker"
 tools: [read, search, edit]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+model: ["GPT-5 mini (copilot)", "GPT-5.4 mini (copilot)"]
+reasoning_depth: "low"
 user-invocable: false
 ---
 

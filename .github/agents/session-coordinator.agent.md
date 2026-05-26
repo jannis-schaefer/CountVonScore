@@ -4,7 +4,8 @@ name: "SessionCoordinator"
 argument-hint: "Describe session goal, constraints, and desired checkpoint cadence."
 tools: [agent, read, search, edit]
 agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, E2EFlakeTriage, CSSLayoutSpecialist, ZustandStateSpecialist, CIWorkflowSpecialist, QualityGateRunner, GitCheckpointWorker, Handoff]
-model: ["GPT-5.3-Codex (copilot)", "GPT-5 (copilot)"]
+model: ["GPT-5.4 (copilot)", "Gemini 2.5 Pro"]
+reasoning_depth: "high"
 user-invocable: true
 handoffs:
   - label: Load Session Context
@@ -119,6 +120,12 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 4. High-impact blockers include unresolved architecture invariants, recurring E2E flakes after retries, and CI gate policy deadlocks.
 5. Keep `Claude Opus 4.7` opt-in only when its cost tier is explicitly approved.
 6. Re-evaluate this matrix when pricing tiers or model availability changes (see `docs/ai/model-selection.md`).
+
+## Runtime Model Override
+
+1. The `SessionCoordinator` MUST treat `docs/ai/model-selection.md` as the canonical model matrix and load it at delegation time.
+2. When delegating work, the coordinator SHOULD pass an explicit `model` override to the worker invocation if the matrix specifies a different default than the worker frontmatter.
+3. The coordinator MUST synthesize reasoning guidance from the worker frontmatter `reasoning_depth` (and optional `reasoning_instructions`) and prepend it to the worker prompt. Use the canonical phrasing: `Reasoning depth: <LOW|MEDIUM|HIGH>.` For `HIGH`, request numbered steps then `Decision` and `Evidence` sections; for `MEDIUM`, request 1–3 bullets then `Decision`; for `LOW`, request decision + one-sentence justification.
 
 ## Skill Callouts
 
