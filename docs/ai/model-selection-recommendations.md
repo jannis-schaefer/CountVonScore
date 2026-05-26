@@ -176,7 +176,7 @@ workers:
   - `{ model: "<model-name>", reasoning_depth: <...> }`
   - `{ model: "human" }`
 
-4. (Removed) — commit step removed from these implementer instructions. When implementing the `SessionCoordinator`, load the canonical matrix at runtime from `docs/ai/model-selection.md` and treat it as authoritative for `models`, `max_retries`, `escalate_on`, and `escalate_to`. If the matrix is unavailable or malformed, fall back to the agent frontmatter `models` and `reasoning_depth`, but emit a warning and record the fallback in logs.
+4. (Removed) — commit step removed from these implementer instructions. When implementing the `SessionCoordinator`, load the canonical matrix at runtime from `docs/ai/model-selection.md` and treat it as authoritative for `models`, `max_retries`, `escalate_on`, and `escalate_to`. If the matrix is missing or malformed, fall back to agent defaults (agent frontmatter `models` and `reasoning_depth`).
 
 
 ---

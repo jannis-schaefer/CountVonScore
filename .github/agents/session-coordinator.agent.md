@@ -89,12 +89,10 @@ Be the only user-facing orchestrator. Delegate, validate, and decide next action
 
 This unified runtime policy defines how the `SessionCoordinator` selects models and how much reasoning depth to request when delegating work.
 
-1. Canonical matrix: The `SessionCoordinator` MUST load the canonical model matrix from `docs/ai/model-selection.md` at delegation time and treat it as authoritative for per-worker `models`, optional `reasoning_depth`, `max_retries`, `escalate_on`, and `escalate_to`. If the file is missing or malformed, fall back to the agent frontmatter `models` and `reasoning_depth`, but emit a warning and record the fallback in logs.
+1. Canonical matrix: The `SessionCoordinator` MUST load the canonical model matrix from `docs/ai/model-selection.md` at delegation time and treat it as authoritative for per-worker `models`, optional `reasoning_depth`, `max_retries`, `escalate_on`, and `escalate_to`. If the file is missing or malformed, fall back to agent defaults (agent frontmatter `models` and `reasoning_depth`).
 
 2. Model selection rules:
-  - Use the first model in the worker's `models` list (from the matrix if present, otherwise frontmatter) as the primary model.
-  - `models[1:]` are worker-local fallbacks and may be used to retry on transient failures.
-  - Reserve very high-cost models (e.g., the `Claude Opus` family) for explicit escalation only; prefer 1x-cost models as defaults.
+  - Use the first model in the worker's `models` list (from the matrix if present, otherwise agent defaults) as the primary model.
 
 3. Reasoning depth rules:
   - Determine reasoning depth from the matrix `reasoning_depth` if specified; otherwise fall back to worker frontmatter `reasoning_depth`; otherwise use these defaults:
