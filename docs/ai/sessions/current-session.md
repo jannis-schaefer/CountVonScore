@@ -4,7 +4,7 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: master
+**Branch**: main
 **Started**: 2026-05-19 16:00
 **Agent/Contributor**: Copilot + User
 
@@ -26,6 +26,7 @@ Closeout - handoff and durable memory updates.
 2026-05-19 16:31 - Cost-aware model selection policy documented and linked into AI memory docs
 2026-05-19 16:33 - Session handoff pack started (plan, decisions, session note, memory updates)
 2026-05-19 16:36 - Session handoff pack completed and ready for next-session smoke validation
+2026-05-26 17:00 - Closeout: ran `npm run lint` (failed 14 errors); created handoff at docs/ai/sessions/2026-05-26-1700.md; commits merged to `main` locally; push pending user approval
 
 ## Blockers / Notes
 
