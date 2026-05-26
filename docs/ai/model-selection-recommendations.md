@@ -135,32 +135,49 @@ Notes: "Primary" = default model to assign; "Fallback" = cheaper or alternative 
 
 ## Implementation: Fallbacks and Escalations
 
-This section documents how to implement the `models` (fallbacks) and `escalate_to` behavior described in the canonical matrix so runtime code is deterministic and auditable.
+Implementation steps (concise):
 
-- `models` (agent frontmatter): must be an ordered array of model names (primary first, then fallbacks). The Coordinator uses `models[0]` as the primary and `models[1:]` as ordered fallbacks for normal retry/failure handling.
+1. Add an ordered `models` array to each agent frontmatter (`.github/agents/<agent>.agent.md`). Example frontmatter:
 
-- Normal fallback policy (recommended):
-  1. On initial delegation, invoke `models[0]` with the requested `reasoning_depth`.
- 2. If invocation fails with a transient error (timeout, service-unavailable) or deterministic failure that suggests a model-specific bug (unsupported API, parsing error), retry with the next fallback from `models[1:]`, up to the worker's `max_retries` or the `global_defaults.max_retries`.
- 3. Do not use fallbacks to escalate reasoning depth — fallbacks are provider/substitute models only.
- 4. Never promote a fallback to be the permanent primary without an explicit configuration change (human approval or automated policy after repeated runs).
+```yaml
+name: "TypeScriptImplementer"
+models:
+  - "GPT-5.3-Codex"
+  - "GPT-5.4"
+reasoning_depth: "medium"
+```
 
-- Escalation policy (recommended, implemented via `workers.<Name>.escalate_to` in the canonical matrix):
-  1. `escalate_on` lists the events that trigger escalation (e.g., `timeout`, `low_confidence`, `failed_assertion`, `repeated_flake`). When such an event occurs, the Coordinator MUST stop normal fallback iteration and process the ordered `escalate_to` list.
- 2. Each `escalate_to` entry is invoked in order:
-     - If the entry has only `reasoning_depth` (no `model`): re-invoke the current model with the specified higher `reasoning_depth`.
-     - If the entry has `model`: switch to that model and invoke with the entry's `reasoning_depth` (if present) or worker default.
-     - If `model` == `human`: create a human-review task (notify owner, open issue/PR, or call human routing hook).
- 3. For each escalation step, record an audit entry containing: timestamp, initiating event, from-model, to-model or re-invoke, requested `reasoning_depth`, invocation outcome, and error message (if any).
- 4. If an escalation step fails (unsupported reasoning depth, invocation error), proceed to the next `escalate_to` entry.
+2. Populate `docs/ai/model-selection.md` with per-worker entries containing at minimum:
+  - `models` (ordered list)
+  - `max_retries` (integer)
+  - optional `escalate_on` (list of trigger events)
+  - `escalate_to` (ordered list)
 
-- Practical guidance for implementers:
-  - Keep `models` in the agent's frontmatter concise and vendor-neutral where possible (exact model strings should match the canonical matrix).
-  - Implement a small coordinator helper that encapsulates: `select_primary_and_fallbacks()`, `try_with_fallbacks()`, and `run_escalation_plan()` so code is testable and auditable.
-  - Emit metrics: `escalation_count`, `escalation_step_success`, `fallback_usage_count`, and `reasoning_depth_overrides` to track cost and reliability impact.
-  - Provide a lightweight integration test that simulates a transient failure and confirms coordinator chooses fallbacks, and another that simulates an `escalate_on` event and confirms `escalate_to` entries are invoked in order.
+Example worker entry:
 
-See `docs/ai/model-selection.md` for the canonical `escalate_to` examples and per-worker configuration.
+```yaml
+workers:
+  TypeScriptImplementer:
+    models:
+      - GPT-5.3-Codex
+      - GPT-5.4
+    max_retries: 2
+    escalate_on:
+      - failed_typecheck
+    escalate_to:
+      - reasoning_depth: high
+      - model: GPT-5.4
+        reasoning_depth: high
+      - model: human
+```
+
+3. Valid forms for entries in `escalate_to` (use only these):
+  - `{ reasoning_depth: <low|medium|high> }` — re-invoke current model with specified depth
+  - `{ model: "<model-name>", reasoning_depth: <...> }`
+  - `{ model: "human" }`
+
+4. Commit changed agent frontmatter and `docs/ai/model-selection.md` (branch `main` if merging locally). Keep edits minimal and avoid adding runtime usage details here.
+
 
 ---
 
