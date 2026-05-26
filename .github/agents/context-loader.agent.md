@@ -2,7 +2,10 @@
 description: "Load current project/session context and produce a concise implementation brief with immediate next steps and blockers."
 name: "ContextLoader"
 tools: [read, search]
-model: ["GPT-5 mini (copilot)", "GPT-5.4 mini (copilot)"]
+models:
+	- "GPT-5 mini"
+	- "GPT-5.4 mini"
+	- "Claude Sonnet 4.6"
 reasoning_depth: "medium"
 user-invocable: false
 ---

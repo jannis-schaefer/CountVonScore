@@ -2,7 +2,9 @@
 description: "Own CI workflow design, required/optional gates, and release pipeline quality policy."
 name: "CIWorkflowSpecialist"
 tools: [read, search, edit]
-model: ["GPT-5.4 (copilot)", "GPT-5.3-Codex (copilot)"]
+models:
+	- "GPT-5.4"
+	- "GPT-5.3-Codex"
 reasoning_depth: "medium"
 user-invocable: false
 ---

@@ -4,7 +4,9 @@ name: "SessionCoordinator"
 argument-hint: "Describe session goal, constraints, and desired checkpoint cadence."
 tools: [agent, read, search, edit]
 agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, E2EFlakeTriage, CSSLayoutSpecialist, ZustandStateSpecialist, CIWorkflowSpecialist, QualityGateRunner, GitCheckpointWorker, Handoff]
-model: ["GPT-5.4 (copilot)", "Gemini 2.5 Pro"]
+models:
+  - "GPT-5.4"
+  - "Gemini 2.5 Pro"
 reasoning_depth: "high"
 user-invocable: true
 handoffs:

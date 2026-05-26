@@ -2,7 +2,9 @@
 description: "Run and evaluate quality gates, then report pass/fail matrix with blocker severity and ownership suggestions."
 name: "QualityGateRunner"
 tools: [read, search]
-model: ["GPT-5.4 (copilot)", "GPT-5 mini (copilot)"]
+models:
+	- "GPT-5.4"
+	- "GPT-5 mini"
 reasoning_depth: "medium"
 user-invocable: false
 ---
