@@ -1,7 +1,7 @@
 ---
 description: "Run and evaluate quality gates, then report pass/fail matrix with blocker severity and ownership suggestions."
 name: "QualityGateRunner"
-tools: [read, search]
+tools: [read, search, execute]
 models:
 	- "GPT-5.4"
 	- "GPT-5 mini"
@@ -19,6 +19,7 @@ Evaluate readiness by running or interpreting gate outputs for:
 - `npm run build`
 - `npm run test:integration`
 - `npm run test:e2e:required` (when behavior/UI changed)
+- Accessibility evidence check (when behavior/UI/layout changed), per `docs/ai/qa-accessibility-policy.md`
 
 ## Output Contract
 
@@ -26,6 +27,7 @@ Evaluate readiness by running or interpreting gate outputs for:
 - Blocking failures first
 - Suspected owner by domain (TS, E2E, config)
 - Minimal next action sequence
+- Accessibility status (`pass`/`fail`) and blocker classification when in scope
 
 ## Skill Callouts
 

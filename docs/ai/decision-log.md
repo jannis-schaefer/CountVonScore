@@ -200,6 +200,25 @@ Durable decisions and design rationale. Append-only; never remove entries.
 - Coordinator references the model matrix as runtime policy
 - Session closeout now includes model-policy maintenance as durable memory
 
+### 2026-05-26: Minimal Accessibility QA Policy Linked Into Verification Flows
+
+**Context**: Session verification coverage needed a lightweight, explicit accessibility checkpoint aligned with existing smoke and layout validation workflows.
+
+**Decision**:
+- Adopt a minimal accessibility QA policy as a documented closeout requirement
+- Link the policy from quality-gate-runner documentation and CSS layout flow documentation
+- Keep scope lightweight so it complements existing smoke gates instead of replacing them
+
+**Rationale**:
+- Establishes a consistent baseline accessibility check without adding heavy process overhead
+- Reduces drift by binding the policy to the existing verification paths that contributors already follow
+- Improves release confidence for UI/layout changes where accessibility regressions can be subtle
+
+**Impact**:
+- Accessibility QA expectation is now explicitly represented in session closeout evidence
+- Quality-gate-runner and CSS flow documentation now point to the same minimal policy baseline
+- Integration and MCP smoke evidence can be reported alongside accessibility policy compliance
+
 ---
 
 **Next Entry**: Add below when a significant decision is made.

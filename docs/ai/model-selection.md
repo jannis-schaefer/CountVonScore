@@ -76,8 +76,8 @@ workers:
 
 	CSSLayoutSpecialist:
 		models:
-			- Claude Sonnet 4.6
 			- GPT-5.4
+			- Claude Sonnet 4.6
 			- GPT-5.4 mini
 		max_retries: 2
 		escalate_to:

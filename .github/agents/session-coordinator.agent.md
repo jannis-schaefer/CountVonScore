@@ -40,7 +40,7 @@ handoffs:
     send: false
   - label: Review CSS Layout Risk
     agent: CSSLayoutSpecialist
-    prompt: Evaluate layout/CSS changes for responsive regressions and visual risks. Return decision, evidence, files or commands, risks, and next owner.
+    prompt: Evaluate layout/CSS changes for responsive regressions and visual risks using bounded render-feedback iteration. Include baseline/post-change screenshot evidence across target breakpoints, mobile interaction findings, and accessibility impact summary. Return decision, evidence, files or commands, risks, and next owner.
     send: false
   - label: Review Zustand State Semantics
     agent: ZustandStateSpecialist
