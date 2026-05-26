@@ -120,9 +120,6 @@ This unified runtime policy defines how the `SessionCoordinator` selects models 
   - Record an audit trail for each delegation and escalation step (timestamp, from-model, to-model or re-invoke, reasoning_depth, outcome).
   - Log warnings when falling back to frontmatter due to missing or malformed matrix entries.
 
-7. Re-evaluation triggers:
-  - Re-evaluate the matrix when pricing tiers change >30%, models deprecate, repeated quality regressions over three sessions, or major tool-support changes.
-
 ## Escalation Semantics
 
 1. The `SessionCoordinator` MUST parse the central YAML `docs/ai/model-selection.md` and honor the `workers.<Name>.escalate_to` ordered list for escalation.
