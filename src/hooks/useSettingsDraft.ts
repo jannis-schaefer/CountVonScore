@@ -69,16 +69,6 @@ export function useSettingsDraft(): SettingsDraft {
   const [bundledConfigs, setBundledConfigs] = useState<GameConfig[]>([]);
   const [configMessage, setConfigMessage] = useState('');
 
-  useEffect(() => { setEditableCounters(counterDefinitions); }, [counterDefinitions]);
-  useEffect(() => { setOverridesText(JSON.stringify(playerOverrides, null, 2)); }, [playerOverrides]);
-  useEffect(() => { setEditableDefaultPlayerCount(defaultPlayerCount); }, [defaultPlayerCount]);
-  useEffect(() => { setEditableEliminationEnabled(eliminationEnabled); }, [eliminationEnabled]);
-  useEffect(() => { setEditableEliminationCounterId(eliminationCounterId); }, [eliminationCounterId]);
-  useEffect(() => { setEditableEliminationThreshold(eliminationThreshold); }, [eliminationThreshold]);
-  useEffect(() => { setEditableEliminationOutcome(eliminationOutcome); }, [eliminationOutcome]);
-  useEffect(() => { setEditableEliminationRule(eliminationRule); }, [eliminationRule]);
-  useEffect(() => { setConfigName(currentGameConfigName); }, [currentGameConfigName]);
-
   useEffect(() => {
     loadBundledGameConfigs()
       .then(setBundledConfigs)

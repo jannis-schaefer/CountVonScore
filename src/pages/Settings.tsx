@@ -1,8 +1,8 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
-import { useTheme } from '../context/ThemeContext';
-import { usePlayerCardLayout } from '../context/PlayerCardLayoutContext';
+import { useTheme } from '../context/useTheme';
+import { usePlayerCardLayout } from '../context/usePlayerCardLayout';
 import { useSettingsDraft } from '../hooks/useSettingsDraft';
 import { CounterDefinitionsSection } from '../components/settings/CounterDefinitionsSection';
 import { EliminationSection } from '../components/settings/EliminationSection';

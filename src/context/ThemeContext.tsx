@@ -1,18 +1,12 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { getTheme, getAvailableThemes, type ThemeDefinition } from '../config/themes';
+import { getTheme, getAvailableThemes } from '../config/themes';
+import { ThemeContext } from './ThemeContextValue';
 
-interface ThemeContextType {
-  theme: string;
-  selectTheme: (themeId: string) => void;
-  availableThemes: ThemeDefinition[];
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const availableThemes = getAvailableThemes();
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { theme, setTheme } = useGameStore();
-  const availableThemes = getAvailableThemes();
 
   useEffect(() => {
     const themeDefinition = getTheme(theme);
@@ -29,7 +23,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...availableThemes.map((t) => t.className)
     );
     document.documentElement.classList.add(themeDefinition.className);
-  }, [theme, availableThemes]);
+  }, [theme]);
 
   const selectTheme = (themeId: string) => {
     if (getTheme(themeId)) {
@@ -44,12 +38,4 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
 };

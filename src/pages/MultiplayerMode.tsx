@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { evaluatePlayerEliminationStatus } from '../store/engine/elimination';
@@ -22,21 +22,12 @@ export const MultiplayerMode: React.FC = () => {
     undo,
   } = useGameStore();
   const [trackedPlayerIndex, setTrackedPlayerIndex] = React.useState(0);
-
-  useEffect(() => {
-    if (players.length === 0) {
-      setTrackedPlayerIndex(0);
-      return;
-    }
-
-    const preferred = Math.min(currentPlayerIndex, players.length - 1);
-    setTrackedPlayerIndex((prev) => {
-      if (prev >= 0 && prev < players.length) {
-        return prev;
-      }
-      return preferred;
-    });
-  }, [players, currentPlayerIndex]);
+  const preferredTrackedPlayerIndex = players.length === 0
+    ? 0
+    : Math.min(currentPlayerIndex, players.length - 1);
+  const safeTrackedPlayerIndex = trackedPlayerIndex >= 0 && trackedPlayerIndex < players.length
+    ? trackedPlayerIndex
+    : preferredTrackedPlayerIndex;
 
   const handleCounterChange = (
     playerId: string,
@@ -46,7 +37,7 @@ export const MultiplayerMode: React.FC = () => {
     setCounter(playerId, counterId, value);
   };
 
-  const trackedPlayer = players[trackedPlayerIndex];
+  const trackedPlayer = players[safeTrackedPlayerIndex];
   const trackedPlayerStatus = trackedPlayer
     ? evaluatePlayerEliminationStatus(trackedPlayer, players, {
         enabled: eliminationEnabled,
@@ -80,7 +71,7 @@ export const MultiplayerMode: React.FC = () => {
             <select
               id="tracked-player"
               className="input w-fit-240"
-              value={trackedPlayerIndex}
+              value={safeTrackedPlayerIndex}
               onChange={(event) => setTrackedPlayerIndex(Number(event.target.value))}
             >
               {players.map((player, index) => (

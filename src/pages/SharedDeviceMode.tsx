@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore';
 import { evaluatePlayerEliminationStatus } from '../store/engine/elimination';
@@ -6,7 +6,7 @@ import { PlayerCard } from '../components/PlayerCard';
 import { PlayerCardsLayout } from '../components/PlayerCardsLayout';
 import { TurnNavigation } from '../components/TurnNavigation';
 import { GameControls } from '../components/GameControls';
-import { usePlayerCardLayout } from '../context/PlayerCardLayoutContext';
+import { usePlayerCardLayout } from '../context/usePlayerCardLayout';
 
 export const SharedDeviceMode: React.FC = () => {
   const navigate = useNavigate();
@@ -37,19 +37,13 @@ export const SharedDeviceMode: React.FC = () => {
   } = useGameStore();
 
   // Show starting-player overlay when we're at the very first turn and no player has been chosen yet.
-  const [startingPlayerChosen, setStartingPlayerChosen] = useState(turnNumber > 1);
+  const [hasSelectedStartingPlayer, setHasSelectedStartingPlayer] = useState(turnNumber > 1);
   const [selectingManually, setSelectingManually] = useState(false);
-
-  // If the game was resumed mid-game, skip the overlay.
-  useEffect(() => {
-    if (turnNumber > 1) {
-      setStartingPlayerChosen(true);
-    }
-  }, [turnNumber]);
+  const startingPlayerChosen = turnNumber > 1 || hasSelectedStartingPlayer;
 
   const handleChoosePlayer = (index: number) => {
     setStartingPlayer(index);
-    setStartingPlayerChosen(true);
+    setHasSelectedStartingPlayer(true);
     setSelectingManually(false);
   };
 
@@ -244,7 +238,7 @@ export const SharedDeviceMode: React.FC = () => {
               onUndo={undo}
               onReset={() => {
                 resetGame();
-                setStartingPlayerChosen(false);
+                setHasSelectedStartingPlayer(false);
                 setSelectingManually(false);
               }}
               onOpenSettings={() => navigate('/settings')}
