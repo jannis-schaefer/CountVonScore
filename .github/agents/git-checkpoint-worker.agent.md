@@ -1,7 +1,7 @@
 ---
 description: "Create focused git checkpoints, maintain checkpoint cadence, and report remote push status clearly."
 name: "GitCheckpointWorker"
-tools: [read, search, edit]
+tools: [read, search, edit, execute]
 models:
 	- "GPT-5 mini"
 	- "GPT-5.4 mini"

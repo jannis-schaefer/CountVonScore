@@ -1,7 +1,7 @@
 ---
 description: "Diagnose flaky E2E behavior and propose deterministic stabilization actions."
 name: "E2EFlakeTriage"
-tools: [read, search]
+tools: [read, search, execute]
 models:
 	- "GPT-5.4"
 	- "Gemini 2.5 Pro"
