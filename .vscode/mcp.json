@@ -1,0 +1,37 @@
+{
+  "inputs": [
+    {
+      "id": "workspaceRoot",
+      "type": "promptString",
+      "description": "Absolute path to workspace root",
+      "default": "c:/Users/I8K/git/lifecounter-starrealms"
+    },
+    {
+      "id": "chromeBinary",
+      "type": "promptString",
+      "description": "Optional path to Chrome/Chromium executable",
+      "default": ""
+    }
+  ],
+  "servers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {
+        "CHROME_PATH": "${input:chromeBinary}"
+      }
+    }
+  }
+}
