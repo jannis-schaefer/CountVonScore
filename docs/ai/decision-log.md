@@ -219,6 +219,28 @@ Durable decisions and design rationale. Append-only; never remove entries.
 - Quality-gate-runner and CSS flow documentation now point to the same minimal policy baseline
 - Integration and MCP smoke evidence can be reported alongside accessibility policy compliance
 
+### 2026-05-29: Public Remote Configured — CountVonScore
+
+**Context**: Repository had no remote; all work was local only. Needed to publish to a public GitHub repo with sanitized author info and no workspace-specific file history.
+
+**Decision**:
+- Rewrote all commit authors to `Copilot (AI) <copilot@ai.local>` using `git filter-repo` before first push
+- Stripped workspace-specific Windows npm wrapper scripts (`build.ps1`, `dev.ps1`, `npm-wrapper.ps1`, `npm-wrapper.bat`) from full history
+- Added them to `.gitignore`
+- Set repo-local git identity: `user.name = Copilot (AI)`, `user.email = copilot@ai.local`
+- Added single `origin` remote via SSH host alias `countvonscore-pub-repo` pointing to `jannis-schaefer/CountVonScore.git`
+- Pushed `main` as the default branch; session branches remain local only
+
+**Rationale**:
+- Single remote + single default branch is simplest for two-way collaboration
+- History rewrite before first push has zero force-push risk
+- Sanitized author info discloses AI usage without exposing internal identities
+
+**Impact**:
+- `origin` is now `countvonscore-pub-repo:jannis-schaefer/CountVonScore.git`
+- Two-way sync: `git pull --rebase origin main` / `git push origin main`
+- CI workflows (`.github/workflows/e2e-release.yml`) will run on GitHub Actions on PR to `release/**`
+
 ---
 
 **Next Entry**: Add below when a significant decision is made.
