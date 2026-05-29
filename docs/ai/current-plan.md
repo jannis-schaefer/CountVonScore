@@ -35,12 +35,12 @@ Secondary objective:
 - [x] Cost-aware model matrix and escalation triggers are documented.
 - [x] Model policy is documented in `docs/ai/model-selection.md` with re-evaluation triggers.
 - [x] Session QA approval granted from passing `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration`, and required E2E gates in this session.
-- [x] Closeout docs updated without commit/push, per user request.
-- [x] Remote status checked: no upstream/remote is configured in `.git/config` in this environment.
+- [x] Closeout docs updated and committed.
+- [x] Remote `origin` configured and `main` pushed to `countvonscore-pub-repo:jannis-schaefer/CountVonScore.git`.
 
 ## Dependencies / Blockers
 
-- No commit or push was performed because the user did not request a git checkpoint.
+- None. Remote is live.
 
 ## Decision Rationale
 

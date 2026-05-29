@@ -39,10 +39,14 @@ Closeout complete - addendum captured for integration smoke, MCP minimal-binding
 - MCP smoke validated for minimal bindings (Playwright + Chrome DevTools).
 - Minimal accessibility QA policy linkage documented across quality-gate-runner and CSS flow docs.
 - Earlier 17:00 lint-failure text is retained only as superseded historical draft context.
-- No commit or push was performed during this closeout because the user did not request a git checkpoint.
-- `.git/config` shows no configured remote/upstream in this environment.
+
+## Remote / Push Status
+
+- Remote `origin` configured at `countvonscore-pub-repo:jannis-schaefer/CountVonScore.git` (2026-05-29).
+- `main` branch pushed and confirmed upstream.
+- All commit authors rewritten to `Copilot (AI) <copilot@ai.local>` before first push.
+- Workspace-specific PS1/BAT scripts stripped from full history via `git filter-repo` before push.
 
 ## Blockers / Notes
 
-- Push-to-remote durability remains unavailable in this environment, but risk is reduced because the repository is user-confirmed on a backed-up volume and available on multiple machines.
 - Accessibility QA policy is now documented at minimal baseline; deeper manual screen-reader/device sweeps remain out of scope for this closeout.
