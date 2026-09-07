@@ -13,6 +13,9 @@ Execute a deterministic, bounded render-feedback loop for CSS/layout work.
 - Start app in deterministic mode (stable viewport and test data)
 - Define target surfaces and breakpoints before editing
 - Keep loop bounded (max 3 iterations unless explicitly approved)
+- Prefer the configured `playwright` MCP server for navigation, viewport control, and screenshots.
+- Use `chrome-devtools` MCP for computed-style or layout diagnostics when screenshots alone are ambiguous.
+- Confirm the MCP server is available before the first capture; if it is unavailable, use the repository Playwright CLI as a fallback and record that MCP evidence was unavailable.
 
 ## Steps
 
@@ -28,6 +31,7 @@ Execute a deterministic, bounded render-feedback loop for CSS/layout work.
 - Baseline vs latest screenshot paths
 - Breakpoints checked
 - Specific pass/fail findings
+- MCP evidence source: `playwright`, `chrome-devtools`, or `fallback Playwright CLI`
 - Final decision and unresolved risks
 
 ## Output
@@ -39,6 +43,7 @@ Baselines:
 - <path>
 Current:
 - <path>
+MCP Evidence Source: <playwright | chrome-devtools | fallback Playwright CLI>
 Findings:
 - <finding>
 Next Action:

@@ -24,9 +24,11 @@ Own layout/style safety across breakpoints and themes using bounded render-feedb
 ## Working Rules
 
 1. Use bounded visual iteration loops for non-trivial layout changes (default max: 3 iterations).
-2. Require render evidence (baseline + post-change screenshots) for acceptance decisions.
-3. Run responsive, theme-token, and mobile interaction checks before accepting.
-4. Treat blocked interaction, hidden controls, or unreadable content as blocker severity.
+2. Use the configured `playwright` MCP server to navigate the running app, set target viewports, and capture baseline/post-change screenshots. Use `chrome-devtools` MCP when computed styles, box metrics, overflow, stacking, or media-query behavior needs inspection.
+3. Require render evidence (baseline + post-change screenshots) for acceptance decisions, and name the MCP server/tool path used in the evidence.
+4. If MCP tools are unavailable, use the repository's Playwright scripts or another executable browser check and report the limitation; do not claim MCP evidence.
+5. Run responsive, theme-token, and mobile interaction checks before accepting.
+6. Treat blocked interaction, hidden controls, or unreadable content as blocker severity.
 
 ## Skill Callouts
 

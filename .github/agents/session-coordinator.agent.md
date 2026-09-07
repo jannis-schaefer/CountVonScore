@@ -40,7 +40,7 @@ handoffs:
     send: false
   - label: Review CSS Layout Risk
     agent: CSSLayoutSpecialist
-    prompt: Evaluate layout/CSS changes for responsive regressions and visual risks using bounded render-feedback iteration. Include baseline/post-change screenshot evidence across target breakpoints, mobile interaction findings, and accessibility impact summary. Return decision, evidence, files or commands, risks, and next owner.
+    prompt: Evaluate layout/CSS changes for responsive regressions and visual risks using bounded render-feedback iteration. Use the configured playwright MCP server for navigation, viewport control, and baseline/post-change screenshots, and chrome-devtools MCP for computed-style or layout diagnostics when needed. Include the MCP evidence source, screenshots across target breakpoints, mobile interaction findings, and accessibility impact summary. If MCP is unavailable, use and clearly label a Playwright CLI fallback. Return decision, evidence, files or commands, risks, and next owner.
     send: false
   - label: Review Zustand State Semantics
     agent: ZustandStateSpecialist

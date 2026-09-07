@@ -8,6 +8,12 @@ user-invocable: true
 
 Turn visual diffs into actionable, severity-ranked fixes.
 
+## Evidence Source
+
+- Prefer screenshots captured through the configured `playwright` MCP server.
+- When a difference needs diagnosis, inspect the rendered page with `chrome-devtools` MCP before assigning a CSS root cause.
+- Record the evidence source and viewport for every finding. A Playwright CLI fallback is valid evidence, but must be labeled as such.
+
 ## Severity Rubric
 
 - Critical: hidden controls, unreadable text, blocked turn flow, interaction impossible
