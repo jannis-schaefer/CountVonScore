@@ -3,9 +3,8 @@ description: "Implement TypeScript/React changes with focused diffs and no cross
 name: "TypeScriptImplementer"
 tools: [read, search, edit, execute]
 models:
-	- "GPT-5.3-Codex"
-	- "GPT-5.4"
-	- "Claude Sonnet 4.6"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "medium"
 user-invocable: false
 ---

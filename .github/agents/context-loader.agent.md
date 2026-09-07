@@ -3,9 +3,8 @@ description: "Load current project/session context and produce a concise impleme
 name: "ContextLoader"
 tools: [read, search]
 models:
-	- "GPT-5 mini"
-	- "GPT-5.4 mini"
-	- "Claude Sonnet 4.6"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "medium"
 user-invocable: false
 ---

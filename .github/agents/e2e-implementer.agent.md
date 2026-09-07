@@ -3,8 +3,8 @@ description: "Implement and stabilize Playwright E2E tests, including promoting 
 name: "E2EImplementer"
 tools: [read, search, edit, execute]
 models:
-	- "GPT-5.3-Codex"
-	- "GPT-5.4"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "medium"
 user-invocable: false
 ---

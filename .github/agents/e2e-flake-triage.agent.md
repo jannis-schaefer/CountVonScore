@@ -3,9 +3,8 @@ description: "Diagnose flaky E2E behavior and propose deterministic stabilizatio
 name: "E2EFlakeTriage"
 tools: [read, search, execute]
 models:
-	- "GPT-5.4"
-	- "Gemini 2.5 Pro"
-	- "GPT-5.3-Codex"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "high"
 user-invocable: false
 ---

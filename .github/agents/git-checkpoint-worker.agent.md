@@ -3,8 +3,8 @@ description: "Create focused git checkpoints, maintain checkpoint cadence, and r
 name: "GitCheckpointWorker"
 tools: [read, search, edit, execute]
 models:
-	- "GPT-5 mini"
-	- "GPT-5.4 mini"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "low"
 user-invocable: false
 ---

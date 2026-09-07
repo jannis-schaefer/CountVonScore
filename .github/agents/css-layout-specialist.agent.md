@@ -3,9 +3,8 @@ description: "Own CSS/layout behavior, responsive breakpoints, and visual regres
 name: "CSSLayoutSpecialist"
 tools: [read, search, edit, execute]
 models:
-	- "Claude Sonnet 4.6"
-	- "GPT-5.4"
-	- "GPT-5.4 mini"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "medium"
 user-invocable: false
 ---

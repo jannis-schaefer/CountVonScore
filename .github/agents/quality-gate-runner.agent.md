@@ -3,8 +3,8 @@ description: "Run and evaluate quality gates, then report pass/fail matrix with 
 name: "QualityGateRunner"
 tools: [read, search, execute]
 models:
-	- "GPT-5.4"
-	- "GPT-5 mini"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "medium"
 user-invocable: false
 ---

@@ -3,9 +3,8 @@ description: "Own store-level design, action semantics, selectors, and persisten
 name: "ZustandStateSpecialist"
 tools: [read, search, edit]
 models:
-	- "GPT-5.3-Codex"
-	- "GPT-5.4"
-	- "Gemini 2.5 Pro"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "high"
 user-invocable: false
 ---

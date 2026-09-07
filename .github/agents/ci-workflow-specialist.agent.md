@@ -3,8 +3,8 @@ description: "Own CI workflow design, required/optional gates, and release pipel
 name: "CIWorkflowSpecialist"
 tools: [read, search, edit]
 models:
-	- "GPT-5.4"
-	- "GPT-5.3-Codex"
+	- "GPT-5.6 Luna"
+	- "GPT-5.6 Terra"
 reasoning_depth: "medium"
 user-invocable: false
 ---
