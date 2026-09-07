@@ -5,8 +5,8 @@ argument-hint: "Describe session goal, constraints, and desired checkpoint caden
 tools: [agent, read, search, edit]
 agents: [ContextLoader, TypeScriptImplementer, E2EImplementer, E2EFlakeTriage, CSSLayoutSpecialist, ZustandStateSpecialist, CIWorkflowSpecialist, QualityGateRunner, GitCheckpointWorker, Handoff]
 models:
-  - "GPT-5.4"
-  - "Gemini 2.5 Pro"
+  - "GPT-5.6 Luna"
+  - "GPT-5.6 Terra"
 reasoning_depth: "high"
 user-invocable: true
 handoffs:
@@ -92,7 +92,9 @@ This unified runtime policy defines how the `SessionCoordinator` selects models 
 1. Canonical matrix: The `SessionCoordinator` MUST load the canonical model matrix from `docs/ai/model-selection.md` at delegation time and treat it as authoritative for per-worker `models`, optional `reasoning_depth`, `max_retries`, `escalate_on`, and `escalate_to`. If the file is missing or malformed, fall back to agent defaults (agent frontmatter `models` and `reasoning_depth`).
 
 2. Model selection rules:
-  - Use the first model in the worker's `models` list (from the matrix if present, otherwise agent defaults) as the primary model.
+  - Use GPT-5.6 Luna for low and standard work.
+  - Start directly on GPT-5.6 Terra when the task requires deeper reasoning; otherwise use Terra only after a failure trigger.
+  - Treat GPT-5.6 Sol as the final escalation-only model; never escalate from Sol back to Luna.
 
 3. Reasoning depth rules:
   - Determine reasoning depth from the matrix `reasoning_depth` if specified; otherwise fall back to worker frontmatter `reasoning_depth`; otherwise use these defaults:
@@ -112,9 +114,12 @@ This unified runtime policy defines how the `SessionCoordinator` selects models 
   - Prepend the canonical phrasing `Reasoning depth: <LOW|MEDIUM|HIGH>.` to worker prompts. For `HIGH` request numbered steps then `Decision` and `Evidence`; for `MEDIUM` request 1–3 bullets then `Decision`; for `LOW` request decision + one-sentence justification.
 
 5. Retry & escalation:
-  - On a transient failure (see matrix `escalate_on` or global defaults), first retry the current model with increased reasoning depth (to `high`) if not already `high`.
-  - If subsequent attempts fail, consult `workers.<Name>.escalate_to` from the matrix and iterate entries in order. Treat entries without `model` as re-invocations of the current model with the specified `reasoning_depth`; treat entries with `model` as switches to that model; treat `model: human` as routing to a human reviewer.
-  - Do not append `escalate_to` entries to the worker's `models` fallback list — escalation targets are invoked directly and only when an escalation event occurs.
+  - Model changes are failure-only. Do not switch models during a successful run.
+  - On a failure trigger, retry according to the matrix and follow the ordered path GPT-5.6 Luna -> GPT-5.6 Terra -> GPT-5.6 Sol.
+  - A task may start at GPT-5.6 Terra when deeper reasoning is needed, in which case the only escalation target is GPT-5.6 Sol.
+  - GPT-5.6 Sol is terminal. If Sol fails, stop and report the blocker; do not return to Luna.
+  - Consult `workers.<Name>.escalate_to` and iterate entries in order. Treat entries without `model` as re-invocations of the current model with the specified `reasoning_depth`; treat entries with `model` as switches to that model.
+  - Do not append `escalate_to` entries to the worker's `models` list — escalation targets are invoked directly and only after a failure trigger.
 
 6. Observability:
   - Record an audit trail for each delegation and escalation step (timestamp, from-model, to-model or re-invoke, reasoning_depth, outcome).
@@ -123,7 +128,7 @@ This unified runtime policy defines how the `SessionCoordinator` selects models 
 ## Escalation Semantics
 
 1. The `SessionCoordinator` MUST parse the central YAML `docs/ai/model-selection.md` and honor the `workers.<Name>.escalate_to` ordered list for escalation.
-2. Worker frontmatter may include an ordered `models` array. The Coordinator MUST treat `models[0]` as the primary model and `models[1:]` as the worker-local fallbacks.
+2. Worker frontmatter may include an ordered `models` array. The Coordinator MUST treat `models[0]` as the primary model and later entries as failure-only eligibility, never as routine rotation.
 3. On an escalation trigger (an event listed in `escalate_on`), the Coordinator MUST iterate `workers.<Name>.escalate_to` in order and invoke each entry as follows:
   - If the entry has a `model` field: invoke that model and supply the entry's `reasoning_depth` (or worker default if omitted).
   - If the entry omits `model`: re-invoke the current model with the entry's `reasoning_depth` (this allows escalating by increasing reasoning depth without switching vendors).

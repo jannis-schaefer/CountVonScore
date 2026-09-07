@@ -1,6 +1,8 @@
 # Model Selection Recommendations
 
-TL;DR — Balanced (cost + quality): use GPT-5.4 / GPT-5.3-Codex for agentic coding and multi-step work, Claude Sonnet/Opus for layout/agentic safety when justified, Gemini 2.5 Pro as an alternative for long-context reasoning. Cheap models (GPT-5 mini, GPT-5.4 mini, GPT-5.3-Codex) are fine for routine or high-volume tasks.
+TL;DR — Current policy: use GPT-5.6 Luna for low and standard work, escalate to GPT-5.6 Terra for deeper reasoning or failure recovery, and escalate finally to GPT-5.6 Sol. Sol is terminal and never escalates back to Luna.
+
+The canonical, machine-readable policy is [model-selection.md](model-selection.md). The older model-specific recommendations below are retained as historical rationale and do not override the current matrix.
 
 **Cost multipliers (provided)**
 
@@ -142,8 +144,8 @@ Implementation steps (concise):
 ```yaml
 name: "TypeScriptImplementer"
 models:
-  - "GPT-5.3-Codex"
-  - "GPT-5.4"
+  - "GPT-5.6 Luna"
+  - "GPT-5.6 Terra"
 reasoning_depth: "medium"
 ```
 
@@ -159,16 +161,18 @@ Example worker entry:
 workers:
   TypeScriptImplementer:
     models:
-      - GPT-5.3-Codex
-      - GPT-5.4
+      - GPT-5.6 Luna
+      - GPT-5.6 Terra
     max_retries: 2
     escalate_on:
       - failed_typecheck
     escalate_to:
-      - reasoning_depth: high
-      - model: GPT-5.4
+      - model: GPT-5.6 Terra
         reasoning_depth: high
-      - model: human
+      - model: GPT-5.6 Sol
+        reasoning_depth: high
+      - model: GPT-5.6 Luna
+        reasoning_depth: high
 ```
 
 3. Valid forms for entries in `escalate_to` (use only these):
@@ -176,7 +180,7 @@ workers:
   - `{ model: "<model-name>", reasoning_depth: <...> }`
   - `{ model: "human" }`
 
-4. (Removed) — commit step removed from these implementer instructions. When implementing the `SessionCoordinator`, load the canonical matrix at runtime from `docs/ai/model-selection.md` and treat it as authoritative for `models`, `max_retries`, `escalate_on`, and `escalate_to`. If the matrix is missing or malformed, fall back to agent defaults (agent frontmatter `models` and `reasoning_depth`).
+4. When implementing the `SessionCoordinator`, load the canonical matrix at runtime from `docs/ai/model-selection.md` and treat it as authoritative for `models`, `max_retries`, `escalate_on`, and `escalate_to`. If the matrix is missing or malformed, fall back to agent defaults (GPT-5.6 Luna and GPT-5.6 Terra in agent frontmatter). Apply escalation only after a failure trigger; use GPT-5.6 Sol as the terminal escalation and never return to Luna after Sol fails.
 
 
 ---
