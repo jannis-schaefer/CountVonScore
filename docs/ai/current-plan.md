@@ -1,61 +1,52 @@
-# Current Plan - Backlog Triage And Next Implementation Scope
+# Current Plan - Four-Player Tabletop Layout And MCP Verification
 
 **Status**: In Progress
 **Started**: 2026-09-08
-**Target Completion**: 2026-09-08
+**Target Completion**: TBD
 
 ## Scope
 
-Reconcile the repository, record the evidence-backed backlog, and select the next implementation scope.
+Verify that agents can use Playwright MCP for visual editing feedback, then adapt the four-player tabletop presentation for a phone or tablet lying flat between players.
 
 Primary objective:
-- Turn known maintenance items, deferred behavior decisions, and longer-term ideas into a prioritized backlog.
+- Give each of four players an aligned card at a distinct table edge, rotated to face the player seated at that edge.
 
 Secondary objective:
-- Establish the next implementation scope and preserve checkpoint/push discipline.
+- Capture repeatable Playwright MCP baseline and post-change screenshot evidence before accepting layout changes.
 
 ## Steps
 
-1. Record the reconciled Git state: `main` matches `origin/main` at `2671994`.
-2. Prioritize a concrete documentation repair: remove obsolete Windows helper-script guidance from `README.md`, replace `npm lint` with `npm run lint`, and remove the unrelated ESLint fragment appended after the license.
-3. Obtain a product decision for historical edits that reach a win/elimination threshold: recalculate later committed turns on "Apply Changes and Return", or truncate them on "Continue From This Turn".
-4. Route the decided historical-edit behavior to `E2EImplementer` and promote the matching skipped regression case(s).
-5. Keep deeper accessibility automation as a future enhancement; the current policy remains integration plus breakpoint/DevTools evidence.
-6. Run focused validation after each substantive edit, then required quality gates before checkpointing.
-7. Create a focused commit and push it through `GitCheckpointWorker`, then run `Handoff` with read-only Git evidence.
+1. Verify the `playwright` MCP server is available to `CSSLayoutSpecialist` by navigating the running app, setting a landscape viewport, and saving a baseline screenshot.
+2. Configure a deterministic four-player game and select the existing `tabletopRotated` layout.
+3. Inspect the baseline at a desktop/tabletop landscape viewport and targeted tablet landscape viewport(s): four cards must occupy bottom, right, top, and left edges; each must face outward toward its seated player; controls must remain visible and reachable.
+4. If tablet breakpoints collapse the table into a vertical list, make the smallest CSS/layout change that retains the four-edge arrangement on usable flat-table tablet viewports while preserving the mobile fallback.
+5. Capture matching post-change screenshots through Playwright MCP. Use Chrome DevTools MCP only to diagnose ambiguous rotation, overflow, or box-model issues.
+6. Run responsive, theme, touch, and focused automated validation. Report baseline/current screenshot paths, breakpoints, MCP evidence source, and unresolved risks.
+7. Commit and push through `GitCheckpointWorker`, then run `Handoff` with read-only Git evidence.
 
 ## Verification
 
-- [x] Live branch and worktree state verified: `main` matches `origin/main` at `2671994`.
-- [x] Unpublished commits and upstream synchronization reviewed.
-- [ ] New implementation scope recorded and routed.
-- [ ] Focused validation completed for new changes.
-- [ ] Required quality gates completed.
+- [x] README setup/lint guidance repaired; `npm run lint` validation is blocked because `npm` is unavailable in the current shell.
+- [ ] Playwright MCP availability demonstrated with a baseline screenshot.
+- [ ] Four-player `tabletopRotated` layout inspected at target landscape breakpoints.
+- [ ] Required tablet layout adjustment implemented, if baseline evidence requires it.
+- [ ] Post-change Playwright MCP screenshots captured and reviewed.
+- [ ] Responsive, theme, touch, and focused automated validation completed.
 - [ ] Focused checkpoint committed and pushed.
 - [ ] Handoff completed with read-only Git evidence.
 
 ## Dependencies / Blockers
 
-- Historical win/elimination threshold behavior must be specified before the skipped E2E drafts can be promoted.
-- No blocker exists for the README repair.
+- `npm` is unavailable in the current shell, blocking repository scripts and the configured `npx` MCP server command until Node.js is available on `PATH`.
+- If Playwright MCP is unavailable to the layout agent after Node.js is restored, record the host/tooling blocker instead of claiming screenshot evidence.
 
-## Backlog
+## Deferred Backlog
 
-### Ready Now
-
-- Repair `README.md` setup and lint instructions, and remove the unrelated ESLint configuration fragment appended after the license.
-
-### Needs Product Decision
-
-- Define the outcome when a historical turn edit crosses a win/elimination threshold: recalculation of later turns versus truncation of the future timeline. The corresponding skipped scenarios are in `e2e/regression/turn-navigation-edge-drafts.spec.ts`.
-
-### Future Idea
-
+- Define historical win/elimination threshold behavior before promoting the skipped E2E drafts in `e2e/regression/turn-navigation-edge-drafts.spec.ts`.
 - Add dedicated accessibility automation after the minimal MCP/Playwright evidence policy has produced enough signal to define a useful required gate.
 
 ## Decision Rationale
 
-- Session state must be based on live Git evidence, not inherited closeout text.
-- Git mutation belongs to `GitCheckpointWorker`; `Handoff` may inspect and report only.
-- Do not claim completion while required changes are uncommitted or unpublished.
+- `tabletopRotated` already assigns four seats clockwise at the bottom, right, top, and left with rotations of 0, 90, 180, and -90 degrees; evidence must establish whether its responsive breakpoint preserves the intended flat-table experience.
+- Do not claim visual acceptance without baseline and post-change MCP screenshot evidence, or an explicit MCP availability blocker.
 - Keep behavior-ambiguous E2E scenarios skipped until product semantics are explicit.

@@ -14,34 +14,7 @@ A multiplayer resource counter for the turn-based card game **Star Realms**, bui
 
 ## Quick Start
 
-### Using Helper Scripts (Recommended on Windows)
-
-If npm/node aren't in your PATH, use these helper scripts:
-
-**PowerShell:**
-```powershell
-# Start development server
-.\dev.ps1
-
-# Build for production
-.\build.ps1
-
-# General npm wrapper
-.\npm-wrapper.ps1 run dev
-.\npm-wrapper.ps1 install
-.\npm-wrapper.ps1 run build
-```
-
-**Command Prompt (batch file):**
-```bash
-npm-wrapper.bat run dev
-npm-wrapper.bat run build
-npm-wrapper.bat install
-```
-
-### Direct npm Commands
-
-If npm/node work in your terminal:
+Install a current Node.js LTS release, then run:
 
 ```bash
 # Install dependencies
@@ -56,34 +29,11 @@ npm run build
 # Preview production build
 npm run preview
 
-# Run linter
-npm lint
+# Run lint checks
+npm run lint
 ```
 
-## Troubleshooting npm/node Issues
-
-### Quick Fixes
-
-1. **Use helper scripts** (easiest):
-   ```powershell
-   .\dev.ps1              # Start dev server
-   .\build.ps1            # Build for production
-   .\npm-wrapper.ps1 install   # Run any npm command
-   ```
-
-2. **Fix PATH permanently** (PowerShell):
-   - Open PowerShell as Admin
-   - Run: `notepad $PROFILE`
-   - Add this line:
-     ```powershell
-     $env:PATH = "C:\Program Files\nodejs;$env:PATH"
-     ```
-   - Save, close, reopen PowerShell
-
-3. **Check if Node.js is installed**:
-   ```powershell
-   & 'C:\Program Files\nodejs\node.exe' --version
-   ```
+If `npm` is unavailable, install Node.js from https://nodejs.org/ and open a new terminal.
 
 ## Development
 
@@ -182,47 +132,12 @@ Settings → Presets (Star Realms, Magic-Like, etc.)
 
 Having issues? Try:
 
-1. Use `.\dev.ps1` or `.\npm-wrapper.ps1 run dev` if npm isn't working
-2. Clear browser cache (Ctrl+Shift+Delete)
-3. Close/reopen the app
-4. Check browser console for errors (F12)
-5. Ensure JavaScript is enabled
-
-For persistent npm issues:
-```powershell
-# Add Node.js path permanently
-$profile_content = @"
-if (Test-Path 'C:\Program Files\nodejs') {
-    `$env:PATH = 'C:\Program Files\nodejs;' + `$env:PATH
-}
-"@
-
-Add-Content -Path $PROFILE -Value $profile_content
-```
+1. Confirm Node.js is installed and `npm --version` succeeds.
+2. Run `npm install` again.
+3. Clear the browser cache.
+4. Close and reopen the app.
+5. Check the browser console for errors.
 
 ## License
 
 MIT
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
