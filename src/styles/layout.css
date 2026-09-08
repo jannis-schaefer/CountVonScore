@@ -504,6 +504,15 @@
   .player-layout-rotate-right {
     transform: none;
   }
+
+  /* Rotation no longer distinguishes left/right seats here, so mark seat side with a positional accent border. */
+  .player-layout-side-left .player-layout-card-wrap-rotated-side {
+    border-left: 4px solid var(--accent-color);
+  }
+
+  .player-layout-side-right .player-layout-card-wrap-rotated-side {
+    border-right: 4px solid var(--accent-color);
+  }
 }
 
 @media (max-width: 768px) {

@@ -37,6 +37,11 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 2026-09-08 - Static analysis of `EDGE_ORDER`/`getEdgeForIndex` mathematically proves players 2 and 4 (array indices 1/3) always resolve to opposite edges (`right`/`left`) for a 4-player game — no collision is possible in that code path. Leading hypothesis is the portrait-fallback breakpoint collapsing all seats into one column on a narrow window, making 2 and 4 look interchangeable. Not confirmed live.
 2026-09-08 - Found likely-related dead code: `src/index.css` still has leftover Vite-template `#root` boilerplate (`width: 1126px`, `text-align: center`, `border-inline`) that partially overlaps/conflicts with the real `#root` rule in `src/App.css`. Neither sets `overflow: hidden`, so this doesn't fully explain the `/new-game` overflow report by itself — flagged as a lead to verify live, not assumed fixed.
 2026-09-08 - Wrote a new app-wide layout verification pass plan into `docs/ai/current-plan.md` (pages × breakpoints matrix, both bug reports as items to reproduce with live measurement before fixing, dead-CSS cleanup as a separate low-risk step).
+2026-09-08 - Started session properly: created and pushed feature branch `feat/layout-verification-pass` (`dca4739`).
+2026-09-08 - CSSLayoutSpecialist confirmed `/new-game` (ModeSelection) does NOT reproduce the reported overflow, under default state and with 8 extra counter definitions, at all four target breakpoints.
+2026-09-08 - CSSLayoutSpecialist reproduced and fixed a real bug on `/settings`: unconstrained select/input intrinsic width caused a 723px-wide blowout in a 390px viewport, making roughly half the page unreachable. This is almost certainly what the "new game screen overflow" report actually referred to (Settings is reached via "Edit Game Settings" from New Game). Fixed in `src/styles/layout.css` and `src/styles/themes/generic.css`.
+2026-09-08 - Cross-theme/cross-page regression check (Star Realms theme, `/shared`, `/multiplayer`) found no regressions from the fix.
+2026-09-08 - Required quality gates passed (lint, tsc, build, integration). Committed and pushed `54cdf75` on `feat/layout-verification-pass`.
 
 ## TODOs
 
@@ -51,7 +56,9 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 - [x] Capture and review post-change MCP screenshots.
 - [x] Run responsive, theme, touch, and required automated validation.
 - [x] Commit and push through `GitCheckpointWorker` (`3455c2e`, `main` matches `origin/main`).
-- [ ] Reproduce `/new-game` overflow report live with concrete measurements; identify and fix root cause.
+- [x] Start feature branch `feat/layout-verification-pass` and push session-init commit (`dca4739`).
+- [x] Reproduce `/new-game` overflow report live with concrete measurements — did not reproduce; root cause traced to `/settings` instead.
+- [x] Fix the confirmed `/settings` overflow bug and verify across breakpoints/themes/pages; committed and pushed (`54cdf75`).
 - [ ] Reproduce `tabletopRotated` player 2/4 report live; fix fallback breakpoint or seat order as needed.
 - [ ] Remove dead `#root` boilerplate from `src/index.css`; confirm no visual regression.
 - [ ] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
@@ -64,7 +71,7 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 
 ## Remote / Push Status
 
-- `main` matched `origin/main` at `3455c2e` after the tabletop layout fix checkpoint.
+- `feat/layout-verification-pass` pushed with upstream tracking; latest commit `54cdf75` (settings overflow fix).
 
 ## Blockers / Notes
 
