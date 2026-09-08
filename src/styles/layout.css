@@ -384,6 +384,7 @@
 .player-layout-side-top,
 .player-layout-side-bottom {
   display: flex;
+  justify-content: center;
   gap: 12px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -403,7 +404,7 @@
 .player-layout-side-right {
   display: grid;
   gap: 12px;
-  align-content: start;
+  align-content: center;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -428,7 +429,7 @@
 }
 
 .player-layout-card-wrap-rotated-side {
-  width: min(420px, 90vw);
+  width: clamp(200px, 28vh, 420px);
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
@@ -464,7 +465,7 @@
   line-height: 1;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1024px) and (orientation: portrait) {
   .player-layout-table {
     min-height: 0;
     grid-template-columns: 1fr;
