@@ -81,6 +81,8 @@ select {
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .input:focus,

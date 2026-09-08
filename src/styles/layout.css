@@ -17,10 +17,12 @@
 
 .header-row {
   display: grid;
-  grid-template-columns: 120px 1fr 120px;
+  grid-template-columns: 120px minmax(0, 1fr) 120px;
   gap: 12px;
   align-items: center;
   margin-bottom: 18px;
+  width: 100%;
+  min-width: 0;
 }
 
 .header-title {
@@ -176,6 +178,7 @@
 
 .flex-1 {
   flex: 1;
+  min-width: 0;
 }
 
 .controls-start {
@@ -343,6 +346,13 @@
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.controls-row > select,
+.controls-row > .input {
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 60vw;
 }
 
 .card-button {
@@ -557,7 +567,7 @@
 
 @media (max-width: 640px) {
   .header-row {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       'title title'
       'left right';
