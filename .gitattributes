@@ -4,4 +4,5 @@
 #
 # One-time setup required per clone (run once after cloning):
 #   git config merge.ours.driver true
+* text=auto eol=lf
 docs/ai/sessions/current-session.md merge=ours
