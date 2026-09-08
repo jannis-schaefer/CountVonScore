@@ -1,62 +1,61 @@
-# Current Plan - Agentic Workflow Governance And Validation
+# Current Plan - Backlog Triage And Next Implementation Scope
 
-**Status**: Complete
-**Started**: 2026-05-19
-**Target Completion**: 2026-05-20
+**Status**: In Progress
+**Started**: 2026-09-08
+**Target Completion**: 2026-09-08
 
 ## Scope
 
-Finalize the agent platform governance baseline so future implementation sessions run predictably.
+Reconcile the repository, record the evidence-backed backlog, and select the next implementation scope.
 
 Primary objective:
-- Enforce deterministic coordinator policy for routing, acceptance, reasoning effort, and cost-aware model selection.
+- Turn known maintenance items, deferred behavior decisions, and longer-term ideas into a prioritized backlog.
 
 Secondary objective:
-- Capture durable memory updates so future sessions can resume without context loss.
+- Establish the next implementation scope and preserve checkpoint/push discipline.
 
 ## Steps
 
-1. Define and tighten coordinator routing and acceptance guardrails.
-2. Normalize worker output contracts and reduce instruction drift.
-3. Centralize runtime reasoning ownership in coordinator policy.
-4. Define per-worker reasoning defaults and escalation rules.
-5. Define cost-aware model selection defaults and high-cost escalation triggers.
-6. Document coordinator-vs-worker policy ownership split in repo instructions.
-7. Capture model-selection rationale and re-evaluation procedure in AI memory docs.
-8. Execute required quality gates for any code-changing sessions that follow.
-9. Capture closeout docs with QA outcome and git-status notes.
+1. Record the reconciled Git state: `main` matches `origin/main` at `2671994`.
+2. Prioritize a concrete documentation repair: remove obsolete Windows helper-script guidance from `README.md`, replace `npm lint` with `npm run lint`, and remove the unrelated ESLint fragment appended after the license.
+3. Obtain a product decision for historical edits that reach a win/elimination threshold: recalculate later committed turns on "Apply Changes and Return", or truncate them on "Continue From This Turn".
+4. Route the decided historical-edit behavior to `E2EImplementer` and promote the matching skipped regression case(s).
+5. Keep deeper accessibility automation as a future enhancement; the current policy remains integration plus breakpoint/DevTools evidence.
+6. Run focused validation after each substantive edit, then required quality gates before checkpointing.
+7. Create a focused commit and push it through `GitCheckpointWorker`, then run `Handoff` with read-only Git evidence.
 
 ## Verification
 
-- [x] Coordinator routing and acceptance guardrails are explicit.
-- [x] Worker output contract expectations are explicit.
-- [x] Reasoning ownership split is documented in central instructions.
-- [x] Per-worker reasoning effort defaults are documented in coordinator.
-- [x] Cost-aware model matrix and escalation triggers are documented.
-- [x] Model policy is documented in `docs/ai/model-selection.md` with re-evaluation triggers.
-- [x] Session QA approval granted from passing `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration`, and required E2E gates in this session.
-- [x] Closeout docs updated and committed.
-- [x] Remote `origin` configured and `main` pushed to `countvonscore-pub-repo:jannis-schaefer/CountVonScore.git`.
+- [x] Live branch and worktree state verified: `main` matches `origin/main` at `2671994`.
+- [x] Unpublished commits and upstream synchronization reviewed.
+- [ ] New implementation scope recorded and routed.
+- [ ] Focused validation completed for new changes.
+- [ ] Required quality gates completed.
+- [ ] Focused checkpoint committed and pushed.
+- [ ] Handoff completed with read-only Git evidence.
 
 ## Dependencies / Blockers
 
-- None. Remote is live.
+- Historical win/elimination threshold behavior must be specified before the skipped E2E drafts can be promoted.
+- No blocker exists for the README repair.
+
+## Backlog
+
+### Ready Now
+
+- Repair `README.md` setup and lint instructions, and remove the unrelated ESLint configuration fragment appended after the license.
+
+### Needs Product Decision
+
+- Define the outcome when a historical turn edit crosses a win/elimination threshold: recalculation of later turns versus truncation of the future timeline. The corresponding skipped scenarios are in `e2e/regression/turn-navigation-edge-drafts.spec.ts`.
+
+### Future Idea
+
+- Add dedicated accessibility automation after the minimal MCP/Playwright evidence policy has produced enough signal to define a useful required gate.
 
 ## Decision Rationale
 
-- Runtime policy belongs in coordinator because it owns retries, reroutes, and escalation.
-- Worker files should stay domain-focused and not duplicate orchestration policy.
-- High-cost models are escalation-only unless pricing or quality constraints change materially.
-
-## Session Closeout - 2026-05-26
-
-- Documentation closeout completed for the coordinator/model-selection governance session.
-- QA approval is recorded for this session based on passing lint, TypeScript, build, integration, and required E2E gates.
-- No commit or push was performed during closeout because the user did not request a git commit.
-- Delegation smoke validation is not required for this completed governance closeout.
-
-## Session Closeout Addendum - 2026-05-26
-
-- Integration smoke revalidated: `npm run test:integration` passed.
-- MCP smoke validated for minimal bindings: Playwright + Chrome DevTools.
-- Minimal accessibility QA policy was added and linked from quality-gate-runner and CSS layout flow docs.
+- Session state must be based on live Git evidence, not inherited closeout text.
+- Git mutation belongs to `GitCheckpointWorker`; `Handoff` may inspect and report only.
+- Do not claim completion while required changes are uncommitted or unpublished.
+- Keep behavior-ambiguous E2E scenarios skipped until product semantics are explicit.

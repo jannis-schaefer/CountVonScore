@@ -5,48 +5,43 @@
 
 
 **Branch**: main
-**Started**: 2026-05-19 16:00
+**Started**: 2026-09-08
 **Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-Harden and simplify the custom agent workflow so orchestration behavior is deterministic, cost-aware, and easier to maintain.
+Start a new session, reconcile repository state, and prioritize the next implementation scope from the backlog.
 
 ## Active Step
 
-Closeout complete - addendum captured for integration smoke, MCP minimal-bindings smoke, and accessibility QA policy linkage.
+Select and route the next implementation item: the README repair is ready; historical threshold behavior needs a product decision.
 
 ## Checkpoint Log
 
-2026-05-19 16:00 - Session resumed and coordinator/worker architecture review initiated
-2026-05-19 16:10 - Coordinator wording cleaned to remove rollout-era and phase-era artifacts
-2026-05-19 16:18 - Runtime guidance centralized and worker output contract naming normalized
-2026-05-19 16:24 - Model defaults moved to agent frontmatter ownership and coordinator effort escalation policy added
-2026-05-19 16:28 - Coordinator vs worker policy ownership split documented
-2026-05-19 16:31 - Cost-aware model selection policy documented and linked into AI memory docs
-2026-05-19 16:33 - Session handoff pack started (plan, decisions, session note, memory updates)
-2026-05-19 16:36 - Session handoff pack completed and ready for closeout validation
-2026-05-26 17:00 - Initial closeout draft captured stale lint-failure notes in docs/ai/sessions/2026-05-26-1700.md (superseded by 17:35 reconciliation)
-2026-05-26 17:35 - Closeout corrected in docs only: QA approval recorded from passing lint, tsc, build, integration, and required E2E gates; no commit/push performed per user request; no remote configured in `.git/config`
-2026-05-26 18:00 - QA reconciliation completed: smoke-validation follow-up removed from required list; upstream risk downgraded per user-confirmed multi-machine backup persistence
-2026-05-26 18:20 - Integration smoke reconfirmed via `npm run test:integration`; MCP smoke validated for minimal bindings (Playwright + Chrome DevTools); minimal accessibility QA policy linked into quality-gate-runner and CSS flow docs
-2026-05-26 18:45 - Focused git checkpoint prepared for CSS layout skills, coordinator/layout specialist upgrades, MCP+accessibility policy docs, and closeout documentation updates
+2026-09-08 - New session opened; stale completion state replaced with repository-reconciliation TODOs.
+2026-09-08 - Git reconciliation complete: `main` matches `origin/main` at `2671994`; backlog triaged.
+2026-09-08 - Docs-only checkpoint committed for the new backlog-triage session plan.
+
+## TODOs
+
+- [x] Verify branch, worktree, remote, latest commit, and `origin/main..HEAD`.
+- [x] Decide whether unpublished commits belong on `main` or need branch handling.
+- [ ] Select and route the next implementation item.
+- [ ] Repair README setup/lint guidance and remove its appended ESLint fragment.
+- [ ] Decide historical win/elimination threshold behavior before promoting skipped E2E drafts.
+- [ ] Run focused validation and required quality gates.
+- [ ] Commit and push through `GitCheckpointWorker`.
+- [ ] Run `Handoff` with read-only Git status/diff evidence.
 
 ## QA Status
 
-- Approved for this session based on passing `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration`, and required E2E gates.
-- Integration smoke reconfirmed in closeout addendum via `npm run test:integration`.
-- MCP smoke validated for minimal bindings (Playwright + Chrome DevTools).
-- Minimal accessibility QA policy linkage documented across quality-gate-runner and CSS flow docs.
-- Earlier 17:00 lint-failure text is retained only as superseded historical draft context.
+- Not yet evaluated for this session.
+- Required gates remain pending until the new scope is known.
 
 ## Remote / Push Status
 
-- Remote `origin` configured at `countvonscore-pub-repo:jannis-schaefer/CountVonScore.git` (2026-05-29).
-- `main` branch pushed and confirmed upstream.
-- All commit authors rewritten to `Copilot (AI) <copilot@ai.local>` before first push.
-- Workspace-specific PS1/BAT scripts stripped from full history via `git filter-repo` before push.
+- `main` matches `origin/main` at `2671994`.
 
 ## Blockers / Notes
 
-- Accessibility QA policy is now documented at minimal baseline; deeper manual screen-reader/device sweeps remain out of scope for this closeout.
+- The README repair is ready. Historical threshold behavior is blocked pending a product decision; dedicated accessibility automation remains a future idea.
