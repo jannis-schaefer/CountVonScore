@@ -1,7 +1,7 @@
 ---
 description: "Own CSS/layout behavior, responsive breakpoints, and visual regression risk assessments."
 name: "CSSLayoutSpecialist"
-tools: [read, search, edit, execute]
+tools: [read, search, edit, execute, playwright/*, chrome-devtools/*]
 models:
 	- "GPT-5.6 Luna"
 	- "GPT-5.6 Terra"

@@ -26,7 +26,8 @@ Secondary objective:
 
 ## Verification
 
-- [x] README setup/lint guidance repaired; `npm run lint` validation is blocked because `npm` is unavailable in the current shell.
+- [x] README setup/lint guidance repaired; Node/npm are now available, but lint must be rerun before acceptance.
+- [x] `CSSLayoutSpecialist` is bound to `playwright/*` and `chrome-devtools/*`; `@playwright/mcp` package startup was verified.
 - [ ] Playwright MCP availability demonstrated with a baseline screenshot.
 - [ ] Four-player `tabletopRotated` layout inspected at target landscape breakpoints.
 - [ ] Required tablet layout adjustment implemented, if baseline evidence requires it.
@@ -37,8 +38,8 @@ Secondary objective:
 
 ## Dependencies / Blockers
 
-- `npm` is unavailable in the current shell, blocking repository scripts and the configured `npx` MCP server command until Node.js is available on `PATH`.
-- If Playwright MCP is unavailable to the layout agent after Node.js is restored, record the host/tooling blocker instead of claiming screenshot evidence.
+- VS Code has not registered the configured Playwright MCP server tools in the active chat session. Restart or reconnect the `playwright` server in the MCP Servers view, then start a fresh `CSSLayoutSpecialist` invocation.
+- If the tools remain unavailable after reconnection, record the host/tooling blocker instead of claiming screenshot evidence.
 
 ## Deferred Backlog
 
@@ -48,5 +49,6 @@ Secondary objective:
 ## Decision Rationale
 
 - `tabletopRotated` already assigns four seats clockwise at the bottom, right, top, and left with rotations of 0, 90, 180, and -90 degrees; evidence must establish whether its responsive breakpoint preserves the intended flat-table experience.
+- The `CSSLayoutSpecialist` allowlist now includes `playwright/*` and `chrome-devtools/*`; successful package launch alone does not prove VS Code chat-tool registration.
 - Do not claim visual acceptance without baseline and post-change MCP screenshot evidence, or an explicit MCP availability blocker.
 - Keep behavior-ambiguous E2E scenarios skipped until product semantics are explicit.
