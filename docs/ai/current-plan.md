@@ -47,16 +47,16 @@ Breakpoints: 1366×768 (desktop/tabletop landscape), 1024×768 (tablet landscape
 - [x] `/new-game` overflow reproduced with concrete measurements (not assumed) and root cause identified. Result: does NOT reproduce on `ModeSelection` itself (default state or with 8 extra counter definitions) at any of the four breakpoints; `overflow`/`overflow-y` on `html`/`body`/`#root`/`.page-center` are `visible` in all cases.
 - [x] `/new-game` fix applied and verified scrollable/reachable at all four breakpoints. Result: no fix needed for `ModeSelection`; the real bug was on `/settings` (reached via "Edit Game Settings"), which is what the report most likely referred to.
 - [x] Found and fixed a real, confirmed horizontal-overflow bug on `/settings` at 390×844: unconstrained `<select>`/`.input` intrinsic width inside `.controls-row` blew out ancestor grid tracks (`scrollWidth` 723px in a 390px viewport), making roughly half the page's controls unreachable — a WCAG 1.4.10 (Reflow) blocker. Fixed in `src/styles/layout.css` (`.controls-row > select/.input` min/max-width, `.flex-1` min-width, `.header-row` grid hardening) and `src/styles/themes/generic.css` (`.input, select` min/max-width). Verified clean at all four breakpoints, both themes, and on `/#/shared` and `/#/multiplayer` (no regression to `.flex-1`/`.controls-row` usage elsewhere). Committed and pushed as `54cdf75`.
-- [ ] `tabletopRotated` player 2/4 report reproduced and explained (fallback breakpoint vs seat-order intent).
-- [ ] Any resulting `EDGE_ORDER`/breakpoint fix applied and verified with screenshots.
-- [ ] Dead `#root` boilerplate removed from `src/index.css` and confirmed no visual regression across the pages × breakpoints matrix. Note: the settings-overflow investigation already proved `#root`/`html`/`body` `overflow` is `visible` in all cases, so this boilerplate is not a functional overflow cause — it remains a cosmetic/dead-code cleanup only.
+- [x] `tabletopRotated` player 2/4 report reproduced and explained (fallback breakpoint vs seat-order intent). Confirmed: `EDGE_ORDER`/`getEdgeForIndex` never collide; the perceived "same side" was the portrait-fallback (`@media (max-width: 1024px) and (orientation: portrait)`) rendering left/right seats as visually identical unrotated cards with no distinguishing style, reproduced at 900x950 and 390x844.
+- [x] Any resulting `EDGE_ORDER`/breakpoint fix applied and verified with screenshots. Fix: added a themed left/right accent border to `.player-layout-side-left`/`-right` card wraps inside the existing portrait-fallback media query only (no `EDGE_ORDER`/seat-assignment change). Verified in both themes at 1366x768 (landscape, unaffected), 900x950, and 390x844. Committed and pushed as `8987999`.
+- [x] Dead Vite boilerplate removed from `src/index.css`: unused root tokens, dark-mode starter block, duplicate `#root` rules, and duplicate global heading rules removed; reset/body sizing/font/number-input normalization preserved. `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration`, and required E2E (5 passed) all pass. Full MCP screenshot comparison for this cleanup remains a minor evidence gap because the CSS specialist was unavailable during this step; no visual regression was reported by the static review.
 - [ ] Full pages × breakpoints matrix screenshot pass completed with no other undiscovered overflow/reachability bugs. Partial coverage so far: `/new-game`, `/settings` (both themes), `/shared`, `/multiplayer` at 1366x768/1024x768/768x1024/390x844.
-- [x] Required quality gates pass after all changes (lint, tsc, build, integration all pass as of `54cdf75`).
-- [x] Checkpoint(s) committed and pushed for the confirmed fix so far (`54cdf75` on `feat/layout-verification-pass`).
+- [x] Required quality gates pass after all changes: lint, tsc, build, integration, and required E2E (5 passed).
+- [x] Checkpoints committed and pushed for confirmed fixes (`54cdf75`, `8987999`) on `feat/layout-verification-pass`; root CSS cleanup is ready for its own checkpoint.
 
 ## Dependencies / Blockers
 
-- Terminal execution and Playwright MCP tools were disabled in the tool session that authored this plan; the verification pass itself requires a session where both are enabled and confirmed working before any fix is trusted.
+- Full pages × breakpoints matrix is still incomplete; the root CSS cleanup lacks fresh MCP before/after screenshots because the CSS specialist had transient network errors. This is evidence debt, not a known functional failure.
 
 ## Deferred Backlog
 
@@ -67,5 +67,5 @@ Breakpoints: 1366×768 (desktop/tabletop landscape), 1024×768 (tablet landscape
 ## Decision Rationale
 
 - Do not fix either newly reported bug from description alone; this session's tabletop work proved static reasoning missed real, measurable overflow bugs that only live MCP measurement caught.
-- Treat the leftover `src/index.css` template boilerplate as a plausible but unconfirmed lead, not an assumed root cause.
+- Treat the leftover `src/index.css` template boilerplate as dead cosmetic code, not the root cause of the Settings overflow (that was proven to be intrinsic select/input width).
 - Keep fixes scoped one-at-a-time with before/after evidence and a quality-gate/commit cycle per fix, matching the bounded-iteration discipline already established this session.

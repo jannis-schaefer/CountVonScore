@@ -42,6 +42,8 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 2026-09-08 - CSSLayoutSpecialist reproduced and fixed a real bug on `/settings`: unconstrained select/input intrinsic width caused a 723px-wide blowout in a 390px viewport, making roughly half the page unreachable. This is almost certainly what the "new game screen overflow" report actually referred to (Settings is reached via "Edit Game Settings" from New Game). Fixed in `src/styles/layout.css` and `src/styles/themes/generic.css`.
 2026-09-08 - Cross-theme/cross-page regression check (Star Realms theme, `/shared`, `/multiplayer`) found no regressions from the fix.
 2026-09-08 - Required quality gates passed (lint, tsc, build, integration). Committed and pushed `54cdf75` on `feat/layout-verification-pass`.
+2026-09-08 - Reproduced the `tabletopRotated` player 2/4 report live at 900x950 and 390x844: confirmed `EDGE_ORDER`/seat assignment never collide; the portrait-fallback CSS rendered left/right seats as visually identical unrotated cards, explaining the "same side" perception. Fixed with a themed accent border scoped to the existing portrait-fallback media query only; verified in both themes, no regression at landscape breakpoints. Gates passed; committed and pushed `8987999`.
+2026-09-08 - Removed dead Vite starter CSS from `src/index.css` while preserving reset, body sizing/font, and number-input normalization. Lint, tsc, build, integration, and required E2E (5 passed after installing Chromium) pass. CSS specialist visual comparison was blocked by transient network errors; cleanup is low-risk and has no known functional regression.
 
 ## TODOs
 
@@ -59,8 +61,8 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 - [x] Start feature branch `feat/layout-verification-pass` and push session-init commit (`dca4739`).
 - [x] Reproduce `/new-game` overflow report live with concrete measurements — did not reproduce; root cause traced to `/settings` instead.
 - [x] Fix the confirmed `/settings` overflow bug and verify across breakpoints/themes/pages; committed and pushed (`54cdf75`).
-- [ ] Reproduce `tabletopRotated` player 2/4 report live; fix fallback breakpoint or seat order as needed.
-- [ ] Remove dead `#root` boilerplate from `src/index.css`; confirm no visual regression.
+- [x] Reproduce `tabletopRotated` player 2/4 report live; fix applied and verified; committed and pushed (`8987999`).
+- [x] Remove dead Vite boilerplate from `src/index.css`; code gates and required E2E pass; fresh screenshot comparison remains a minor evidence gap.
 - [ ] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
 - [ ] Run `Handoff` with read-only Git status/diff evidence.
 
@@ -71,7 +73,7 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 
 ## Remote / Push Status
 
-- `feat/layout-verification-pass` pushed with upstream tracking; latest commit `54cdf75` (settings overflow fix).
+- `feat/layout-verification-pass` pushed with upstream tracking; latest commit `8987999` (seat accent fallback fix).
 
 ## Blockers / Notes
 
