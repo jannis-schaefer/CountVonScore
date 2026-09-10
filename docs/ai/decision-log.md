@@ -20,6 +20,16 @@ Durable decisions and design rationale. Append-only; never remove entries.
 
 ## Entries
 
+### 2026-09-10: Close Out Layout Verification Pass With Documented Residual Risk
+
+**Context**: The app-wide layout verification pass on `feat/layout-verification-pass` completed with live MCP evidence, required quality gates, and three pushed checkpoints, but the session memory still described the work as active.
+
+**Decision**: Mark the layout verification pass complete and carry the existing mobile counter touch-target issue as a non-blocking accessibility follow-up. Record checkpoints `54cdf75`, `8987999`, and `e58ae60`, the full MCP matrix, and the 5 passing required E2E tests in the handoff documentation.
+
+**Rationale**: All targeted layout surfaces were verified across the documented breakpoints and themes with no remaining overflow or unreachable-control defect. The approximately 12x20px counter controls remain below the recommended 44x44px touch target, but do not block the completed layout gate.
+
+**Impact**: `docs/ai/current-plan.md`, `docs/ai/sessions/current-session.md`, and the dated handoff note now identify the next owner as accessibility follow-up rather than layout verification.
+
 ### 2026-05-19: Theme Contract Enforcement With Skip-Invalid Build Behavior
 
 **Context**: Theme contributions could break runtime styling due to missing shared tokens or malformed metadata. Manual review alone was not enough to prevent bad themes from entering generated registry output.

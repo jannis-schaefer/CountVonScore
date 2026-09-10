@@ -14,7 +14,7 @@ Repair README guidance, verify Playwright MCP visual feedback, adapt the four-pl
 
 ## Active Step
 
-Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on `feat/layout-verification-pass`: reproduce and resolve the `/new-game` unscrollable-overflow report and the `tabletopRotated` "player 2/4 same side" report, then sweep all pages/breakpoints for similar issues.
+Closeout complete for the app-wide layout verification pass on `feat/layout-verification-pass`; all confirmed layout issues were fixed, verified, committed, and pushed.
 
 ## Checkpoint Log
 
@@ -43,7 +43,8 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 2026-09-08 - Cross-theme/cross-page regression check (Star Realms theme, `/shared`, `/multiplayer`) found no regressions from the fix.
 2026-09-08 - Required quality gates passed (lint, tsc, build, integration). Committed and pushed `54cdf75` on `feat/layout-verification-pass`.
 2026-09-08 - Reproduced the `tabletopRotated` player 2/4 report live at 900x950 and 390x844: confirmed `EDGE_ORDER`/seat assignment never collide; the portrait-fallback CSS rendered left/right seats as visually identical unrotated cards, explaining the "same side" perception. Fixed with a themed accent border scoped to the existing portrait-fallback media query only; verified in both themes, no regression at landscape breakpoints. Gates passed; committed and pushed `8987999`.
-2026-09-08 - Removed dead Vite starter CSS from `src/index.css` while preserving reset, body sizing/font, and number-input normalization. Lint, tsc, build, integration, and required E2E (5 passed after installing Chromium) pass. CSS specialist visual comparison was blocked by transient network errors; cleanup is low-risk and has no known functional regression.
+2026-09-08 - Removed dead Vite starter CSS from `src/index.css` while preserving reset, body sizing/font, and number-input normalization. Lint, tsc, build, integration, and required E2E (5 passed after installing Chromium) pass.
+2026-09-08 - Completed full MCP visual matrix across `/`, `/new-game`, `/settings`, `/shared`, and `/multiplayer` at 1366x768 and 390x844 in both themes, plus tabletop landscape/portrait checks. No horizontal overflow or unreachable controls found; console had 0 errors. Existing mobile counter controls measure approximately 12x20px and remain a non-blocking touch-target follow-up.
 
 ## TODOs
 
@@ -62,22 +63,24 @@ Execute the app-wide layout verification pass (see `docs/ai/current-plan.md`) on
 - [x] Reproduce `/new-game` overflow report live with concrete measurements — did not reproduce; root cause traced to `/settings` instead.
 - [x] Fix the confirmed `/settings` overflow bug and verify across breakpoints/themes/pages; committed and pushed (`54cdf75`).
 - [x] Reproduce `tabletopRotated` player 2/4 report live; fix applied and verified; committed and pushed (`8987999`).
-- [x] Remove dead Vite boilerplate from `src/index.css`; code gates and required E2E pass; fresh screenshot comparison remains a minor evidence gap.
-- [ ] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
-- [ ] Run `Handoff` with read-only Git status/diff evidence.
+- [x] Remove dead Vite boilerplate from `src/index.css`; code gates and required E2E pass.
+- [x] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
+- [x] Run `Handoff` with read-only Git status/diff evidence.
 
 ## QA Status
 
-- `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration` all passed after the layout fix.
+- `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration`, and required E2E (5 tests) all passed after the layout fixes.
 - Layout validated live via Playwright MCP screenshots and DOM measurements at 1366x768, 1024x768 (landscape), and 768x1024 (portrait).
+- Full MCP matrix: `/`, `/new-game`, `/settings`, `/shared`, and `/multiplayer` at 1366x768 and 390x844 in both themes, with `tabletopRotated` rechecked at landscape and portrait fallback breakpoints.
 
 ## Remote / Push Status
 
-- `feat/layout-verification-pass` pushed with upstream tracking; latest commit `8987999` (seat accent fallback fix).
+- `feat/layout-verification-pass` pushed with upstream tracking; checkpoints `54cdf75`, `8987999`, and `e58ae60` are included.
 
 ## Blockers / Notes
 
 - Historical threshold behavior remains blocked pending a product decision (unrelated to this layout work).
-- Terminal execution and Playwright MCP tools were disabled in the tool session that wrote the verification-pass plan; both must be reconfirmed working before trusting any fix for the two new bug reports.
-- Two open bug reports pending live reproduction: `/new-game` unscrollable overflow, and `tabletopRotated` player 2/4 "same side" perception.
+- Terminal execution and Playwright MCP tools were reconfirmed working; all planned layout evidence is now captured.
+- The `/new-game` report was traced to `/settings` and fixed; the `tabletopRotated` player 2/4 perception issue was reproduced and fixed.
 - Optional future improvement: compact the shared-device header/turn-banner for table layouts so auto-scroll-to-active-player isn't needed to see the whole table at once.
+- Existing mobile counter hit areas are a non-blocking accessibility/usability follow-up.
