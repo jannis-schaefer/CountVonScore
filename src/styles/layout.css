@@ -17,10 +17,12 @@
 
 .header-row {
   display: grid;
-  grid-template-columns: 120px 1fr 120px;
+  grid-template-columns: 120px minmax(0, 1fr) 120px;
   gap: 12px;
   align-items: center;
   margin-bottom: 18px;
+  width: 100%;
+  min-width: 0;
 }
 
 .header-title {
@@ -176,6 +178,7 @@
 
 .flex-1 {
   flex: 1;
+  min-width: 0;
 }
 
 .controls-start {
@@ -345,6 +348,13 @@
   justify-content: center;
 }
 
+.controls-row > select,
+.controls-row > .input {
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 60vw;
+}
+
 .card-button {
   border: 0;
   background: transparent;
@@ -494,6 +504,15 @@
   .player-layout-rotate-right {
     transform: none;
   }
+
+  /* Rotation no longer distinguishes left/right seats here, so mark seat side with a positional accent border. */
+  .player-layout-side-left .player-layout-card-wrap-rotated-side {
+    border-left: 4px solid var(--accent-color);
+  }
+
+  .player-layout-side-right .player-layout-card-wrap-rotated-side {
+    border-right: 4px solid var(--accent-color);
+  }
 }
 
 @media (max-width: 768px) {
@@ -557,7 +576,7 @@
 
 @media (max-width: 640px) {
   .header-row {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       'title title'
       'left right';
