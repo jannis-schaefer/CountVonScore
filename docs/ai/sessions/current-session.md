@@ -4,30 +4,21 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: main
-**Started**: 2026-09-08
+**Branch**: feat/backlog-followups
+**Started**: 2026-09-11
 **Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-Repair README guidance, verify Playwright MCP visual feedback, adapt the four-player tabletop layout for flat-table use, run a broader app-wide layout verification pass, and merge the completed work into main.
+Address the four deferred backlog items from the layout verification pass: (1) historical win/elimination threshold behavior for the skipped E2E drafts, (2) mobile counter touch-target sizing, (3) optional dedicated accessibility automation, (4) optional shared-device header/turn-banner compaction. Start with item 1 as a product-design discussion before writing any code, since it defines behavior that is currently ambiguous and intentionally left undecided.
 
 ## Active Step
 
-Closed out: `feat/layout-verification-pass` merged into `main` (merge commit `bd9e89d`) on 2026-09-11 after all required gates passed on the branch. Remaining backlog is documented, not blocking.
+Discussing historical win/elimination threshold behavior with the user before implementing anything (see `docs/ai/current-plan.md`).
 
 ## Checkpoint Log
 
-2026-09-08 - New session opened; stale completion state replaced with repository-reconciliation TODOs.
-2026-09-08 - Git reconciliation complete: `main` matches `origin/main` at `2671994`; backlog triaged.
-2026-09-08 - Docs-only checkpoint committed for the new backlog-triage session plan.
-2026-09-08 - README repair completed; Node/npm later confirmed available and lint remains pending.
-2026-09-08 - Session scope set to Playwright MCP verification and four-player flat-table layout review.
-2026-09-08 - Checkpoint: README repair and tabletop layout session plan committed; npm validation remains blocked and Playwright MCP is not registered in this chat session.
-2026-09-08 - Playwright MCP package startup verified; CSSLayoutSpecialist bound to `playwright/*` and `chrome-devtools/*`; VS Code chat-tool registration remains pending reconnection.
-2026-09-08 - Tool-binding blocker discovered in this coordinator invocation: no `playwright/*`/`chrome-devtools/*` MCP tools and no terminal-execution tool (`run_in_terminal`) are bound in this session, so the requested screenshot capture, quality-gate runs, and git commit/push cannot be executed here despite the user-reported prior confirmation. `get_task_output` for the referenced dev-server task id returned "Task not found," confirming the background terminal is not reachable from this tool session either.
-2026-09-08 - Code-level review of `src/styles/layout.css` and `src/components/PlayerCardsLayout.tsx` confirms the suspected bug without visual evidence: `.player-layout-table` collapsed to a single-column vertical stack (and dropped left/right rotation) at `@media (max-width: 1024px)` with no orientation guard, so landscape tablets narrower than 1024px (e.g. iPad Mini landscape) would lose the four-edge `tabletopRotated` arrangement.
-2026-09-08 - Applied smallest fix: scoped that breakpoint to `and (orientation: portrait)` so the vertical mobile fallback still applies to portrait phones/tablets while landscape viewports keep the four-edge rotated table. Change was UNVERIFIED by screenshot at that point — Playwright MCP tools were not available to that session.
+2026-09-11 - New session opened on `feat/backlog-followups` from clean `main` (`3c22920`). Reviewed current `applyHistoricalChangesState`/`continueFromHistoricalTurnState` implementation in `src/store/engine/turns.ts` to ground the threshold-behavior discussion in actual code behavior rather than assumptions.
 2026-09-08 - Node/npm reinstalled for this machine's OS/arch (removed `node_modules`/`package-lock.json`, ran `npm install`); `npm run dev` confirmed serving at http://localhost:5173/ with no console errors.
 2026-09-08 - A fresh agent invocation confirmed `playwright/*` MCP tools registered and callable. Used them to configure a real 4-player game, select `tabletopRotated`, and capture baseline screenshots — this revealed two real bugs beyond the orientation-media-query fix: (1) top/bottom/left/right cards were not centered along their edges, and (2) the rotated left/right card squares were hard-coded to 420px regardless of viewport height, forcing total table height to ~999.5px on a 768px-tall viewport and pushing the top-edge player completely out of view even with auto-scroll-to-active-player.
 2026-09-08 - Fixed both bugs in `src/styles/layout.css` (`justify-content`/`align-content` centering, and `width: clamp(200px, 28vh, 420px)` for the rotated squares). Verified with MCP screenshots and `getBoundingClientRect()` measurements that all four seats are now simultaneously visible, centered, and correctly rotated at 1366×768 and 1024×768 landscape; portrait fallback at 768×1024 unaffected.
