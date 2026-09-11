@@ -56,6 +56,8 @@ Breakpoints: 1366×768 (desktop/tabletop landscape), 1024×768 (tablet landscape
 
 Handoff is complete with read-only Git status, diff, history, branch, and upstream evidence recorded in `docs/ai/sessions/2026-09-08-layout-verification.md`.
 
+`feat/layout-verification-pass` was merged into `main` on 2026-09-11 (merge commit `bd9e89d`), which was the only remaining gap from the prior session. `main` now matches `origin/main`.
+
 ## Dependencies / Blockers
 
 - Full visual matrix is complete. Remaining risk is existing mobile counter minus/plus controls measuring approximately 12x20px, below the recommended 44x44px touch target; this is a separate accessibility follow-up, not a layout overflow blocker.

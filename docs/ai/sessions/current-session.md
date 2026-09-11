@@ -4,17 +4,17 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: feat/layout-verification-pass
+**Branch**: main
 **Started**: 2026-09-08
 **Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-Repair README guidance, verify Playwright MCP visual feedback, adapt the four-player tabletop layout for flat-table use, and now run a broader app-wide layout verification pass following two new user bug reports.
+Repair README guidance, verify Playwright MCP visual feedback, adapt the four-player tabletop layout for flat-table use, run a broader app-wide layout verification pass, and merge the completed work into main.
 
 ## Active Step
 
-Closeout complete for the app-wide layout verification pass on `feat/layout-verification-pass`; all confirmed layout issues were fixed, verified, committed, and pushed.
+Closed out: `feat/layout-verification-pass` merged into `main` (merge commit `bd9e89d`) on 2026-09-11 after all required gates passed on the branch. Remaining backlog is documented, not blocking.
 
 ## Checkpoint Log
 
@@ -45,6 +45,7 @@ Closeout complete for the app-wide layout verification pass on `feat/layout-veri
 2026-09-08 - Reproduced the `tabletopRotated` player 2/4 report live at 900x950 and 390x844: confirmed `EDGE_ORDER`/seat assignment never collide; the portrait-fallback CSS rendered left/right seats as visually identical unrotated cards, explaining the "same side" perception. Fixed with a themed accent border scoped to the existing portrait-fallback media query only; verified in both themes, no regression at landscape breakpoints. Gates passed; committed and pushed `8987999`.
 2026-09-08 - Removed dead Vite starter CSS from `src/index.css` while preserving reset, body sizing/font, and number-input normalization. Lint, tsc, build, integration, and required E2E (5 passed after installing Chromium) pass.
 2026-09-08 - Completed full MCP visual matrix across `/`, `/new-game`, `/settings`, `/shared`, and `/multiplayer` at 1366x768 and 390x844 in both themes, plus tabletop landscape/portrait checks. No horizontal overflow or unreachable controls found; console had 0 errors. Existing mobile counter controls measure approximately 12x20px and remain a non-blocking touch-target follow-up.
+2026-09-11 - Resumed session: prior work was fully complete but had not been merged to main. Reran all required gates (lint, tsc, build, integration, required E2E: 5/5) on `feat/layout-verification-pass` — all pass. Merged into `main` with `git merge --no-ff` as `bd9e89d` and pushed. `main` now matches `origin/main`.
 
 ## TODOs
 
@@ -66,6 +67,7 @@ Closeout complete for the app-wide layout verification pass on `feat/layout-veri
 - [x] Remove dead Vite boilerplate from `src/index.css`; code gates and required E2E pass.
 - [x] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
 - [x] Run `Handoff` with read-only Git status/diff evidence.
+- [x] Merge `feat/layout-verification-pass` into `main` and push (`bd9e89d`).
 
 ## QA Status
 
@@ -75,7 +77,7 @@ Closeout complete for the app-wide layout verification pass on `feat/layout-veri
 
 ## Remote / Push Status
 
-- `feat/layout-verification-pass` pushed with upstream tracking; checkpoints `54cdf75`, `8987999`, and `e58ae60` are included.
+- `main` and `origin/main` both at `bd9e89d` after merging `feat/layout-verification-pass` (checkpoints `54cdf75`, `8987999`, `e58ae60`, `dca4739`, `c0c2ce0`).
 
 ## Blockers / Notes
 
@@ -84,3 +86,4 @@ Closeout complete for the app-wide layout verification pass on `feat/layout-veri
 - The `/new-game` report was traced to `/settings` and fixed; the `tabletopRotated` player 2/4 perception issue was reproduced and fixed.
 - Optional future improvement: compact the shared-device header/turn-banner for table layouts so auto-scroll-to-active-player isn't needed to see the whole table at once.
 - Existing mobile counter hit areas are a non-blocking accessibility/usability follow-up.
+- `feat/layout-verification-pass` is fully merged into `main`; safe to delete once confirmed no longer needed for reference.
