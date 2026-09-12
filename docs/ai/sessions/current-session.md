@@ -41,6 +41,7 @@ Discussing historical win/elimination threshold behavior with the user before im
 2026-09-12 - Recorded item 1 decision/design in `docs/ai/current-plan.md` and `docs/ai/decision-log.md`; deleted three stale untracked debug screenshots and added `tabletop-rotated-*.png` to `.gitignore` to prevent recurrence. Committed as `776d780` and pushed to `origin/feat/backlog-followups`.
 2026-09-12 - Wired phantom turn threshold review into historical edits (`src/store/gameStore.ts`). Committed as `bff42e5` and pushed to `origin/feat/backlog-followups`.
 2026-09-12 - Added phantom turn threshold review prompt UI (`src/pages/SharedDeviceMode.tsx`). Committed as `c9594d7` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Fixed edited turn state not being passed into phantom detection (`src/store/engine/turns.ts`, `src/store/gameStore.ts`, `scripts/integration-behavior.ts`) and promoted the threshold-review E2E drafts (`e2e/regression/turn-navigation-edge-drafts.spec.ts`). Committed as `026ad51` and pushed to `origin/feat/backlog-followups`.
 
 ## TODOs
 
