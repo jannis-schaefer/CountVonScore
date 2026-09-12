@@ -815,6 +815,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const phantoms = findPhantomTurns({
         viewedTurnNumber: state.viewedTurnNumber,
+        viewedPlayers: state.viewedPlayers,
         turnRecords: state.turnRecords,
         counterDefinitions: state.counterDefinitions,
         eliminationConfig,
@@ -917,6 +918,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const removed = removePhantomTurnsState({
         viewedTurnNumber: state.viewedTurnNumber,
+        viewedPlayers: state.viewedPlayers,
         turnRecords: state.turnRecords,
         currentPlayerIndex: state.currentPlayerIndex,
         turnStartPlayers: state.turnStartPlayers,

@@ -364,11 +364,12 @@ const computeForwardExcludingPhantoms = (input: {
 
 export const findPhantomTurns = (input: {
   viewedTurnNumber: number | null;
+  viewedPlayers: Player[] | null;
   turnRecords: TurnRecord[];
   counterDefinitions: CounterDefinition[];
   eliminationConfig: EliminationConfig;
 }): PhantomTurn[] => {
-  if (!input.eliminationConfig.enabled || input.viewedTurnNumber === null) {
+  if (!input.eliminationConfig.enabled || input.viewedTurnNumber === null || !input.viewedPlayers) {
     return [];
   }
 
@@ -377,8 +378,14 @@ export const findPhantomTurns = (input: {
     return [];
   }
 
+  const patchedRecords = cloneTurnRecords(input.turnRecords);
+  patchedRecords[editedIndexFromTurn] = {
+    ...patchedRecords[editedIndexFromTurn],
+    endPlayers: clonePlayers(input.viewedPlayers),
+  };
+
   return computeForwardExcludingPhantoms({
-    turnRecords: input.turnRecords,
+    turnRecords: patchedRecords,
     editedIndexFromTurn,
     counterDefinitions: input.counterDefinitions,
     eliminationConfig: input.eliminationConfig,
@@ -387,6 +394,7 @@ export const findPhantomTurns = (input: {
 
 export const removePhantomTurnsState = (input: {
   viewedTurnNumber: number | null;
+  viewedPlayers: Player[] | null;
   turnRecords: TurnRecord[];
   currentPlayerIndex: number;
   turnStartPlayers: Player[];
@@ -398,7 +406,7 @@ export const removePhantomTurnsState = (input: {
   turnStartPlayers: Player[];
   turnRecords: TurnRecord[];
 } | null => {
-  if (input.viewedTurnNumber === null) {
+  if (input.viewedTurnNumber === null || !input.viewedPlayers) {
     return null;
   }
 
@@ -407,16 +415,24 @@ export const removePhantomTurnsState = (input: {
     return null;
   }
 
-  const editedRecord = input.turnRecords[editedIndexFromTurn];
+  const patchedRecords = cloneTurnRecords(input.turnRecords);
+  const editedRecord = {
+    ...patchedRecords[editedIndexFromTurn],
+    endPlayers: clonePlayers(input.viewedPlayers),
+  };
   const { keptRecords, runningPlayers } = computeForwardExcludingPhantoms({
-    turnRecords: input.turnRecords,
+    turnRecords: [
+      ...patchedRecords.slice(0, editedIndexFromTurn),
+      editedRecord,
+      ...patchedRecords.slice(editedIndexFromTurn + 1),
+    ],
     editedIndexFromTurn,
     counterDefinitions: input.counterDefinitions,
     eliminationConfig: input.eliminationConfig,
   });
 
   const updatedRecords = [
-    ...input.turnRecords.slice(0, editedIndexFromTurn),
+    ...patchedRecords.slice(0, editedIndexFromTurn),
     {
       ...editedRecord,
       latestKeyTurnNumber: getLatestKeyTurnNumber(editedIndexFromTurn + 1),

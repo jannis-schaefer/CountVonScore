@@ -137,6 +137,7 @@ function runPhantomTurnTests() {
 
   const phantoms = findPhantomTurns({
     viewedTurnNumber: 3,
+    viewedPlayers: editedTurnRecords[2].endPlayers,
     turnRecords: editedTurnRecords,
     counterDefinitions,
     eliminationConfig,
@@ -148,6 +149,7 @@ function runPhantomTurnTests() {
 
   const removed = removePhantomTurnsState({
     viewedTurnNumber: 3,
+    viewedPlayers: editedTurnRecords[2].endPlayers,
     turnRecords: editedTurnRecords,
     currentPlayerIndex: 0,
     turnStartPlayers: turn6End,
