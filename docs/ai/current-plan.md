@@ -1,75 +1,79 @@
-# Current Plan - App-Wide Layout Verification Pass
+# Current Plan - Backlog Follow-Ups
 
-**Status**: Complete
-**Started**: 2026-09-08
-**Target Completion**: 2026-09-08
-
-## Prior Phase Outcome (complete, committed)
-
-The four-player tabletop layout work is done and pushed (`3455c2e`): seats are centered on their edges, rotated squares scale with viewport height, and all required gates pass. Two open questions from that phase carry into this pass rather than being fixed blindly:
-
-1. User-reported: "player 2 and 4 are on the same side" in `tabletopRotated`. Static analysis of `EDGE_ORDER`/`getEdgeForIndex` in `src/components/PlayerCardsLayout.tsx` proves indices 1 and 3 (players 2 and 4) always resolve to opposite edges (`right`/`left`) for a 4-player game — no code path produces a literal collision. Leading hypothesis: the portrait/narrow-window fallback (`@media (max-width: 1024px) and (orientation: portrait)`) collapses all four seats into one vertical column, so on a narrow-but-not-truly-mobile window, player 2 and player 4 both lose rotation and look interchangeable ("the same side"). Needs live confirmation.
-2. User-reported: the `/new-game` screen (`ModeSelection.tsx`, wrapped in `.page-center`) overflows without being scrollable, making most of its controls unreachable.
-
-## Suspected Root Cause For Item 2 (verify before trusting)
-
-`src/index.css` still contains leftover Vite-template boilerplate that conflicts with the app's real `#root` rule in `src/App.css`:
-
-- `src/index.css` sets `#root { width: 1126px; max-width: 100%; text-align: center; border-inline: 1px solid var(--border); min-height: 100svh; ... }`.
-- `src/App.css` sets `#root { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }`.
-
-Both use `min-height` (not `height`), and neither sets `overflow: hidden`, so this doesn't fully explain an unscrollable overflow by itself — but it is definitely dead/unintended boilerplate (stray `text-align: center` and `border-inline` applied app-wide) and a reasonable first cleanup regardless of whether it's the direct cause of item 2. Confirm the real cause with a live MCP `getBoundingClientRect`/computed-style check (same method used for the tabletop fix) before changing anything, the same way the tabletop investigation avoided guessing.
+**Status**: In Progress (items 1-2 complete; optional items deferred)
+**Started**: 2026-09-11
+**Target Completion**: TBD
 
 ## Scope
 
-Run a systematic layout verification pass across all pages and key breakpoints using Playwright MCP, since this session already found multiple real, non-obvious overflow/centering bugs that static code review alone missed.
+Address the four items deferred from the layout verification pass (see `docs/ai/decision-log.md` and the merged `feat/layout-verification-pass` history):
 
-## Pages × Breakpoints Matrix
+1. Historical win/elimination threshold behavior (decided, implementing).
+2. Enlarge mobile counter +/- controls (currently ~12x20px, below the recommended 44x44px touch target).
+3. Optional: add dedicated accessibility automation once enough MCP/Playwright evidence signal exists (deferred).
+4. Optional: compact the shared-device header/turn-banner for table layouts so auto-scroll-to-active-player isn't needed to see the whole table (deferred).
 
-Pages: `/` (HomeMenu), `/new-game` (ModeSelection), `/shared` (SharedDeviceMode — check `grid`, `tabletop`, `tabletopRotated`, `minimalist`, `seatRail` layouts with 2/4/5 players), `/multiplayer` (MultiplayerMode), `/settings` (Settings — longest/most complex form).
+## Item 1: Historical Win/Elimination Threshold Behavior — Decided Design
 
-Breakpoints: 1366×768 (desktop/tabletop landscape), 1024×768 (tablet landscape boundary), 768×1024 (tablet portrait), 390×844 (phone portrait).
+**User decision (2026-09-11): Option C.** When "Apply Changes and Return" causes a player to newly cross a win/loss/placement threshold at the edited turn, and that player has recorded turns later in the (pre-edit) history, do not silently recalculate. Prompt the user with three choices:
 
-## Steps
+1. **Continue from this point** — truncate the timeline at the edited turn, equivalent to the existing "Continue From This Turn" flow.
+2. **Keep phantom turns and damage** — commit the full recalculation as today's code already does (no change).
+3. **Remove phantom turns and damage from the ledger** — replay forward, but exclude the now-eliminated/won player's own turns and any counter effects (including damage to other players) those turns caused, while keeping every other still-active player's genuine subsequent turns.
 
-1. Confirm Playwright MCP tools are registered and callable in the active session (navigate + snapshot) before starting.
-2. For each page × breakpoint combination: capture a screenshot, and measure `document.documentElement.scrollHeight` vs `window.innerHeight` plus `getBoundingClientRect()` on the outer content wrapper to confirm every control is reachable by scroll — do not rely on visual inspection alone, per this session's evidence.
-3. Specifically reproduce and resolve the `/new-game` overflow report: measure whether scrolling actually reaches the "Confirm And Start" button at each breakpoint; if not, identify the exact blocking rule (fixed height + `overflow: hidden`, or a grid/flex sizing bug) rather than assuming the leftover `#root` CSS is the cause.
-4. Reproduce the `tabletopRotated` "player 2/4 same side" report by resizing to a narrow-but-landscape-leaning window and a genuinely narrow/portrait window, to determine whether the portrait-fallback breakpoint is triggering too eagerly or whether seat-order intent (`EDGE_ORDER` sequence) needs to change.
-5. Remove the dead Vite-template `#root` boilerplate from `src/index.css` (`text-align: center`, `border-inline`, width/min-height duplication with `App.css`) as an independent, low-risk cleanup, then re-screenshot affected pages to confirm no visual regression.
-6. Apply the smallest fix for each confirmed bug found, one at a time, with before/after screenshot evidence (bounded iteration, same discipline as the tabletop fix).
-7. Run required quality gates (`lint`, `tsc`, `build`, `test:integration`) after any code change.
-8. Checkpoint and push through `GitCheckpointWorker` after each confirmed, verified fix — do not batch unrelated fixes into one commit.
+Applies uniformly to win, loss, and placement outcomes — no special-casing by `EliminationOutcome` type.
+
+### Root cause of "phantom damage" (verified from code)
+
+`applyHistoricalChangesState` recalculates forward by replaying each turn's **original delta** (`buildTurnDelta`/`applyTurnDelta`) on the new baseline. Turn rotation (`actingPlayerId`) is already correctly reassigned to skip eliminated players via `getNextActivePlayerIndex` — but the delta itself, computed from the *original* turn's start/end player state, still gets applied regardless of who is now nominally "acting" for that turn slot. So a turn that was originally the now-eliminated player's turn (e.g. "reduce Player Y's Authority by 3") still silently applies that same effect to Player Y under a relabeled acting player, even though that player should never have taken the turn. This is what "phantom turns and phantom damage" refers to.
+
+### Detection algorithm
+
+A turn at original index `i` (where `i > editedIndexFromTurn`) is **phantom** if: the *original* `turnRecords[i].actingPlayerId` refers to a player who, per the recalculated state at the start of turn `i`, is already out of rotation (`isPlayerOutOfTurnRotation`/`evaluatePlayerEliminationStatus` against the active `EliminationConfig`).
+
+### Resolution semantics
+
+- `continueFromPoint`: reuse `continueFromHistoricalTurnState` unchanged (already truncates correctly).
+- `keepPhantom`: commit the existing `applyHistoricalChangesState` result unchanged (today's behavior, now opt-in rather than automatic).
+- `removePhantom`: new pure function. Walk the same forward recalculation loop, but for turns flagged as phantom, skip applying that turn's delta (treat it as a no-op) and splice that turn record out of `turnRecords` entirely (renumbering subsequent turns and their `latestKeyTurnNumber`), while still applying every non-phantom turn's delta normally.
+
+### Implementation plan (phased, one checkpoint per phase)
+
+1. Pure engine layer in `src/store/engine/turns.ts`: `findPhantomTurns(...)` detection helper, `removePhantomTurnsState(...)` resolution function. No store/UI wiring yet. Add coverage in `scripts/integration-behavior.ts`.
+2. Store wiring in `src/store/gameStore.ts`: `applyHistoricalChanges` detects phantom turns; if any exist, store a `pendingThresholdReview` state instead of committing immediately. Add `resolveThresholdReview(choice)` action implementing the three resolutions.
+3. Minimal UI in `src/pages/SharedDeviceMode.tsx`: render the three-way prompt only when `pendingThresholdReview` is set.
+4. Promote the two skipped drafts in `e2e/regression/turn-navigation-edge-drafts.spec.ts` and add coverage for the new prompt paths.
+5. Required quality gates + checkpoint after each phase.
+
+## Steps (remaining items)
+
+1. Item 2: complete. Mobile `.counter-btn` controls now have 44x44px minimum dimensions; desktop density is unchanged.
+2. Item 3: deferred. Existing MCP evidence did not establish a dedicated automation gap beyond the focused browser checks already performed.
+3. Item 4: deferred. Existing table layouts are usable at verified breakpoints; no additional compaction is required for this session.
 
 ## Verification
 
-- [x] MCP tool availability reconfirmed in the session doing this pass.
-- [x] `/new-game` overflow reproduced with concrete measurements (not assumed) and root cause identified. Result: does NOT reproduce on `ModeSelection` itself (default state or with 8 extra counter definitions) at any of the four breakpoints; `overflow`/`overflow-y` on `html`/`body`/`#root`/`.page-center` are `visible` in all cases.
-- [x] `/new-game` fix applied and verified scrollable/reachable at all four breakpoints. Result: no fix needed for `ModeSelection`; the real bug was on `/settings` (reached via "Edit Game Settings"), which is what the report most likely referred to.
-- [x] Found and fixed a real, confirmed horizontal-overflow bug on `/settings` at 390×844: unconstrained `<select>`/`.input` intrinsic width inside `.controls-row` blew out ancestor grid tracks (`scrollWidth` 723px in a 390px viewport), making roughly half the page's controls unreachable — a WCAG 1.4.10 (Reflow) blocker. Fixed in `src/styles/layout.css` (`.controls-row > select/.input` min/max-width, `.flex-1` min-width, `.header-row` grid hardening) and `src/styles/themes/generic.css` (`.input, select` min/max-width). Verified clean at all four breakpoints, both themes, and on `/#/shared` and `/#/multiplayer` (no regression to `.flex-1`/`.controls-row` usage elsewhere). Committed and pushed as `54cdf75`.
-- [x] `tabletopRotated` player 2/4 report reproduced and explained (fallback breakpoint vs seat-order intent). Confirmed: `EDGE_ORDER`/`getEdgeForIndex` never collide; the perceived "same side" was the portrait-fallback (`@media (max-width: 1024px) and (orientation: portrait)`) rendering left/right seats as visually identical unrotated cards with no distinguishing style, reproduced at 900x950 and 390x844.
-- [x] Any resulting `EDGE_ORDER`/breakpoint fix applied and verified with screenshots. Fix: added a themed left/right accent border to `.player-layout-side-left`/`-right` card wraps inside the existing portrait-fallback media query only (no `EDGE_ORDER`/seat-assignment change). Verified in both themes at 1366x768 (landscape, unaffected), 900x950, and 390x844. Committed and pushed as `8987999`.
-- [x] Dead Vite boilerplate removed from `src/index.css`: unused root tokens, dark-mode starter block, duplicate `#root` rules, and duplicate global heading rules removed; reset/body sizing/font/number-input normalization preserved. `npm run lint`, `npx tsc --noEmit`, `npm run build`, `npm run test:integration`, and required E2E (5 passed) all pass.
-- [x] Full pages × breakpoints matrix screenshot pass completed: `/`, `/new-game`, `/settings`, `/shared`, and `/multiplayer` at 1366x768 and 390x844 in both themes; `tabletopRotated` also rechecked at 1024x768 landscape and 390x844 portrait fallback. No horizontal overflow or unreachable controls found.
-- [x] Required quality gates pass after all changes: lint, tsc, build, integration, and required E2E (5 passed).
-- [x] Checkpoints committed and pushed for confirmed fixes (`54cdf75`, `8987999`, `e58ae60`) on `feat/layout-verification-pass`.
+- [x] Item 1 behavior decided explicitly by the user (Option C, detailed above).
+- [x] Item 1 pure engine layer implemented with test coverage (`findPhantomTurns`, `removePhantomTurnsState` in `src/store/engine/turns.ts`; synthetic 6-turn scenario in `scripts/integration-behavior.ts`).
+- [x] Item 1 store wiring implemented (`pendingThresholdReview` state, `resolveThresholdReview` action in `src/store/gameStore.ts`).
+- [x] Item 1 UI implemented ("Elimination/Win Threshold Reached" prompt in `src/pages/SharedDeviceMode.tsx`).
+- [x] Item 1 E2E drafts promoted and passing: both original skipped drafts rewritten plus a new third test for `removePhantom`, all 4 tests in `e2e/regression/turn-navigation-edge-drafts.spec.ts` pass, verified stable across a 3x repeat run (12/12).
+- [x] Item 1 bug found and fixed during E2E verification: `applyHistoricalChanges`/`resolveThresholdReview` initially called `findPhantomTurns`/`removePhantomTurnsState` with stale pre-edit `turnRecords`, so the edit itself was never reflected in phantom detection. Fixed by having both functions accept `viewedPlayers` and patch the edited turn internally, matching the existing `applyHistoricalChangesState`/`continueFromHistoricalTurnState` calling convention.
+- [x] Item 2 touch targets enlarged and verified via browser checks at mobile breakpoints with no desktop regression.
+- [x] Item 3 explicitly deferred again with rationale.
+- [x] Item 4 explicitly deferred again with rationale.
+- [x] Required quality gates pass after each change (lint, tsc, build, integration, required E2E all green as of commit `026ad51`).
+- [x] Checkpoints committed and pushed per confirmed fix (`3f21bdc`, `776d780`, `bff42e5`, `c9594d7`, `026ad51` on `feat/backlog-followups`).
 
-Handoff is complete with read-only Git status, diff, history, branch, and upstream evidence recorded in `docs/ai/sessions/2026-09-08-layout-verification.md`.
-
-`feat/layout-verification-pass` was merged into `main` on 2026-09-11 (merge commit `bd9e89d`), which was the only remaining gap from the prior session. `main` now matches `origin/main`.
+**Item 1 status: Complete.**
 
 ## Dependencies / Blockers
 
-- Full visual matrix is complete. Remaining risk is existing mobile counter minus/plus controls measuring approximately 12x20px, below the recommended 44x44px touch target; this is a separate accessibility follow-up, not a layout overflow blocker.
-
-## Deferred Backlog
-
-- Define historical win/elimination threshold behavior before promoting the skipped E2E drafts in `e2e/regression/turn-navigation-edge-drafts.spec.ts`.
-- Add dedicated accessibility automation after the minimal MCP/Playwright evidence policy has produced enough signal to define a useful required gate.
-- Optional: compact the shared-device header/turn-banner specifically for table layouts so the full table fits without the auto-scroll-to-active-player needing to move the viewport away from the page header.
+None currently for item 1 (complete). Items 2-4 remain open; item 2 is next.
 
 ## Decision Rationale
 
-- Do not fix either newly reported bug from description alone; this session's tabletop work proved static reasoning missed real, measurable overflow bugs that only live MCP measurement caught.
-- Treat the leftover `src/index.css` template boilerplate as dead cosmetic code, not the root cause of the Settings overflow (that was proven to be intrinsic select/input width).
-- Keep fixes scoped one-at-a-time with before/after evidence and a quality-gate/commit cycle per fix, matching the bounded-iteration discipline already established this session.
+- Elimination/rotation mechanics already exist and are reused correctly by both historical-edit paths; the actual gap was that delta replay ignores rotation reassignment, silently preserving a since-eliminated player's original effects. This was confirmed by reading the code, not assumed.
+- Applying the three-way choice uniformly across win/loss/placement avoids introducing asymmetric special cases not requested by the user.
+- Phased implementation (engine → store → UI → E2E) with a checkpoint per phase matches the bounded, evidence-per-step discipline used in the prior layout verification session.
+- E2E verification is what actually caught the stale-turnRecords bug — reinforces that behavior-affecting logic must be checked end-to-end, not just unit-tested in isolation.

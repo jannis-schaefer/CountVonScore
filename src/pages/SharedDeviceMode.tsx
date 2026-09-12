@@ -32,6 +32,8 @@ export const SharedDeviceMode: React.FC = () => {
     previousTurn,
     applyHistoricalChanges,
     continueFromHistoricalTurn,
+    pendingThresholdReview,
+    resolveThresholdReview,
     resetGame,
     undo,
   } = useGameStore();
@@ -180,7 +182,7 @@ export const SharedDeviceMode: React.FC = () => {
             </div>
           )}
 
-          {isHistoricalTurnDirty && (
+          {isHistoricalTurnDirty && !pendingThresholdReview && (
             <div className="panel stack" style={{ gap: '12px', border: '1px solid rgba(255,255,255,0.18)' }}>
               <div>
                 <h3 className="panel-title" style={{ marginBottom: '6px' }}>Past Turn Changed</h3>
@@ -194,6 +196,34 @@ export const SharedDeviceMode: React.FC = () => {
                 </button>
                 <button className="btn btn-secondary" onClick={continueFromHistoricalTurn}>
                   Continue From This Turn
+                </button>
+              </div>
+            </div>
+          )}
+
+          {pendingThresholdReview && (
+            <div className="panel stack" style={{ gap: '12px', border: '1px solid rgba(255,255,255,0.18)' }}>
+              <div>
+                <h3 className="panel-title" style={{ marginBottom: '6px' }}>Elimination/Win Threshold Reached</h3>
+                <p style={{ margin: 0, opacity: 0.82 }}>
+                  {(() => {
+                    const phantomPlayerIds = Array.from(new Set(pendingThresholdReview.phantoms.map((phantom) => phantom.playerId)));
+                    const phantomPlayerNames = phantomPlayerIds
+                      .map((playerId) => players.find((player) => player.id === playerId)?.name ?? 'A player')
+                      .join(', ');
+                    return `This edit causes ${phantomPlayerNames} to reach the elimination/win threshold, but they still have later recorded turns. Choose how to handle those turns.`;
+                  })()}
+                </p>
+              </div>
+              <div className="controls-row" style={{ justifyContent: 'flex-start' }}>
+                <button className="btn" onClick={() => resolveThresholdReview('continueFromPoint')}>
+                  Continue From This Point
+                </button>
+                <button className="btn btn-secondary" onClick={() => resolveThresholdReview('keepPhantom')}>
+                  Keep Phantom Turns And Damage
+                </button>
+                <button className="btn btn-secondary" onClick={() => resolveThresholdReview('removePhantom')}>
+                  Remove Phantom Turns And Damage
                 </button>
               </div>
             </div>

@@ -4,30 +4,21 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: main
-**Started**: 2026-09-08
+**Branch**: feat/backlog-followups
+**Started**: 2026-09-11
 **Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-Repair README guidance, verify Playwright MCP visual feedback, adapt the four-player tabletop layout for flat-table use, run a broader app-wide layout verification pass, and merge the completed work into main.
+Address the four deferred backlog items from the layout verification pass: (1) historical win/elimination threshold behavior for the skipped E2E drafts, (2) mobile counter touch-target sizing, (3) optional dedicated accessibility automation, (4) optional shared-device header/turn-banner compaction. Start with item 1 as a product-design discussion before writing any code, since it defines behavior that is currently ambiguous and intentionally left undecided.
 
 ## Active Step
 
-Closed out: `feat/layout-verification-pass` merged into `main` (merge commit `bd9e89d`) on 2026-09-11 after all required gates passed on the branch. Remaining backlog is documented, not blocking.
+Final quality gates and required session closeout after completing item 2; optional accessibility automation and shared-device chrome compaction are explicitly deferred.
 
 ## Checkpoint Log
 
-2026-09-08 - New session opened; stale completion state replaced with repository-reconciliation TODOs.
-2026-09-08 - Git reconciliation complete: `main` matches `origin/main` at `2671994`; backlog triaged.
-2026-09-08 - Docs-only checkpoint committed for the new backlog-triage session plan.
-2026-09-08 - README repair completed; Node/npm later confirmed available and lint remains pending.
-2026-09-08 - Session scope set to Playwright MCP verification and four-player flat-table layout review.
-2026-09-08 - Checkpoint: README repair and tabletop layout session plan committed; npm validation remains blocked and Playwright MCP is not registered in this chat session.
-2026-09-08 - Playwright MCP package startup verified; CSSLayoutSpecialist bound to `playwright/*` and `chrome-devtools/*`; VS Code chat-tool registration remains pending reconnection.
-2026-09-08 - Tool-binding blocker discovered in this coordinator invocation: no `playwright/*`/`chrome-devtools/*` MCP tools and no terminal-execution tool (`run_in_terminal`) are bound in this session, so the requested screenshot capture, quality-gate runs, and git commit/push cannot be executed here despite the user-reported prior confirmation. `get_task_output` for the referenced dev-server task id returned "Task not found," confirming the background terminal is not reachable from this tool session either.
-2026-09-08 - Code-level review of `src/styles/layout.css` and `src/components/PlayerCardsLayout.tsx` confirms the suspected bug without visual evidence: `.player-layout-table` collapsed to a single-column vertical stack (and dropped left/right rotation) at `@media (max-width: 1024px)` with no orientation guard, so landscape tablets narrower than 1024px (e.g. iPad Mini landscape) would lose the four-edge `tabletopRotated` arrangement.
-2026-09-08 - Applied smallest fix: scoped that breakpoint to `and (orientation: portrait)` so the vertical mobile fallback still applies to portrait phones/tablets while landscape viewports keep the four-edge rotated table. Change was UNVERIFIED by screenshot at that point — Playwright MCP tools were not available to that session.
+2026-09-11 - New session opened on `feat/backlog-followups` from clean `main` (`3c22920`). Reviewed current `applyHistoricalChangesState`/`continueFromHistoricalTurnState` implementation in `src/store/engine/turns.ts` to ground the threshold-behavior discussion in actual code behavior rather than assumptions.
 2026-09-08 - Node/npm reinstalled for this machine's OS/arch (removed `node_modules`/`package-lock.json`, ran `npm install`); `npm run dev` confirmed serving at http://localhost:5173/ with no console errors.
 2026-09-08 - A fresh agent invocation confirmed `playwright/*` MCP tools registered and callable. Used them to configure a real 4-player game, select `tabletopRotated`, and capture baseline screenshots — this revealed two real bugs beyond the orientation-media-query fix: (1) top/bottom/left/right cards were not centered along their edges, and (2) the rotated left/right card squares were hard-coded to 420px regardless of viewport height, forcing total table height to ~999.5px on a 768px-tall viewport and pushing the top-edge player completely out of view even with auto-scroll-to-active-player.
 2026-09-08 - Fixed both bugs in `src/styles/layout.css` (`justify-content`/`align-content` centering, and `width: clamp(200px, 28vh, 420px)` for the rotated squares). Verified with MCP screenshots and `getBoundingClientRect()` measurements that all four seats are now simultaneously visible, centered, and correctly rotated at 1366×768 and 1024×768 landscape; portrait fallback at 768×1024 unaffected.
@@ -46,6 +37,15 @@ Closed out: `feat/layout-verification-pass` merged into `main` (merge commit `bd
 2026-09-08 - Removed dead Vite starter CSS from `src/index.css` while preserving reset, body sizing/font, and number-input normalization. Lint, tsc, build, integration, and required E2E (5 passed after installing Chromium) pass.
 2026-09-08 - Completed full MCP visual matrix across `/`, `/new-game`, `/settings`, `/shared`, and `/multiplayer` at 1366x768 and 390x844 in both themes, plus tabletop landscape/portrait checks. No horizontal overflow or unreachable controls found; console had 0 errors. Existing mobile counter controls measure approximately 12x20px and remain a non-blocking touch-target follow-up.
 2026-09-11 - Resumed session: prior work was fully complete but had not been merged to main. Reran all required gates (lint, tsc, build, integration, required E2E: 5/5) on `feat/layout-verification-pass` — all pass. Merged into `main` with `git merge --no-ff` as `bd9e89d` and pushed. `main` now matches `origin/main`.
+2026-09-12 - Committed phantom-turn detection/removal pure functions and test coverage (`src/store/engine/turns.ts`, `scripts/integration-behavior.ts`) as `3f21bdc` on `feat/backlog-followups` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Recorded item 1 decision/design in `docs/ai/current-plan.md` and `docs/ai/decision-log.md`; deleted three stale untracked debug screenshots and added `tabletop-rotated-*.png` to `.gitignore` to prevent recurrence. Committed as `776d780` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Wired phantom turn threshold review into historical edits (`src/store/gameStore.ts`). Committed as `bff42e5` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Added phantom turn threshold review prompt UI (`src/pages/SharedDeviceMode.tsx`). Committed as `c9594d7` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Fixed edited turn state not being passed into phantom detection (`src/store/engine/turns.ts`, `src/store/gameStore.ts`, `scripts/integration-behavior.ts`) and promoted the threshold-review E2E drafts (`e2e/regression/turn-navigation-edge-drafts.spec.ts`). Committed as `026ad51` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Marked backlog item 1 (threshold behavior) complete in `docs/ai/current-plan.md`. Committed as `589d6be` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Enlarged mobile `.counter-btn` controls to a 44x44px minimum in `src/styles/layout.css`; focused browser checks measured 44x44px at 390x844 and preserved approximately 12x20px desktop density at 1280x900. Lint, build, and core gameplay E2E passed.
+2026-09-12 - Explicitly deferred dedicated accessibility automation and shared-device header/turn-banner compaction for this session because existing focused browser evidence did not show a blocking gap or usability defect.
+2026-09-12 - Checkpointed completed backlog item 2 and its plan/session documentation updates; screenshots remain untracked and excluded from this checkpoint.
 
 ## TODOs
 
@@ -68,6 +68,7 @@ Closed out: `feat/layout-verification-pass` merged into `main` (merge commit `bd
 - [x] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
 - [x] Run `Handoff` with read-only Git status/diff evidence.
 - [x] Merge `feat/layout-verification-pass` into `main` and push (`bd9e89d`).
+- [x] Complete mobile counter touch-target follow-up and record explicit deferrals for optional items.
 
 ## QA Status
 

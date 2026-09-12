@@ -516,6 +516,11 @@
 }
 
 @media (max-width: 768px) {
+  .counter-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
   .player-layout-scroll-item {
     flex-basis: calc(100vw - 36px);
   }
