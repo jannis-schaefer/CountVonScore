@@ -1,6 +1,6 @@
 # Current Plan - Backlog Follow-Ups
 
-**Status**: In Progress (item 1 implementation)
+**Status**: In Progress (items 1-2 complete; optional items deferred)
 **Started**: 2026-09-11
 **Target Completion**: TBD
 
@@ -10,8 +10,8 @@ Address the four items deferred from the layout verification pass (see `docs/ai/
 
 1. Historical win/elimination threshold behavior (decided, implementing).
 2. Enlarge mobile counter +/- controls (currently ~12x20px, below the recommended 44x44px touch target).
-3. Optional: add dedicated accessibility automation once enough MCP/Playwright evidence signal exists.
-4. Optional: compact the shared-device header/turn-banner for table layouts so auto-scroll-to-active-player isn't needed to see the whole table.
+3. Optional: add dedicated accessibility automation once enough MCP/Playwright evidence signal exists (deferred).
+4. Optional: compact the shared-device header/turn-banner for table layouts so auto-scroll-to-active-player isn't needed to see the whole table (deferred).
 
 ## Item 1: Historical Win/Elimination Threshold Behavior — Decided Design
 
@@ -47,9 +47,9 @@ A turn at original index `i` (where `i > editedIndexFromTurn`) is **phantom** if
 
 ## Steps (remaining items)
 
-1. Item 2: increase counter +/- button touch targets toward 44x44px in `src/styles/layout.css`/theme CSS, verify with Playwright MCP at mobile breakpoints, no regression to desktop density.
-2. Item 3: only scope if the user wants it now; otherwise leave deferred.
-3. Item 4: only scope if the user wants it now; otherwise leave deferred.
+1. Item 2: complete. Mobile `.counter-btn` controls now have 44x44px minimum dimensions; desktop density is unchanged.
+2. Item 3: deferred. Existing MCP evidence did not establish a dedicated automation gap beyond the focused browser checks already performed.
+3. Item 4: deferred. Existing table layouts are usable at verified breakpoints; no additional compaction is required for this session.
 
 ## Verification
 
@@ -59,9 +59,9 @@ A turn at original index `i` (where `i > editedIndexFromTurn`) is **phantom** if
 - [x] Item 1 UI implemented ("Elimination/Win Threshold Reached" prompt in `src/pages/SharedDeviceMode.tsx`).
 - [x] Item 1 E2E drafts promoted and passing: both original skipped drafts rewritten plus a new third test for `removePhantom`, all 4 tests in `e2e/regression/turn-navigation-edge-drafts.spec.ts` pass, verified stable across a 3x repeat run (12/12).
 - [x] Item 1 bug found and fixed during E2E verification: `applyHistoricalChanges`/`resolveThresholdReview` initially called `findPhantomTurns`/`removePhantomTurnsState` with stale pre-edit `turnRecords`, so the edit itself was never reflected in phantom detection. Fixed by having both functions accept `viewedPlayers` and patch the edited turn internally, matching the existing `applyHistoricalChangesState`/`continueFromHistoricalTurnState` calling convention.
-- [ ] Item 2 touch targets enlarged and verified via MCP at mobile breakpoints with no desktop regression.
-- [ ] Item 3 scoped or explicitly deferred again.
-- [ ] Item 4 scoped or explicitly deferred again.
+- [x] Item 2 touch targets enlarged and verified via browser checks at mobile breakpoints with no desktop regression.
+- [x] Item 3 explicitly deferred again with rationale.
+- [x] Item 4 explicitly deferred again with rationale.
 - [x] Required quality gates pass after each change (lint, tsc, build, integration, required E2E all green as of commit `026ad51`).
 - [x] Checkpoints committed and pushed per confirmed fix (`3f21bdc`, `776d780`, `bff42e5`, `c9594d7`, `026ad51` on `feat/backlog-followups`).
 

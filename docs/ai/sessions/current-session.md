@@ -14,7 +14,7 @@ Address the four deferred backlog items from the layout verification pass: (1) h
 
 ## Active Step
 
-Discussing historical win/elimination threshold behavior with the user before implementing anything (see `docs/ai/current-plan.md`).
+Final quality gates and required session closeout after completing item 2; optional accessibility automation and shared-device chrome compaction are explicitly deferred.
 
 ## Checkpoint Log
 
@@ -43,6 +43,9 @@ Discussing historical win/elimination threshold behavior with the user before im
 2026-09-12 - Added phantom turn threshold review prompt UI (`src/pages/SharedDeviceMode.tsx`). Committed as `c9594d7` and pushed to `origin/feat/backlog-followups`.
 2026-09-12 - Fixed edited turn state not being passed into phantom detection (`src/store/engine/turns.ts`, `src/store/gameStore.ts`, `scripts/integration-behavior.ts`) and promoted the threshold-review E2E drafts (`e2e/regression/turn-navigation-edge-drafts.spec.ts`). Committed as `026ad51` and pushed to `origin/feat/backlog-followups`.
 2026-09-12 - Marked backlog item 1 (threshold behavior) complete in `docs/ai/current-plan.md`. Committed as `589d6be` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Enlarged mobile `.counter-btn` controls to a 44x44px minimum in `src/styles/layout.css`; focused browser checks measured 44x44px at 390x844 and preserved approximately 12x20px desktop density at 1280x900. Lint, build, and core gameplay E2E passed.
+2026-09-12 - Explicitly deferred dedicated accessibility automation and shared-device header/turn-banner compaction for this session because existing focused browser evidence did not show a blocking gap or usability defect.
+2026-09-12 - Checkpointed completed backlog item 2 and its plan/session documentation updates; screenshots remain untracked and excluded from this checkpoint.
 
 ## TODOs
 
@@ -65,6 +68,7 @@ Discussing historical win/elimination threshold behavior with the user before im
 - [x] Run full pages × breakpoints screenshot matrix from the new verification-pass plan.
 - [x] Run `Handoff` with read-only Git status/diff evidence.
 - [x] Merge `feat/layout-verification-pass` into `main` and push (`bd9e89d`).
+- [x] Complete mobile counter touch-target follow-up and record explicit deferrals for optional items.
 
 ## QA Status
 
