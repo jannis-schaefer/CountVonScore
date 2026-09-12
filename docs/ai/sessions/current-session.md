@@ -42,6 +42,7 @@ Discussing historical win/elimination threshold behavior with the user before im
 2026-09-12 - Wired phantom turn threshold review into historical edits (`src/store/gameStore.ts`). Committed as `bff42e5` and pushed to `origin/feat/backlog-followups`.
 2026-09-12 - Added phantom turn threshold review prompt UI (`src/pages/SharedDeviceMode.tsx`). Committed as `c9594d7` and pushed to `origin/feat/backlog-followups`.
 2026-09-12 - Fixed edited turn state not being passed into phantom detection (`src/store/engine/turns.ts`, `src/store/gameStore.ts`, `scripts/integration-behavior.ts`) and promoted the threshold-review E2E drafts (`e2e/regression/turn-navigation-edge-drafts.spec.ts`). Committed as `026ad51` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Marked backlog item 1 (threshold behavior) complete in `docs/ai/current-plan.md`. Committed as `589d6be` and pushed to `origin/feat/backlog-followups`.
 
 ## TODOs
 
