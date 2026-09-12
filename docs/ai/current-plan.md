@@ -54,22 +54,26 @@ A turn at original index `i` (where `i > editedIndexFromTurn`) is **phantom** if
 ## Verification
 
 - [x] Item 1 behavior decided explicitly by the user (Option C, detailed above).
-- [ ] Item 1 pure engine layer implemented with test coverage.
-- [ ] Item 1 store wiring implemented.
-- [ ] Item 1 UI implemented.
-- [ ] Item 1 E2E drafts promoted and passing.
+- [x] Item 1 pure engine layer implemented with test coverage (`findPhantomTurns`, `removePhantomTurnsState` in `src/store/engine/turns.ts`; synthetic 6-turn scenario in `scripts/integration-behavior.ts`).
+- [x] Item 1 store wiring implemented (`pendingThresholdReview` state, `resolveThresholdReview` action in `src/store/gameStore.ts`).
+- [x] Item 1 UI implemented ("Elimination/Win Threshold Reached" prompt in `src/pages/SharedDeviceMode.tsx`).
+- [x] Item 1 E2E drafts promoted and passing: both original skipped drafts rewritten plus a new third test for `removePhantom`, all 4 tests in `e2e/regression/turn-navigation-edge-drafts.spec.ts` pass, verified stable across a 3x repeat run (12/12).
+- [x] Item 1 bug found and fixed during E2E verification: `applyHistoricalChanges`/`resolveThresholdReview` initially called `findPhantomTurns`/`removePhantomTurnsState` with stale pre-edit `turnRecords`, so the edit itself was never reflected in phantom detection. Fixed by having both functions accept `viewedPlayers` and patch the edited turn internally, matching the existing `applyHistoricalChangesState`/`continueFromHistoricalTurnState` calling convention.
 - [ ] Item 2 touch targets enlarged and verified via MCP at mobile breakpoints with no desktop regression.
 - [ ] Item 3 scoped or explicitly deferred again.
 - [ ] Item 4 scoped or explicitly deferred again.
-- [ ] Required quality gates pass after each change.
-- [ ] Checkpoints committed and pushed per confirmed fix.
+- [x] Required quality gates pass after each change (lint, tsc, build, integration, required E2E all green as of commit `026ad51`).
+- [x] Checkpoints committed and pushed per confirmed fix (`3f21bdc`, `776d780`, `bff42e5`, `c9594d7`, `026ad51` on `feat/backlog-followups`).
+
+**Item 1 status: Complete.**
 
 ## Dependencies / Blockers
 
-None currently. Design is confirmed; implementation is phased with a checkpoint per phase to keep diffs reviewable.
+None currently for item 1 (complete). Items 2-4 remain open; item 2 is next.
 
 ## Decision Rationale
 
 - Elimination/rotation mechanics already exist and are reused correctly by both historical-edit paths; the actual gap was that delta replay ignores rotation reassignment, silently preserving a since-eliminated player's original effects. This was confirmed by reading the code, not assumed.
 - Applying the three-way choice uniformly across win/loss/placement avoids introducing asymmetric special cases not requested by the user.
 - Phased implementation (engine → store → UI → E2E) with a checkpoint per phase matches the bounded, evidence-per-step discipline used in the prior layout verification session.
+- E2E verification is what actually caught the stale-turnRecords bug — reinforces that behavior-affecting logic must be checked end-to-end, not just unit-tested in isolation.
