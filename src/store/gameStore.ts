@@ -9,6 +9,9 @@ import {
   applyHistoricalChangesState,
   continueFromHistoricalTurnState,
   finalizeTurnState,
+  findPhantomTurns,
+  removePhantomTurnsState,
+  type PhantomTurn,
 } from './engine/turns';
 import {
   loadPersistedGameState,
@@ -89,6 +92,18 @@ export interface GameHistoryEntry {
   turnNumber: number;
 }
 
+export type ThresholdReviewChoice = 'continueFromPoint' | 'keepPhantom' | 'removePhantom';
+
+export interface PendingThresholdReview {
+  editedTurnNumber: number;
+  phantoms: PhantomTurn[];
+  fullRecalculation: {
+    players: Player[];
+    turnStartPlayers: Player[];
+    turnRecords: TurnRecord[];
+  };
+}
+
 export interface GameState {
   players: Player[];
   turnStartPlayers: Player[];
@@ -97,6 +112,7 @@ export interface GameState {
   viewedTurnNumber: number | null;
   viewedPlayers: Player[] | null;
   isHistoricalTurnDirty: boolean;
+  pendingThresholdReview: PendingThresholdReview | null;
   startingPlayerIndex: number;
   turnNumber: number;
   currentPlayerIndex: number;
@@ -129,6 +145,7 @@ interface GameStore extends GameState {
   setStartingPlayer: (index: number) => void;
   applyHistoricalChanges: () => void;
   continueFromHistoricalTurn: () => void;
+  resolveThresholdReview: (choice: ThresholdReviewChoice) => void;
 
   resetGame: () => void;
   undo: () => void;
@@ -315,6 +332,7 @@ const clearHistoricalViewState = () => ({
   viewedTurnNumber: null,
   viewedPlayers: null,
   isHistoricalTurnDirty: false,
+  pendingThresholdReview: null,
   history: [],
 });
 
@@ -495,6 +513,7 @@ const initialGameState: GameState = {
   viewedTurnNumber: null,
   viewedPlayers: null,
   isHistoricalTurnDirty: false,
+  pendingThresholdReview: null,
   startingPlayerIndex: 0,
   turnNumber: 1,
   currentPlayerIndex: 0,
@@ -775,6 +794,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   applyHistoricalChanges: () => {
     set((state) => {
+      const eliminationConfig = getEliminationConfigFromState(state, {
+        counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+      });
+
       const recalculated = applyHistoricalChangesState({
         viewedTurnNumber: state.viewedTurnNumber,
         viewedPlayers: state.viewedPlayers,
@@ -783,13 +806,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
         turnStartPlayers: state.turnStartPlayers,
         players: state.players,
         counterDefinitions: state.counterDefinitions,
-        eliminationConfig: getEliminationConfigFromState(state, {
-          counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
-        }),
+        eliminationConfig,
       });
 
       if (!recalculated) {
         return state;
+      }
+
+      const phantoms = findPhantomTurns({
+        viewedTurnNumber: state.viewedTurnNumber,
+        turnRecords: state.turnRecords,
+        counterDefinitions: state.counterDefinitions,
+        eliminationConfig,
+      });
+
+      if (phantoms.length > 0 && state.viewedTurnNumber !== null) {
+        return {
+          pendingThresholdReview: {
+            editedTurnNumber: state.viewedTurnNumber,
+            phantoms,
+            fullRecalculation: {
+              players: recalculated.players,
+              turnStartPlayers: recalculated.turnStartPlayers,
+              turnRecords: recalculated.turnRecords,
+            },
+          },
+        };
       }
 
       return {
@@ -825,6 +867,74 @@ export const useGameStore = create<GameStore>((set, get) => ({
         turnRecords: continued.turnRecords,
         turnNumber: continued.turnNumber,
         currentPlayerIndex: continued.currentPlayerIndex,
+        ...clearHistoricalViewState(),
+      };
+    });
+    get().saveGame();
+  },
+
+  resolveThresholdReview: (choice: ThresholdReviewChoice) => {
+    set((state) => {
+      const pending = state.pendingThresholdReview;
+      if (!pending) {
+        return state;
+      }
+
+      if (choice === 'keepPhantom') {
+        return {
+          players: pending.fullRecalculation.players,
+          turnStartPlayers: pending.fullRecalculation.turnStartPlayers,
+          turnRecords: pending.fullRecalculation.turnRecords,
+          ...clearHistoricalViewState(),
+        };
+      }
+
+      if (choice === 'continueFromPoint') {
+        const continued = continueFromHistoricalTurnState({
+          viewedTurnNumber: state.viewedTurnNumber,
+          viewedPlayers: state.viewedPlayers,
+          turnRecords: state.turnRecords,
+          counterDefinitions: state.counterDefinitions,
+          eliminationConfig: getEliminationConfigFromState(state, {
+            counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+          }),
+        });
+
+        if (!continued) {
+          return { pendingThresholdReview: null };
+        }
+
+        return {
+          players: continued.players,
+          turnStartPlayers: continued.turnStartPlayers,
+          currentTurnActions: [],
+          turnRecords: continued.turnRecords,
+          turnNumber: continued.turnNumber,
+          currentPlayerIndex: continued.currentPlayerIndex,
+          ...clearHistoricalViewState(),
+        };
+      }
+
+      const removed = removePhantomTurnsState({
+        viewedTurnNumber: state.viewedTurnNumber,
+        turnRecords: state.turnRecords,
+        currentPlayerIndex: state.currentPlayerIndex,
+        turnStartPlayers: state.turnStartPlayers,
+        players: state.players,
+        counterDefinitions: state.counterDefinitions,
+        eliminationConfig: getEliminationConfigFromState(state, {
+          counterId: resolveEliminationCounterId(state.counterDefinitions, state.eliminationCounterId),
+        }),
+      });
+
+      if (!removed) {
+        return { pendingThresholdReview: null };
+      }
+
+      return {
+        players: removed.players,
+        turnStartPlayers: removed.turnStartPlayers,
+        turnRecords: removed.turnRecords,
         ...clearHistoricalViewState(),
       };
     });
