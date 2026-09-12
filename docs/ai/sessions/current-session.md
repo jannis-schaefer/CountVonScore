@@ -38,6 +38,7 @@ Discussing historical win/elimination threshold behavior with the user before im
 2026-09-08 - Completed full MCP visual matrix across `/`, `/new-game`, `/settings`, `/shared`, and `/multiplayer` at 1366x768 and 390x844 in both themes, plus tabletop landscape/portrait checks. No horizontal overflow or unreachable controls found; console had 0 errors. Existing mobile counter controls measure approximately 12x20px and remain a non-blocking touch-target follow-up.
 2026-09-11 - Resumed session: prior work was fully complete but had not been merged to main. Reran all required gates (lint, tsc, build, integration, required E2E: 5/5) on `feat/layout-verification-pass` — all pass. Merged into `main` with `git merge --no-ff` as `bd9e89d` and pushed. `main` now matches `origin/main`.
 2026-09-12 - Committed phantom-turn detection/removal pure functions and test coverage (`src/store/engine/turns.ts`, `scripts/integration-behavior.ts`) as `3f21bdc` on `feat/backlog-followups` and pushed to `origin/feat/backlog-followups`.
+2026-09-12 - Recorded item 1 decision/design in `docs/ai/current-plan.md` and `docs/ai/decision-log.md`; deleted three stale untracked debug screenshots and added `tabletop-rotated-*.png` to `.gitignore` to prevent recurrence. Committed as `776d780` and pushed to `origin/feat/backlog-followups`.
 
 ## TODOs
 
