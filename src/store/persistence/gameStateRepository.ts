@@ -11,6 +11,7 @@ export interface PersistedCounterDefinition {
   name: string;
   icon?: string;
   initialValue: number;
+  longPressAmount?: number;
   persistsBetweenTurns: boolean;
   alwaysDisplayed: boolean;
 }
@@ -76,6 +77,7 @@ const isCounterDefinition = (value: unknown): value is PersistedCounterDefinitio
     isString(value.id) &&
     isString(value.name) &&
     isNumber(value.initialValue) &&
+    (value.longPressAmount === undefined || isNumber(value.longPressAmount)) &&
     isBoolean(value.persistsBetweenTurns) &&
     isBoolean(value.alwaysDisplayed)
   );

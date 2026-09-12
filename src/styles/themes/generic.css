@@ -17,6 +17,11 @@
   --danger-color: #f44336;
   --border-color: #404040;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --counter-surface: var(--secondary-bg);
+  --counter-border: var(--border-color);
+  --counter-hover: rgba(74, 158, 255, 0.1);
+  --counter-active: rgba(74, 158, 255, 0.18);
+  --counter-preview: var(--success-color);
 }
 
 @media (prefers-color-scheme: light) {

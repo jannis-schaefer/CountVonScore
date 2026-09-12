@@ -475,6 +475,113 @@
   line-height: 1;
 }
 
+.counter-controls {
+  display: grid;
+  grid-template-columns: minmax(44px, 0.8fr) minmax(72px, 1.4fr) minmax(44px, 0.8fr);
+  align-items: stretch;
+  width: 100%;
+  min-height: clamp(64px, 10vw, 96px);
+  overflow: hidden;
+  border: 1px solid var(--counter-border, var(--border-color));
+  border-radius: 10px;
+  background: var(--counter-surface, var(--secondary-bg));
+}
+
+.counter-controls > button {
+  min-width: 0;
+  min-height: 64px;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  color: var(--counter-fg, var(--primary-fg));
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.counter-controls > button:hover {
+  background: var(--counter-hover, rgba(127, 127, 127, 0.12));
+}
+
+.counter-controls > button:active {
+  background: var(--counter-active, rgba(127, 127, 127, 0.2));
+}
+
+.counter-controls > button:focus-visible,
+.counter-edit button:focus-visible,
+.counter-edit input:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -2px;
+}
+
+.counter-display {
+  display: grid;
+  place-items: center;
+  border-left: 1px solid var(--counter-border, var(--border-color)) !important;
+  border-right: 1px solid var(--counter-border, var(--border-color)) !important;
+  color: var(--counter-value, var(--primary-fg)) !important;
+  font-size: clamp(2rem, 7vw, 4rem) !important;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.counter-edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--counter-border, var(--border-color));
+  border-radius: 10px;
+  background: var(--counter-surface, var(--secondary-bg));
+}
+
+.counter-preview {
+  grid-column: 1 / -1;
+  min-height: 1.5em;
+  color: var(--counter-preview, var(--success-color));
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  animation: counter-preview-pulse 0.22s ease-out;
+}
+
+.counter-edit-mode {
+  display: flex;
+  min-height: 44px;
+  border: 1px solid var(--counter-border, var(--border-color));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.counter-edit-mode button,
+.counter-edit > button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--counter-fg, var(--primary-fg));
+  cursor: pointer;
+}
+
+.counter-edit-mode button[aria-pressed='true'] {
+  background: var(--accent-color);
+  color: var(--counter-selected-fg, #fff);
+}
+
+.counter-edit .input {
+  width: 100%;
+  min-height: 44px;
+}
+
+@keyframes counter-preview-pulse {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 1024px) and (orientation: portrait) {
   .player-layout-table {
     min-height: 0;
@@ -516,9 +623,12 @@
 }
 
 @media (max-width: 768px) {
-  .counter-btn {
-    min-width: 44px;
-    min-height: 44px;
+  .counter-controls {
+    min-height: 72px;
+  }
+
+  .counter-controls > button {
+    min-height: 72px;
   }
 
   .player-layout-scroll-item {

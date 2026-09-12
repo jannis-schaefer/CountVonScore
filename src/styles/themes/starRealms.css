@@ -108,6 +108,34 @@
   box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
 }
 
+.theme-starRealms {
+  --counter-surface: rgba(26, 15, 46, 0.72);
+  --counter-border: var(--star-realms-border);
+  --counter-fg: var(--star-realms-text);
+  --counter-value: var(--star-realms-gold);
+  --counter-hover: rgba(255, 107, 53, 0.14);
+  --counter-active: rgba(255, 107, 53, 0.24);
+  --counter-preview: var(--star-realms-gold);
+  --counter-selected-fg: #1a0f2e;
+}
+
+.theme-starRealms .counter-controls > .counter-btn {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--star-realms-text);
+}
+
+.theme-starRealms .counter-controls > .counter-btn:hover {
+  background: rgba(255, 107, 53, 0.14);
+  box-shadow: none;
+}
+
+.theme-starRealms .counter-controls > .counter-btn:active {
+  transform: none;
+  box-shadow: none;
+}
+
 .theme-starRealms .input {
   background-color: var(--star-realms-secondary);
   color: var(--star-realms-text);

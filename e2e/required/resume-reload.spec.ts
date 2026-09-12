@@ -7,7 +7,7 @@ test('flow B: game state survives reload and resume path works', async ({ page }
   await page.getByRole('button', { name: 'Player 1' }).click();
 
   const activeCard = page.locator('.player-card.active').first();
-  await activeCard.getByRole('button', { name: '+' }).first().click();
+  await activeCard.getByRole('button', { name: 'Increase counter' }).first().click();
   await expect(activeCard.locator('.counter-display').first()).toHaveText('1');
 
   await page.getByRole('button', { name: 'Back' }).click();

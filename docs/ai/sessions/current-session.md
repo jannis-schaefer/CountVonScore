@@ -4,17 +4,17 @@
 > Main branch always keeps this empty template (protected via .gitattributes merge=ours).
 
 
-**Branch**: feat/backlog-followups
+**Branch**: main
 **Started**: 2026-09-11
 **Agent/Contributor**: Copilot + User
 
 ## Session Intent
 
-Address the four deferred backlog items from the layout verification pass: (1) historical win/elimination threshold behavior for the skipped E2E drafts, (2) mobile counter touch-target sizing, (3) optional dedicated accessibility automation, (4) optional shared-device header/turn-banner compaction. Start with item 1 as a product-design discussion before writing any code, since it defines behavior that is currently ambiguous and intentionally left undecided.
+Redesign counter interactions around three tap zones, short versus hold-release adjustments, configurable long-press amounts, and explicit absolute/relative edit modes without regressing history, persistence, or threshold behavior.
 
 ## Active Step
 
-Final quality gates and required session closeout after completing item 2; optional accessibility automation and shared-device chrome compaction are explicitly deferred.
+Running full quality gates and preparing the interaction-pass checkpoint.
 
 ## Checkpoint Log
 
@@ -46,6 +46,9 @@ Final quality gates and required session closeout after completing item 2; optio
 2026-09-12 - Enlarged mobile `.counter-btn` controls to a 44x44px minimum in `src/styles/layout.css`; focused browser checks measured 44x44px at 390x844 and preserved approximately 12x20px desktop density at 1280x900. Lint, build, and core gameplay E2E passed.
 2026-09-12 - Explicitly deferred dedicated accessibility automation and shared-device header/turn-banner compaction for this session because existing focused browser evidence did not show a blocking gap or usability defect.
 2026-09-12 - Checkpointed completed backlog item 2 and its plan/session documentation updates; screenshots remain untracked and excluded from this checkpoint.
+2026-09-12 - Closeout audit: `main` at `f88c2d1`, synchronized with `origin/main` (`0 0` ahead/behind), clean tracked diff, and `git diff --check` clean. Two untracked PNG evidence artifacts (`counter-target-1280x900.png`, `counter-target-390x844.png`) remain and are non-blocking.
+2026-09-12 - Started a separate counter interaction pass: three-zone controls, short/hold-release adjustments, configurable per-counter long-press amount, absolute/relative edit modes, animated preview, and updated required E2E coverage.
+2026-09-12 - Prepared the counter interaction pass checkpoint; app logic, settings/persistence, CSS/themes, E2E coverage, and supporting plan/decision/session docs are scoped for commit, while screenshot evidence remains excluded.
 
 ## TODOs
 
@@ -78,13 +81,12 @@ Final quality gates and required session closeout after completing item 2; optio
 
 ## Remote / Push Status
 
-- `main` and `origin/main` both at `bd9e89d` after merging `feat/layout-verification-pass` (checkpoints `54cdf75`, `8987999`, `e58ae60`, `dca4739`, `c0c2ce0`).
+- `main`, `origin/main`, and `origin/HEAD` all point to `f88c2d1` (`merge: close backlog follow-ups`); ahead/behind is `0 0`.
 
 ## Blockers / Notes
 
-- Historical threshold behavior remains blocked pending a product decision (unrelated to this layout work).
+- Historical threshold behavior and the mobile counter touch-target follow-up are complete and merged.
 - Terminal execution and Playwright MCP tools were reconfirmed working; all planned layout evidence is now captured.
 - The `/new-game` report was traced to `/settings` and fixed; the `tabletopRotated` player 2/4 perception issue was reproduced and fixed.
 - Optional future improvement: compact the shared-device header/turn-banner for table layouts so auto-scroll-to-active-player isn't needed to see the whole table at once.
-- Existing mobile counter hit areas are a non-blocking accessibility/usability follow-up.
-- `feat/layout-verification-pass` is fully merged into `main`; safe to delete once confirmed no longer needed for reference.
+- Two untracked PNG evidence artifacts remain: `counter-target-1280x900.png` and `counter-target-390x844.png`; they do not block closeout.

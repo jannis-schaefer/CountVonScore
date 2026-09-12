@@ -39,14 +39,14 @@ const setupThresholdReviewScenario = async (page: Page) => {
 
   // Turn 4 (Player 2): increment own Counter A by +3.
   const player2Card = playerCard(page, 'Player 2');
-  const player2Inc = player2Card.getByRole('button', { name: '+' }).first();
+  const player2Inc = player2Card.getByRole('button', { name: 'Increase counter' }).first();
   await player2Inc.click();
   await player2Inc.click();
   await player2Inc.click();
   await page.getByRole('button', { name: 'End Turn' }).click();
 
   // Turn 5 (Player 1 acting): decrement Player 2's Counter A by 2.
-  const player2Dec = playerCard(page, 'Player 2').getByRole('button', { name: '−' }).first();
+  const player2Dec = playerCard(page, 'Player 2').getByRole('button', { name: 'Decrease counter' }).first();
   await player2Dec.click();
   await player2Dec.click();
   await page.getByRole('button', { name: 'End Turn' }).click();
@@ -58,7 +58,7 @@ const setupThresholdReviewScenario = async (page: Page) => {
 
   // While viewing turn 3, decrement Player 1's own Counter A by 2 (now -2, crossing the -1 threshold).
   const activeCard = page.locator('.player-card.active').first();
-  const activeDec = activeCard.getByRole('button', { name: '−' }).first();
+  const activeDec = activeCard.getByRole('button', { name: 'Decrease counter' }).first();
   await activeDec.click();
   await activeDec.click();
 
@@ -120,7 +120,7 @@ test.describe('turn navigation edge case drafts', () => {
     await expect(page.getByText(/Saved turn result/i)).toBeVisible();
 
     const activeCard = page.locator('.player-card.active').first();
-    await activeCard.getByRole('button', { name: '+' }).first().click();
+    await activeCard.getByRole('button', { name: 'Increase counter' }).first().click();
 
     const previousTurnButton = page.getByRole('button', { name: 'Previous Turn' });
     const returnToCurrentButton = page.getByRole('button', { name: 'Return to Current' });

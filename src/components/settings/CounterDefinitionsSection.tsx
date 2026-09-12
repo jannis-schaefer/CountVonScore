@@ -5,6 +5,7 @@ const createNewCounter = (index: number): CounterDefinition => ({
   id: `counter-${Date.now()}-${index}`,
   name: `Counter ${index + 1}`,
   initialValue: 0,
+  longPressAmount: 5,
   persistsBetweenTurns: true,
   alwaysDisplayed: false,
 });
@@ -81,6 +82,21 @@ export const CounterDefinitionsSection: React.FC<Props> = ({
                 onChange={(event) => {
                   const next = [...editableCounters];
                   next[index] = { ...counter, initialValue: Number(event.target.value || 0) };
+                  setEditableCounters(next);
+                }}
+              />
+            </div>
+
+            <div className="settings-row">
+              <label>Long Press Amount</label>
+              <input
+                type="number"
+                min="1"
+                className="input"
+                value={counter.longPressAmount}
+                onChange={(event) => {
+                  const next = [...editableCounters];
+                  next[index] = { ...counter, longPressAmount: Math.max(1, Number(event.target.value || 1)) };
                   setEditableCounters(next);
                 }}
               />

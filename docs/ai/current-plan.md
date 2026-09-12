@@ -1,8 +1,8 @@
 # Current Plan - Backlog Follow-Ups
 
-**Status**: In Progress (items 1-2 complete; optional items deferred)
+**Status**: Complete (items 1-2 complete; optional items deferred)
 **Started**: 2026-09-11
-**Target Completion**: TBD
+**Target Completion**: 2026-09-12
 
 ## Scope
 
@@ -69,7 +69,9 @@ A turn at original index `i` (where `i > editedIndexFromTurn`) is **phantom** if
 
 ## Dependencies / Blockers
 
-None currently for item 1 (complete). Items 2-4 remain open; item 2 is next.
+None. Optional items 3-4 remain intentionally deferred and do not block closeout.
+
+The closeout audit found two untracked PNG evidence artifacts (`counter-target-1280x900.png` and `counter-target-390x844.png`). They are non-blocking and were left untouched for user review.
 
 ## Decision Rationale
 
@@ -77,3 +79,28 @@ None currently for item 1 (complete). Items 2-4 remain open; item 2 is next.
 - Applying the three-way choice uniformly across win/loss/placement avoids introducing asymmetric special cases not requested by the user.
 - Phased implementation (engine → store → UI → E2E) with a checkpoint per phase matches the bounded, evidence-per-step discipline used in the prior layout verification session.
 - E2E verification is what actually caught the stale-turnRecords bug — reinforces that behavior-affecting logic must be checked end-to-end, not just unit-tested in isolation.
+
+## Closeout Verification
+
+- `main` is checked out at `f88c2d1` (`merge: close backlog follow-ups`).
+- `origin/main` and `origin/HEAD` point to the same commit; `HEAD...origin/main` is `0 0`.
+- Worktree has no tracked modifications and `git diff --check` is clean.
+- Required gates and focused browser/E2E verification are recorded above as passing.
+- Two untracked PNG evidence artifacts remain; they do not block closeout because they are not source or generated release inputs.
+
+## New Interaction Pass: Counter Gesture And Edit Controls
+
+Started 2026-09-12 from the completed layout/backlog state. This is a separate feature pass, not a reopening of the closed layout work.
+
+- [x] Replace visible counter +/- buttons with minus, value, and plus interaction zones.
+- [x] Support short tap +/- by 1 and hold-release +/- by a configurable per-counter amount (default 5).
+- [x] Add long-press absolute edit mode and double-tap relative edit mode.
+- [x] Add `=`/`+` mode toggle, animated uncommitted preview, OK, and Cancel.
+- [x] Persist the long-press amount with backwards-compatible loading.
+- [x] Update required core gameplay E2E coverage for the new interaction contract.
+- [ ] Run the full quality gates and commit/push the interaction pass.
+
+### Interaction Pass Risks
+
+- Desktop counter zones remain compact where the previous layout intentionally preserved density; browser checks should confirm the new surface remains usable across themes and tabletop layouts.
+- Long-press timing is currently 500ms and should remain stable in repeat E2E runs.

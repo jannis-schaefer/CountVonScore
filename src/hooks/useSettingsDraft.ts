@@ -91,6 +91,7 @@ export function useSettingsDraft(): SettingsDraft {
       name: counter.name,
       icon: counter.icon,
       initialValue: counter.initialValue,
+      longPressAmount: counter.longPressAmount ?? 5,
       persistsBetweenTurns: counter.persistsBetweenTurns,
       alwaysDisplayed: counter.alwaysDisplayed,
     }));

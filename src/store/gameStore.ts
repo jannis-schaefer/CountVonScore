@@ -27,6 +27,7 @@ export interface CounterDefinition {
   name: string;
   icon?: string;
   initialValue: number;
+  longPressAmount: number;
   persistsBetweenTurns: boolean;
   alwaysDisplayed: boolean;
 }
@@ -43,6 +44,7 @@ export interface GameConfig {
     name: string;
     icon?: string;
     initialValue: number;
+    longPressAmount?: number;
     persistsBetweenTurns: boolean;
     alwaysDisplayed: boolean;
   }>;
@@ -181,6 +183,7 @@ const createDefaultCounterDefinitions = (): CounterDefinition[] => [
     id: 'counter-1',
     name: 'Counter A',
     initialValue: 0,
+    longPressAmount: 5,
     persistsBetweenTurns: true,
     alwaysDisplayed: true,
   },
@@ -188,6 +191,7 @@ const createDefaultCounterDefinitions = (): CounterDefinition[] => [
     id: 'counter-2',
     name: 'Counter B',
     initialValue: 0,
+    longPressAmount: 5,
     persistsBetweenTurns: true,
     alwaysDisplayed: false,
   },
@@ -195,6 +199,7 @@ const createDefaultCounterDefinitions = (): CounterDefinition[] => [
     id: 'counter-3',
     name: 'Counter C',
     initialValue: 0,
+    longPressAmount: 5,
     persistsBetweenTurns: true,
     alwaysDisplayed: false,
   },
@@ -271,6 +276,7 @@ const normalizeDefinitions = (
       name: counter.name,
       icon: counter.icon,
       initialValue: counter.initialValue,
+      longPressAmount: counter.longPressAmount ?? 5,
       persistsBetweenTurns: counter.persistsBetweenTurns,
       alwaysDisplayed: counter.alwaysDisplayed,
     };
@@ -1244,7 +1250,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return;
       }
 
-      const counterDefinitions = savedGame.counterDefinitions;
+      const counterDefinitions = savedGame.counterDefinitions.map((counter) => ({
+        ...counter,
+        longPressAmount: counter.longPressAmount ?? 5,
+      }));
       const players = clonePlayers(savedGame.players as Player[]);
       const turnStartPlayers = clonePlayers(savedGame.turnStartPlayers as Player[]);
       const turnRecords = savedGame.turnRecords.map((record) => ({

@@ -20,6 +20,26 @@ Durable decisions and design rationale. Append-only; never remove entries.
 
 ## Entries
 
+### 2026-09-12: Counter Gesture And Edit Interaction Model
+
+**Context**: Counter updates were exposed as small visible +/- buttons with click-to-edit behavior. The requested interaction needs faster tap adjustments, larger hold-release adjustments, and explicit absolute versus relative numeric edits.
+
+**Decision**: Use one three-zone counter surface (`-`, centered value, `+`). Short taps change by one; holding a side zone for 500ms and releasing changes by a configurable per-counter amount, defaulting to 5. Long-pressing the centered value opens absolute (`=`) edit mode; double-tapping it opens relative (`+`) edit mode. Both modes share a numeric field, a mode toggle, animated preview, and OK/Cancel actions.
+
+**Rationale**: The model keeps the common action spatially obvious while reserving the centered value for intentional edits. Relative edits accept signed values, so a negative entry subtracts without introducing another control path.
+
+**Impact**: Counter definitions and persistence now include an optional `longPressAmount`; older saved games fall back to 5. Required gameplay E2E coverage now targets the new interaction contract.
+
+### 2026-09-12: Close Out Backlog Follow-Ups After Main Synchronization
+
+**Context**: The backlog follow-up work was completed on `feat/backlog-followups` and merged to `main`, but the session memory still described the branch as active and retained an obsolete threshold-behavior blocker.
+
+**Decision**: Classify the session as complete. Keep the two untracked counter-target PNG evidence artifacts in place as non-blocking user-review artifacts rather than deleting them during handoff.
+
+**Rationale**: `main` and `origin/main` are both at `f88c2d1`, the ahead/behind count is `0 0`, tracked diffs are empty, and `git diff --check` is clean. The PNGs are not source or release inputs and do not affect repository correctness.
+
+**Impact**: Current plan and session memory now reflect the completed merge, optional deferred work, exact synchronization evidence, and the remaining untracked artifacts.
+
 ### 2026-09-10: Close Out Layout Verification Pass With Documented Residual Risk
 
 **Context**: The app-wide layout verification pass on `feat/layout-verification-pass` completed with live MCP evidence, required quality gates, and three pushed checkpoints, but the session memory still described the work as active.
