@@ -28,6 +28,16 @@ Durable decisions and design rationale. Append-only; never remove entries.
 
 **Rationale**: All targeted layout surfaces were verified across the documented breakpoints and themes with no remaining overflow or unreachable-control defect. The approximately 12x20px counter controls remain below the recommended 44x44px touch target, but do not block the completed layout gate.
 
+### 2026-09-11: Historical Win/Elimination Threshold Behavior
+
+**Context**: `applyHistoricalChangesState` recalculates every later turn forward by replaying each turn's original delta on the new baseline. Turn rotation correctly skips a newly-eliminated player, but the delta replay does not — a since-eliminated player's original counter effects (including damage dealt to other players) still silently apply under a relabeled acting player. The two related E2E drafts in `e2e/regression/turn-navigation-edge-drafts.spec.ts` were intentionally left `test.skip` pending this decision.
+
+**Decision**: When "Apply Changes and Return" causes a player to newly cross a win/loss/placement threshold and that player has recorded turns later in history, prompt the user with three choices rather than silently recalculating: (1) continue from this point (truncate, same as "Continue From This Turn"), (2) keep phantom turns and damage (today's behavior, made explicit/opt-in), or (3) remove phantom turns and their damage from the ledger while keeping every other still-active player's genuine subsequent turns. Applies uniformly to win, loss, and placement outcomes.
+
+**Rationale**: Silently picking one behavior risks either destroying legitimate future turns for other players (blind truncation) or leaving confusing "phantom" damage baked into the ledger under the wrong player's name (blind recalculation). Giving the choice at the moment of ambiguity, only when it actually matters (a newly-crossed threshold with later recorded turns), preserves the common case's existing behavior with no added friction.
+
+**Impact**: Requires a phased implementation: pure detection/resolution functions in `src/store/engine/turns.ts`, new store state/actions in `src/store/gameStore.ts`, a new three-way UI prompt in `src/pages/SharedDeviceMode.tsx`, and promotion of the two skipped E2E drafts plus new coverage for the "remove phantom" path.
+
 **Impact**: `docs/ai/current-plan.md`, `docs/ai/sessions/current-session.md`, and the dated handoff note now identify the next owner as accessibility follow-up rather than layout verification.
 
 ### 2026-05-19: Theme Contract Enforcement With Skip-Invalid Build Behavior

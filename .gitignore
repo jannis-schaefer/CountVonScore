@@ -29,6 +29,7 @@ test-results/
 **/.last-run.json
 playwright-report/
 .playwright-mcp/
+tabletop-rotated-*.png
 
 build.ps1
 dev.ps1
